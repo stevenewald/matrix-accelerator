@@ -1,0 +1,15 @@
+# Vivado-generated folders (from your directory)
+board/**/*.cache/
+board/**/*.gen/
+board/**/*.hw/
+board/**/*.ip_user_files/
+board/**/*.runs/
+board/**/*.sim/
+board/**/*.tmp/
+
+# Vivado logs and temp files
+board/*.jou
+board/*.log
+board/*.str
+board/ip_upgrade.log
+board/*.xpr.old
