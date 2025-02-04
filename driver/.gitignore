@@ -8,3 +8,5 @@ Module.symvers
 .Module.symvers.cmd
 .modules.order.cmd
 .fpga_driver*
+.cache/
+compile_commands.json
