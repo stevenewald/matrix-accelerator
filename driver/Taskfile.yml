@@ -4,7 +4,11 @@ tasks:
   clean:
     aliases: [c]
     cmds:
-      - make clean
+      - cmd: mv compile_commands.json ..
+        ignore_error: true
+      - cmd: make clean
+      - cmd: mv ../compile_commands.json .
+        ignore_error: true
 
   build:
     alises: [b]
