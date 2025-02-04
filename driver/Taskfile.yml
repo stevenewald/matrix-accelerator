@@ -2,16 +2,23 @@ version: '3'
 
 tasks:
   clean:
+    aliases: [c]
     cmds:
       - make clean
 
   build:
+    alises: [b]
     cmds:
       - make all
 
-  install:
+  edit:
+    aliases: [e]
     cmds:
-      - task: clean
+      - nvim fpga_driver.c
+
+  install:
+    aliases: [i]
+    cmds:
       - task: build
       - cmd: sudo rmmod fpga_driver
         ignore_error: true
