@@ -1,0 +1,18 @@
+version: '3'
+
+tasks:
+  clean:
+    cmds:
+      - make clean
+
+  build:
+    cmds:
+      - make all
+
+  install:
+    cmds:
+      - task: clean
+      - task: build
+      - cmd: sudo rmmod fpga_driver
+        ignore_error: true
+      - cmd: sudo insmod fpga_driver.ko

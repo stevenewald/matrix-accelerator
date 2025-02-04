@@ -47,6 +47,7 @@ static DEVICE_ATTR_RW(reg);
 static ssize_t dma_write_store(struct device *dev,
                                struct device_attribute *attr, const char *buf,
                                size_t count) {
+  printk("Cnt %ld\n", count);
   size_t bytes = min(count, DMA_BUFFER_SIZE);
   dma_addr_t dma_desc_phys;
   struct descriptor *desc;
@@ -57,7 +58,7 @@ static ssize_t dma_write_store(struct device *dev,
     return -ENOMEM;
 
   memset(desc, 0, sizeof(*desc));
-  desc->fst = (0xad4b << 16);// | 1;
+  desc->fst = (0xad4b << 16); // | 1;
   desc->len = bytes;
   desc->src_lo = lower_32_bits(dma_handle);
   desc->src_hi = upper_32_bits(dma_handle);
@@ -70,7 +71,7 @@ static ssize_t dma_write_store(struct device *dev,
   memcpy(dma_buffer, buf, bytes);
   dma_sync_single_for_device(dev, dma_handle, bytes, DMA_TO_DEVICE);
 
-  wmb(); 
+  wmb();
   iowrite32(lower_32_bits(dma_desc_phys), bar1_regs + 0x4080);
   iowrite32(upper_32_bits(dma_desc_phys), bar1_regs + 0x4084);
 
@@ -97,7 +98,7 @@ static ssize_t dma_read_show(struct device *dev, struct device_attribute *attr,
     return -ENOMEM;
 
   memset(desc, 0, sizeof(*desc));
-  desc->fst = (0xad4b << 16);// | 1;
+  desc->fst = (0xad4b << 16); // | 1;
   desc->len = 128;
   desc->src_lo = 0x0;
   desc->src_hi = 0x0;
@@ -135,7 +136,7 @@ static int my_probe(struct pci_dev *pdev, const struct pci_device_id *id) {
 
   ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
   if (ret) {
-      dev_err(&pdev->dev, "No suitable DMA mask available\n");
+    dev_err(&pdev->dev, "No suitable DMA mask available\n");
   }
 
   bar0_regs = pci_iomap(pdev, 0, 0);
