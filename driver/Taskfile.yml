@@ -11,7 +11,7 @@ tasks:
         ignore_error: true
 
   build:
-    alises: [b]
+    aliases: [b]
     cmds:
       - make all
 
