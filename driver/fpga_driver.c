@@ -1,3 +1,4 @@
+#include <linux/atomic.h>
 #include <linux/cdev.h>
 #include <linux/delay.h>
 #include <linux/device.h>
@@ -23,7 +24,9 @@ struct pcie_dev {
   struct device *device;
   dma_addr_t dma_handle;
   void *dma_buffer;
-  int irq;
+  atomic_t dma_in_progress;
+  int dma_irq;
+  int usr_irq;
 };
 
 static DEFINE_MUTEX(dma_lock);
@@ -108,14 +111,21 @@ static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
   iowrite32(upper_32_bits(dma_desc_phys), pcie->bar1_base + 0x4084);
 
   wmb();
+  while (atomic_read(&pcie->dma_in_progress) == 1) {
+  }
+  atomic_set(&pcie->dma_in_progress, 1);
+  iowrite32((1 << 2) | (1 << 1) | 1,
+            pcie->bar1_base + 0x90); // enable H2C interrupts
+
+  iowrite32(1 << 1 | 1 << 2, pcie->bar1_base + 0x40); // clear status
   iowrite32(0x4FFFE7F, pcie->bar1_base + 0x04);
-  mutex_unlock(&dma_lock);
 
   // todo: replace with interrupts
-  while (ioread32(pcie->bar1_base + 0x40) & 1) {
+  while (atomic_read(&pcie->dma_in_progress) == 1) {
   }
-  iowrite32(0, pcie->bar1_base + 0x04);
+  iowrite32(0, pcie->bar1_base + 0x04); // stop engine
 
+  mutex_unlock(&dma_lock);
   dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
   memset(pcie->dma_buffer, 0, DMA_BUFFER_SIZE);
   *ppos += count;
@@ -152,12 +162,17 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
 
   iowrite32(lower_32_bits(dma_desc_phys), pcie->bar1_base + 0x5080);
   iowrite32(upper_32_bits(dma_desc_phys), pcie->bar1_base + 0x5084);
+  while (atomic_read(&pcie->dma_in_progress) == 1) {
+  }
+  atomic_set(&pcie->dma_in_progress, 1);
+  iowrite32((1 << 2) | (1 << 1) | 1,
+            pcie->bar1_base + 0x1090);                  // enable C2H interrupts
+  iowrite32(1 << 1 | 1 << 2, pcie->bar1_base + 0x1040); // clear status
   iowrite32(0x4FFFE7F, pcie->bar1_base + 0x1004);
 
-  // todo: replace with interrupts
-  while (ioread32(pcie->bar1_base + 0x1040) & 1) {
+  while (atomic_read(&pcie->dma_in_progress) == 1) {
   }
-  iowrite32(0, pcie->bar1_base + 0x1004);
+  iowrite32(0, pcie->bar1_base + 0x1004); // stop engine
 
   if (copy_to_user(buf, pcie->dma_buffer, count)) {
     dev_err(pcie->device, "Unable to copy buffer to userspace");
@@ -174,7 +189,13 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
 }
 
 static irqreturn_t pcie_interrupt_handler(int irq, void *dev_id) {
-  printk("MSI interrupt received on IRQ %d\n", irq);
+  struct pcie_dev *dev = (struct pcie_dev *)dev_id;
+  if (irq == dev->dma_irq) {
+    printk("DMA interrupt received on IRQ %d\n", irq);
+    atomic_set(&dev->dma_in_progress, 0);
+  } else {
+    printk("USR interrupt received on IRQ %d\n", irq);
+  }
   return IRQ_HANDLED;
 }
 
@@ -209,6 +230,8 @@ static int pcie_probe(struct pci_dev *pdev, const struct pci_device_id *id) {
   dev = devm_kzalloc(&pdev->dev, sizeof(*dev), GFP_KERNEL);
   if (!dev)
     return -ENOMEM;
+
+  atomic_set(&dev->dma_in_progress, 0);
 
   dev->pdev = pdev;
 
@@ -261,20 +284,34 @@ static int pcie_probe(struct pci_dev *pdev, const struct pci_device_id *id) {
     goto err_unmap_bar1;
   }
 
-  if (pci_alloc_irq_vectors(pdev, 1, 1, PCI_IRQ_MSI) != 1) {
-    dev_err(&pdev->dev, "Failed to allocate MSI vector");
+  if (pci_alloc_irq_vectors(pdev, 2, 2, PCI_IRQ_MSI) != 2) {
+    dev_err(&pdev->dev, "Failed to allocate MSI vectors");
     goto err_free_dma;
   }
 
-  dev->irq = pci_irq_vector(pdev, 0);
+  dev->dma_irq = pci_irq_vector(pdev, 0);
+  dev->usr_irq = pci_irq_vector(pdev, 1);
 
-  if (request_irq(pdev->irq, pcie_interrupt_handler, 0, "fpga_driver", pdev)) {
+  if (request_irq(dev->usr_irq, pcie_interrupt_handler, 0, "fpga_driver",
+                  dev)) {
     dev_err(&pdev->dev, "Unable to request IRQ");
     ret = -EBUSY;
-    goto err_free_irq_errors;
+    goto err_free_irq_vectors;
+  }
+  if (request_irq(dev->dma_irq, pcie_interrupt_handler, 0, "fpga_driver",
+                  dev)) {
+    dev_err(&pdev->dev, "Unable to request IRQ");
+    ret = -EBUSY;
+    goto err_free_irq_vectors;
   }
 
-  iowrite32(0x1, dev->bar1_base + 0x2004); // enable user interrupts
+  iowrite32((uint32_t)-1, dev->bar1_base + 0x2004); // enable user interrupts
+  iowrite32(0, dev->bar1_base +
+                   0x2080); // set user interrupts to trigger on msi vector 0
+  iowrite32((uint32_t)-1,
+            dev->bar1_base + 0x2010); // enable dma engine interrupts
+  iowrite32(1, dev->bar1_base +
+                   0x20A0); // set dma interrupts to trigger on msi vector 1
 
   alloc_chrdev_region(&dev->devt, 0, 1, DEVICE_NAME);
   cdev_init(&dev->cdev, &pcie_fops);
@@ -287,7 +324,7 @@ static int pcie_probe(struct pci_dev *pdev, const struct pci_device_id *id) {
   printk("FPGA Driver Loaded Successfully");
   return 0;
 
-err_free_irq_errors:
+err_free_irq_vectors:
   pci_free_irq_vectors(pdev);
 err_free_dma:
   dma_free_coherent(&pdev->dev, DMA_BUFFER_SIZE, dev->dma_buffer,
@@ -313,7 +350,8 @@ static void pcie_remove(struct pci_dev *pdev) {
   class_destroy(dev->class);
   unregister_chrdev_region(dev->devt, 1);
 
-  free_irq(pdev->irq, pdev);
+  free_irq(dev->usr_irq, pdev);
+  free_irq(dev->dma_irq, pdev);
   pci_free_irq_vectors(pdev);
   dma_free_coherent(&pdev->dev, DMA_BUFFER_SIZE, dev->dma_buffer,
                     dev->dma_handle);
