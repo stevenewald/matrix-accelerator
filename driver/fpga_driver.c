@@ -1,4 +1,5 @@
 #include "dma_regs.h"
+#include "dma_util.h"
 #include <linux/atomic.h>
 #include <linux/cdev.h>
 #include <linux/delay.h>
@@ -31,17 +32,6 @@ struct pcie_dev {
 };
 
 static DEFINE_MUTEX(dma_lock);
-
-typedef struct descriptor {
-  uint32_t fst;
-  uint32_t len;
-  uint32_t src_lo;
-  uint32_t src_hi;
-  uint32_t dst_lo;
-  uint32_t dst_hi;
-  uint32_t nxt_lo;
-  uint32_t nxt_hi;
-} descriptor;
 
 static loff_t pcie_llseek(struct file *file, loff_t offset, int whence) {
   loff_t new_pos;
@@ -86,13 +76,7 @@ static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
   if (!desc)
     return -ENOMEM;
 
-  memset(desc, 0, sizeof(*desc));
-  desc->fst = (0xad4b << 16) | 1;
-  desc->len = count;
-  desc->src_lo = lower_32_bits(pcie->dma_handle);
-  desc->src_hi = upper_32_bits(pcie->dma_handle);
-  desc->dst_lo = *ppos;
-  desc->dst_hi = 0x0;
+  *desc = create_descriptor(H2C, pcie->dma_handle, *ppos, count);
 
   mutex_lock(&dma_lock);
 
@@ -117,16 +101,14 @@ static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
   while (atomic_read(&pcie->dma_in_progress) == 1) {
   }
   atomic_set(&pcie->dma_in_progress, 1);
-  iowrite32((1 << 1),
-            pcie->bar1_base + 0x90); // enable H2C interrupts
-
-  iowrite32(1 << 1, pcie->bar1_base + 0x40); // clear status
-  iowrite32(0x4FFFE7F, pcie->bar1_base + 0x04);
+  write_dma_reg(pcie->bar1_base, H2C_INT_ENABLE, 1 << 1); // enable int on stop
+  write_dma_reg(pcie->bar1_base, H2C_STATUS, 1 << 1);     // clear stop bit
+  write_dma_reg(pcie->bar1_base, H2C_CTRL, 0x4FFFE7F);
 
   // todo: replace with interrupts
   while (atomic_read(&pcie->dma_in_progress) == 1) {
   }
-  iowrite32(0, pcie->bar1_base + 0x04); // stop engine
+  write_dma_reg(pcie->bar1_base, H2C_CTRL, 0); // stop engine
 
   mutex_unlock(&dma_lock);
   dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
@@ -153,13 +135,7 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
   if (!desc)
     return -ENOMEM;
 
-  memset(desc, 0, sizeof(*desc));
-  desc->fst = (0xad4b << 16) | 1;
-  desc->len = count;
-  desc->src_lo = *ppos;
-  desc->src_hi = 0x0;
-  desc->dst_lo = lower_32_bits(pcie->dma_handle);
-  desc->dst_hi = upper_32_bits(pcie->dma_handle);
+  *desc = create_descriptor(C2H, pcie->dma_handle, *ppos, count);
 
   mutex_lock(&dma_lock);
 
@@ -351,12 +327,12 @@ static void pcie_remove(struct pci_dev *pdev) {
   struct pcie_dev *dev = pci_get_drvdata(pdev);
   dev_info(dev->device, "Removing pcie driver");
   device_destroy(dev->class, dev->devt);
-  cdev_del(&dev->cdev);
   class_destroy(dev->class);
+  cdev_del(&dev->cdev);
   unregister_chrdev_region(dev->devt, 1);
 
-  free_irq(dev->usr_irq, pdev);
-  free_irq(dev->dma_irq, pdev);
+  free_irq(dev->usr_irq, dev);
+  free_irq(dev->dma_irq, dev);
   pci_free_irq_vectors(pdev);
   dma_free_coherent(&pdev->dev, DMA_BUFFER_SIZE, dev->dma_buffer,
                     dev->dma_handle);
