@@ -108,18 +108,19 @@ module axi_master(
     
     
     
-    localparam S_IDLE          = 3'd0,
-           S_CHECK_0x10    = 3'd1,
+    localparam S_IDLE      = 3'd0,
+           S_CHECK_0x20    = 3'd1,
            S_DECIDE        = 3'd2,
-           S_READ_0x0      = 3'd3,
-           S_READ_0x4      = 3'd4,
-           S_WRITE_0xC     = 3'd5,
-           S_WRITE_0x10    = 3'd6;
+           S_READ_ARGS     = 3'd3,
+           S_COMPUTE       = 3'd4,
+           S_WRITE_RESULTS = 3'd5,
+           S_WRITE_0x20    = 3'd6;
 
 reg [2:0] current_state;
 
-// Registers to store read values and product
-reg [31:0] reg_A, reg_B, product;
+reg [31:0] args [0:7];
+reg [8:0] arg_num;
+wire [31:0] outputs [0:3];
 
 // Control signals for the AXI-Lite master
 reg r_start;
@@ -132,6 +133,26 @@ assign write   = r_write_en;
 assign addr       = r_addr;
 assign write_data = r_write_data;
 
+integer init, p, o;
+
+wire [63:0] prod [0:1][0:1][0:1];
+genvar i, j, k;
+generate
+for (i = 0; i < 2; i = i + 1) begin : row
+    for (j = 0; j < 2; j = j + 1) begin : col
+        for (k = 0; k < 2; k = k + 1) begin : inner
+            assign prod[i][j][k] = args[i * 2 + k] * args[4 + k * 2 + j];
+        end
+    end
+end
+endgenerate
+generate
+for (i = 0; i < 2; i = i + 1) begin : row2
+    for (j = 0; j < 2; j = j + 1) begin : col2
+            assign outputs[i * 2 + j] = prod[i][j][0] + prod[i][j][1];
+    end
+end
+endgenerate
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -143,10 +164,12 @@ always @(posedge aclk or negedge aresetn) begin
         r_write_en   <= 1'b0;
         r_addr       <= {32{1'b0}};
         r_write_data <= {32{1'b0}};
-        reg_A        <= {32{1'b0}};
-        reg_B        <= {32{1'b0}};
-        product      <= {32{1'b0}};
         current_state <= S_IDLE;
+        arg_num <= 0;
+        
+        for (init = 0; init < 8; init = init + 1) begin
+            args[init] <= 32'h0;
+        end
     end else begin
         // Defaults for each cycle
         r_start      <= 1'b0;
@@ -154,74 +177,71 @@ always @(posedge aclk or negedge aresetn) begin
 
         case (current_state)
             S_IDLE: begin
-                current_state <= S_CHECK_0x10;
+                current_state <= S_CHECK_0x20;
             end
 
             // Initiate read of 0x10
-            S_CHECK_0x10: begin
+            S_CHECK_0x20: begin
                 if(done) begin
                     r_start <= 1'b0;
                     current_state <= S_DECIDE;
                 end else begin
                     r_start      <= 1'b1;
                     r_write_en   <= 1'b0;      // Read
-                    r_addr       <= 32'h10;
+                    r_addr       <= 32'h20;
                 end
             end
 
             // Evaluate data from 0x10
             S_DECIDE: begin
-                current_state <= (read_data == 32'd1) ? S_READ_0x0 : S_CHECK_0x10;
+                current_state <= (read_data == 32'd1) ? S_READ_ARGS : S_CHECK_0x20;
             end
 
             // Read from 0x0 -> reg_A
-            S_READ_0x0: begin
+            S_READ_ARGS: begin
                 if (done) begin
-                    reg_A <= read_data;
+                    args[arg_num] <= read_data;
+                    arg_num<=arg_num+1;
                     r_start <= 1'b0;
-                    current_state <= S_READ_0x4;
+                    if(arg_num==7) begin
+                        arg_num <= 0;
+                        current_state <= S_COMPUTE;
+                    end
                 end else begin
                     r_start <= 1'b1;
                     r_write_en <= 1'b0;
-                    r_addr <= 32'h0;
+                    r_addr <= 32'h0 + 4*arg_num;
                 end
             end
+            
+            S_COMPUTE: current_state <= S_WRITE_RESULTS;
 
-            // Read from 0x4 -> reg_B
-            S_READ_0x4: begin
+            S_WRITE_RESULTS: begin
                 if(done) begin
-                    reg_B <= read_data;
+                    arg_num <= arg_num+1;
                     r_start <= 1'b0;
-                    current_state <= S_WRITE_0xC;
-                end else begin
-                    r_start      <= 1'b1;
-                    r_write_en   <= 1'b0;
-                    r_addr       <= 32'h4;
-                end
-            end
-
-            // Write A*B to 0xc
-            S_WRITE_0xC: begin
-                if(done) begin
-                    r_start <= 1'b0;
-                    current_state <= S_WRITE_0x10;
+                    if(arg_num==3) begin
+                        arg_num <= 0;
+                        current_state <= S_WRITE_0x20;
+                    end
                 end else begin
                     r_start      <= 1'b1;
                     r_write_en   <= 1'b1;
-                    r_addr       <= 32'hc;
-                    r_write_data <= reg_A * reg_B;
+                    r_addr       <= 32'h24 + arg_num * 4;
+                    r_write_data <= outputs[arg_num];
                 end
             end
+            
 
-            // Write 0 to 0x10
-            S_WRITE_0x10: begin
+            // Write 0 to 0x20
+            S_WRITE_0x20: begin
                 if(done) begin
                     r_start <= 1'b0;
                     current_state <= S_IDLE;
                 end else begin
                     r_start <= 1'b1;
                     r_write_en <= 1'b1;
-                    r_addr <= 32'h10;
+                    r_addr <= 32'h20;
                     r_write_data <= 32'h0;
                 end
             end
