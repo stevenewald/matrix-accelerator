@@ -1,3 +1,4 @@
+#include <linux/cdev.h>
 #include <linux/delay.h>
 #include <linux/device.h>
 #include <linux/dma-mapping.h>
@@ -6,15 +7,24 @@
 #include <linux/slab.h>
 #include <linux/string.h>
 
+#define DEVICE_NAME "fpga"
 #define VENDOR_ID 0x10ee
 #define DEVICE_ID 0x7013
 #define REG_OFFSET 0x00
 #define DMA_BUFFER_SIZE 4096
 
-static void __iomem *bar0_regs;
-static void __iomem *bar1_regs;
-static dma_addr_t dma_handle;
-static void *dma_buffer;
+struct pcie_dev {
+  void __iomem *bar0_base, *bar1_base;
+  unsigned long bar0_len, bar1_len;
+  struct pci_dev *pdev;
+  struct cdev cdev;
+  dev_t devt;
+  struct class *class;
+  struct device *device;
+  dma_addr_t dma_handle;
+  void *dma_buffer;
+};
+
 static DEFINE_MUTEX(dma_lock);
 
 typedef struct descriptor {
@@ -28,188 +38,254 @@ typedef struct descriptor {
   uint32_t nxt_hi;
 } descriptor;
 
-static ssize_t reg_show(struct device *dev, struct device_attribute *attr,
-                        char *buf) {
-  u32 val = ioread32(bar0_regs + REG_OFFSET);
-  return sprintf(buf, "0x%x\n", val);
-}
-
-static ssize_t reg_store(struct device *dev, struct device_attribute *attr,
-                         const char *buf, size_t count) {
-  u32 val;
-  if (sscanf(buf, "%x", &val) != 1)
-    return -EINVAL;
-  iowrite32(val, bar0_regs + REG_OFFSET);
-  return count;
-}
-static DEVICE_ATTR_RW(reg);
-
-static ssize_t dma_write_store(struct device *dev,
-                               struct device_attribute *attr, const char *buf,
-                               size_t count) {
-  printk("Cnt %ld\n", count);
+static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
+                              size_t count, loff_t *pos) {
+  struct pcie_dev *pcie = filp->private_data;
   size_t bytes = min(count, DMA_BUFFER_SIZE);
   dma_addr_t dma_desc_phys;
   struct descriptor *desc;
 
-  /* Allocate coherent memory for descriptor */
-  desc = dma_alloc_coherent(dev, sizeof(*desc), &dma_desc_phys, GFP_KERNEL);
+  desc = dma_alloc_coherent(&pcie->pdev->dev, sizeof(*desc), &dma_desc_phys,
+                            GFP_KERNEL);
   if (!desc)
     return -ENOMEM;
 
   memset(desc, 0, sizeof(*desc));
-  desc->fst = (0xad4b << 16); // | 1;
+  desc->fst = (0xad4b << 16);
   desc->len = bytes;
-  desc->src_lo = lower_32_bits(dma_handle);
-  desc->src_hi = upper_32_bits(dma_handle);
+  desc->src_lo = lower_32_bits(pcie->dma_handle);
+  desc->src_hi = upper_32_bits(pcie->dma_handle);
   desc->dst_lo = 0x0;
   desc->dst_hi = 0x0;
 
   mutex_lock(&dma_lock);
 
-  dma_sync_single_for_cpu(dev, dma_handle, bytes, DMA_TO_DEVICE);
-  memcpy(dma_buffer, buf, bytes);
-  dma_sync_single_for_device(dev, dma_handle, bytes, DMA_TO_DEVICE);
+  dma_sync_single_for_cpu(&pcie->pdev->dev, pcie->dma_handle, bytes,
+                          DMA_TO_DEVICE);
+  if (copy_from_user(pcie->dma_buffer, buf, bytes)) {
+    mutex_unlock(&dma_lock);
+    dev_err(pcie->device, "Unable to copy buffer to userspace");
+    dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
+    return -EFAULT;
+  }
+  dma_sync_single_for_device(&pcie->pdev->dev, pcie->dma_handle, bytes,
+                             DMA_TO_DEVICE);
 
   wmb();
-  iowrite32(lower_32_bits(dma_desc_phys), bar1_regs + 0x4080);
-  iowrite32(upper_32_bits(dma_desc_phys), bar1_regs + 0x4084);
+  iowrite32(lower_32_bits(dma_desc_phys), pcie->bar1_base + 0x4080);
+  iowrite32(upper_32_bits(dma_desc_phys), pcie->bar1_base + 0x4084);
 
   wmb();
-  iowrite32(0x4FFFE7F, bar1_regs + 0x04);
+  iowrite32(0x4FFFE7F, pcie->bar1_base + 0x04);
   mutex_unlock(&dma_lock);
 
   udelay(5000);
 
-  dma_free_coherent(dev, sizeof(*desc), desc, dma_desc_phys);
-  memset(dma_buffer, 0, DMA_BUFFER_SIZE);
+  dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
+  memset(pcie->dma_buffer, 0, DMA_BUFFER_SIZE);
+
   return bytes;
 }
 
-static ssize_t dma_read_show(struct device *dev, struct device_attribute *attr,
-                             char *buf) {
-  ssize_t ret;
-
+static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
+                             loff_t *ppos) {
+  struct pcie_dev *pcie = file->private_data;
   dma_addr_t dma_desc_phys;
   struct descriptor *desc;
+  ssize_t ret;
 
-  desc = dma_alloc_coherent(dev, sizeof(*desc), &dma_desc_phys, GFP_KERNEL);
+  if (*ppos != 0)
+    return 0;
+
+  desc = dma_alloc_coherent(&pcie->pdev->dev, sizeof(*desc), &dma_desc_phys,
+                            GFP_KERNEL);
   if (!desc)
     return -ENOMEM;
 
   memset(desc, 0, sizeof(*desc));
-  desc->fst = (0xad4b << 16); // | 1;
+  desc->fst = (0xad4b << 16);
   desc->len = 128;
   desc->src_lo = 0x0;
   desc->src_hi = 0x0;
-  desc->dst_lo = lower_32_bits(dma_handle);
-  desc->dst_hi = upper_32_bits(dma_handle);
+  desc->dst_lo = lower_32_bits(pcie->dma_handle);
+  desc->dst_hi = upper_32_bits(pcie->dma_handle);
 
   mutex_lock(&dma_lock);
 
-  iowrite32(lower_32_bits(dma_desc_phys), bar1_regs + 0x5080);
-  iowrite32(upper_32_bits(dma_desc_phys), bar1_regs + 0x5084);
-
-  iowrite32(0x4FFFE7F, bar1_regs + 0x1004);
+  iowrite32(lower_32_bits(dma_desc_phys), pcie->bar1_base + 0x5080);
+  iowrite32(upper_32_bits(dma_desc_phys), pcie->bar1_base + 0x5084);
+  iowrite32(0x4FFFE7F, pcie->bar1_base + 0x1004);
 
   udelay(5000);
 
-  ret = sprintf(buf, "Read buffer: %*ph\n", DMA_BUFFER_SIZE, dma_buffer);
-  mutex_unlock(&dma_lock);
+  ret = min_t(size_t, count, DMA_BUFFER_SIZE);
+  if (copy_to_user(buf, pcie->dma_buffer, ret)) {
+    dev_err(pcie->device, "Unable to copy buffer to userspace");
+    mutex_unlock(&dma_lock);
+    dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
+    return -EFAULT;
+  }
 
+  mutex_unlock(&dma_lock);
+  dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
+
+  *ppos += ret; // update file position for eof behavior
   return ret;
 }
-static DEVICE_ATTR_WO(dma_write);
-static DEVICE_ATTR_RO(dma_read);
 
-static irqreturn_t my_interrupt_handler(int irq, void *dev_id) {
+static irqreturn_t pcie_interrupt_handler(int irq, void *dev_id) {
+  printk("Interrupt handled\n");
   return IRQ_HANDLED;
 }
 
-static int my_probe(struct pci_dev *pdev, const struct pci_device_id *id) {
+static int pcie_open(struct inode *inode, struct file *filp) {
+
+  struct pcie_dev *pcie = container_of(inode->i_cdev, struct pcie_dev, cdev);
+  filp->private_data = pcie;
+  return 0;
+}
+
+static int pcie_release(struct inode *inode, struct file *filp) {
+  struct pcie_dev *pcie = filp->private_data;
+
+  dev_info(&pcie->pdev->dev, "Device closed\n");
+  return 0;
+}
+
+static struct file_operations pcie_fops = {
+    .owner = THIS_MODULE,
+    .open = pcie_open,
+    .release = pcie_release,
+    .read = pcie_dma_read,
+    .write = pcie_dma_write,
+};
+
+// DRIVER OPS
+
+static int pcie_probe(struct pci_dev *pdev, const struct pci_device_id *id) {
+  dev_info(&pdev->dev, "Initializing PCIe probe");
+  struct pcie_dev *dev;
   int ret;
+
+  dev = devm_kzalloc(&pdev->dev, sizeof(*dev), GFP_KERNEL);
+  if (!dev)
+    return -ENOMEM;
+
+  dev->pdev = pdev;
 
   if (pci_enable_device(pdev))
     return -ENODEV;
 
-  pci_set_master(pdev);
-
-  ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
-  if (ret) {
-    dev_err(&pdev->dev, "No suitable DMA mask available\n");
-  }
-
-  bar0_regs = pci_iomap(pdev, 0, 0);
-  if (!bar0_regs) {
-    ret = -ENOMEM;
+  if (pci_request_region(pdev, 0, "MMIO Interface")) {
+    dev_err(&pdev->dev, "Failed to request BAR0");
+    ret = -ENODEV;
     goto err_disable_device;
   }
 
-  bar1_regs = pci_iomap(pdev, 1, 0);
-  if (!bar1_regs) {
+  if (pci_request_region(pdev, 1, "DMA Interface")) {
+    dev_err(&pdev->dev, "Failed to request BAR1");
+    ret = -ENODEV;
+    goto err_release_bar0;
+  }
+
+  pci_set_master(pdev);
+
+  dev->bar0_len = pci_resource_len(pdev, 0);
+  dev_info(&pdev->dev, "Detected bar0 with size %ld\n", dev->bar0_len);
+  dev->bar0_base = pci_iomap(pdev, 0, dev->bar0_len);
+  if (!dev->bar0_base) {
+    dev_err(&pdev->dev, "Failed to register bar0");
+    ret = -ENOMEM;
+    goto err_release_bar1;
+  }
+
+  dev->bar1_len = pci_resource_len(pdev, 1);
+  dev_info(&pdev->dev, "Detected bar1 with size %ld\n", dev->bar1_len);
+  dev->bar1_base = pci_iomap(pdev, 1, dev->bar1_len);
+  if (!dev->bar1_base) {
+    dev_err(&pdev->dev, "Failed to register bar1");
     ret = -ENOMEM;
     goto err_unmap_bar0;
   }
 
-  dma_buffer =
-      dma_alloc_coherent(&pdev->dev, DMA_BUFFER_SIZE, &dma_handle, GFP_KERNEL);
-  if (!dma_buffer) {
+  ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
+  if (ret) {
+    dev_err(&pdev->dev, "No suitable DMA mask available\n");
+    goto err_unmap_bar1;
+  }
+
+  dev->dma_buffer = dma_alloc_coherent(&pdev->dev, DMA_BUFFER_SIZE,
+                                       &dev->dma_handle, GFP_KERNEL);
+  if (!dev->dma_buffer) {
+    dev_err(&pdev->dev, "Unable to allocate DMA buffer");
     ret = -ENOMEM;
     goto err_unmap_bar1;
   }
 
-  if (request_irq(pdev->irq, my_interrupt_handler, IRQF_SHARED, "fpga_driver",
+  if (request_irq(pdev->irq, pcie_interrupt_handler, IRQF_SHARED, "fpga_driver",
                   pdev)) {
+    dev_err(&pdev->dev, "Unable to request IRQ");
     ret = -EBUSY;
     goto err_free_dma;
   }
 
-  if (device_create_file(&pdev->dev, &dev_attr_reg) ||
-      device_create_file(&pdev->dev, &dev_attr_dma_write) ||
-      device_create_file(&pdev->dev, &dev_attr_dma_read)) {
-    ret = -ENOMEM;
-    goto err_free_irq;
-  }
+  alloc_chrdev_region(&dev->devt, 0, 1, DEVICE_NAME);
+  cdev_init(&dev->cdev, &pcie_fops);
+  cdev_add(&dev->cdev, dev->devt, 1);
 
+  dev->class = class_create(DEVICE_NAME);
+  dev->device = device_create(dev->class, NULL, dev->devt, NULL, DEVICE_NAME);
+
+  pci_set_drvdata(pdev, dev);
   return 0;
 
-err_free_irq:
-  free_irq(pdev->irq, pdev);
 err_free_dma:
-  dma_free_coherent(&pdev->dev, DMA_BUFFER_SIZE, dma_buffer, dma_handle);
+  dma_free_coherent(&pdev->dev, DMA_BUFFER_SIZE, dev->dma_buffer,
+                    dev->dma_handle);
 err_unmap_bar1:
-  pci_iounmap(pdev, bar1_regs);
+  pci_iounmap(pdev, dev->bar1_base);
 err_unmap_bar0:
-  pci_iounmap(pdev, bar0_regs);
+  pci_iounmap(pdev, dev->bar0_base);
+err_release_bar1:
+  pci_release_region(pdev, 1);
+err_release_bar0:
+  pci_release_region(pdev, 0);
 err_disable_device:
   pci_disable_device(pdev);
   return ret;
 }
 
-static void my_remove(struct pci_dev *pdev) {
-  device_remove_file(&pdev->dev, &dev_attr_reg);
-  device_remove_file(&pdev->dev, &dev_attr_dma_write);
-  device_remove_file(&pdev->dev, &dev_attr_dma_read);
+static void pcie_remove(struct pci_dev *pdev) {
+  struct pcie_dev *dev = pci_get_drvdata(pdev);
+  dev_info(dev->device, "Removing pcie driver");
+  device_destroy(dev->class, dev->devt);
+  cdev_del(&dev->cdev);
+  class_destroy(dev->class);
+  unregister_chrdev_region(dev->devt, 1);
+
   free_irq(pdev->irq, pdev);
-  dma_free_coherent(&pdev->dev, DMA_BUFFER_SIZE, dma_buffer, dma_handle);
-  pci_iounmap(pdev, bar0_regs);
-  pci_iounmap(pdev, bar1_regs);
+  dma_free_coherent(&pdev->dev, DMA_BUFFER_SIZE, dev->dma_buffer,
+                    dev->dma_handle);
+  pci_iounmap(pdev, dev->bar1_base);
+  pci_iounmap(pdev, dev->bar0_base);
+  pci_release_region(pdev, 1);
+  pci_release_region(pdev, 0);
   pci_disable_device(pdev);
 }
 
-static struct pci_device_id my_device_ids[] = {
+static struct pci_device_id pcie_device_ids[] = {
     {PCI_DEVICE(VENDOR_ID, DEVICE_ID)},
     {
         0,
     }};
-MODULE_DEVICE_TABLE(pci, my_device_ids);
+MODULE_DEVICE_TABLE(pci, pcie_device_ids);
 
-static struct pci_driver my_driver = {
+static struct pci_driver pcie_driver = {
     .name = "fpga_driver",
-    .id_table = my_device_ids,
-    .probe = my_probe,
-    .remove = my_remove,
+    .id_table = pcie_device_ids,
+    .probe = pcie_probe,
+    .remove = pcie_remove,
 };
-module_pci_driver(my_driver);
+module_pci_driver(pcie_driver);
 
 MODULE_LICENSE("GPL");
