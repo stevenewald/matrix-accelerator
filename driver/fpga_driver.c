@@ -38,12 +38,43 @@ typedef struct descriptor {
   uint32_t nxt_hi;
 } descriptor;
 
+static loff_t pcie_llseek(struct file *file, loff_t offset, int whence) {
+  loff_t new_pos;
+
+  switch (whence) {
+  case SEEK_SET:
+    new_pos = offset;
+    break;
+  case SEEK_CUR:
+    new_pos = file->f_pos + offset;
+    break;
+  case SEEK_END:
+    new_pos = DMA_BUFFER_SIZE + offset;
+    break;
+  default:
+    return -EINVAL;
+  }
+
+  if (new_pos < 0 || new_pos > DMA_BUFFER_SIZE)
+    return -EINVAL; // Out of bounds
+
+  file->f_pos = new_pos;
+  return new_pos;
+}
+
 static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
-                              size_t count, loff_t *pos) {
+                              size_t count, loff_t *ppos) {
   struct pcie_dev *pcie = filp->private_data;
-  size_t bytes = min(count, DMA_BUFFER_SIZE);
   dma_addr_t dma_desc_phys;
   struct descriptor *desc;
+
+  if (*ppos >= DMA_BUFFER_SIZE)
+    return 0;
+
+  if (*ppos + count > DMA_BUFFER_SIZE) {
+    printk("Write size too large\n");
+    count = DMA_BUFFER_SIZE - *ppos;
+  }
 
   desc = dma_alloc_coherent(&pcie->pdev->dev, sizeof(*desc), &dma_desc_phys,
                             GFP_KERNEL);
@@ -52,23 +83,23 @@ static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
 
   memset(desc, 0, sizeof(*desc));
   desc->fst = (0xad4b << 16);
-  desc->len = bytes;
+  desc->len = count;
   desc->src_lo = lower_32_bits(pcie->dma_handle);
   desc->src_hi = upper_32_bits(pcie->dma_handle);
-  desc->dst_lo = 0x0;
+  desc->dst_lo = *ppos;
   desc->dst_hi = 0x0;
 
   mutex_lock(&dma_lock);
 
-  dma_sync_single_for_cpu(&pcie->pdev->dev, pcie->dma_handle, bytes,
+  dma_sync_single_for_cpu(&pcie->pdev->dev, pcie->dma_handle, count,
                           DMA_TO_DEVICE);
-  if (copy_from_user(pcie->dma_buffer, buf, bytes)) {
+  if (copy_from_user(pcie->dma_buffer, buf, count)) {
     mutex_unlock(&dma_lock);
     dev_err(pcie->device, "Unable to copy buffer to userspace");
     dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
     return -EFAULT;
   }
-  dma_sync_single_for_device(&pcie->pdev->dev, pcie->dma_handle, bytes,
+  dma_sync_single_for_device(&pcie->pdev->dev, pcie->dma_handle, count,
                              DMA_TO_DEVICE);
 
   wmb();
@@ -79,12 +110,15 @@ static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
   iowrite32(0x4FFFE7F, pcie->bar1_base + 0x04);
   mutex_unlock(&dma_lock);
 
-  udelay(5000);
+  // todo: replace with interrupts
+  while (ioread32(pcie->bar1_base + 0x4) & 1) {
+  }
 
   dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
   memset(pcie->dma_buffer, 0, DMA_BUFFER_SIZE);
+  *ppos += count;
 
-  return bytes;
+  return count;
 }
 
 static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
@@ -92,10 +126,12 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
   struct pcie_dev *pcie = file->private_data;
   dma_addr_t dma_desc_phys;
   struct descriptor *desc;
-  ssize_t ret;
 
-  if (*ppos != 0)
+  if (*ppos >= DMA_BUFFER_SIZE)
     return 0;
+
+  if (*ppos + count > DMA_BUFFER_SIZE)
+    count = DMA_BUFFER_SIZE - *ppos;
 
   desc = dma_alloc_coherent(&pcie->pdev->dev, sizeof(*desc), &dma_desc_phys,
                             GFP_KERNEL);
@@ -104,8 +140,8 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
 
   memset(desc, 0, sizeof(*desc));
   desc->fst = (0xad4b << 16);
-  desc->len = 128;
-  desc->src_lo = 0x0;
+  desc->len = count;
+  desc->src_lo = *ppos;
   desc->src_hi = 0x0;
   desc->dst_lo = lower_32_bits(pcie->dma_handle);
   desc->dst_hi = upper_32_bits(pcie->dma_handle);
@@ -116,10 +152,11 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
   iowrite32(upper_32_bits(dma_desc_phys), pcie->bar1_base + 0x5084);
   iowrite32(0x4FFFE7F, pcie->bar1_base + 0x1004);
 
-  udelay(5000);
+  // todo: replace with interrupts
+  while (ioread32(pcie->bar1_base + 0x1004) & 1) {
+  }
 
-  ret = min_t(size_t, count, DMA_BUFFER_SIZE);
-  if (copy_to_user(buf, pcie->dma_buffer, ret)) {
+  if (copy_to_user(buf, pcie->dma_buffer, count)) {
     dev_err(pcie->device, "Unable to copy buffer to userspace");
     mutex_unlock(&dma_lock);
     dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
@@ -129,8 +166,8 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
   mutex_unlock(&dma_lock);
   dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
 
-  *ppos += ret; // update file position for eof behavior
-  return ret;
+  *ppos += count;
+  return count;
 }
 
 static irqreturn_t pcie_interrupt_handler(int irq, void *dev_id) {
@@ -152,13 +189,12 @@ static int pcie_release(struct inode *inode, struct file *filp) {
   return 0;
 }
 
-static struct file_operations pcie_fops = {
-    .owner = THIS_MODULE,
-    .open = pcie_open,
-    .release = pcie_release,
-    .read = pcie_dma_read,
-    .write = pcie_dma_write,
-};
+static struct file_operations pcie_fops = {.owner = THIS_MODULE,
+                                           .open = pcie_open,
+                                           .release = pcie_release,
+                                           .read = pcie_dma_read,
+                                           .write = pcie_dma_write,
+                                           .llseek = pcie_llseek};
 
 // DRIVER OPS
 
