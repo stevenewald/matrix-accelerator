@@ -23,6 +23,7 @@ struct pcie_dev {
   struct device *device;
   dma_addr_t dma_handle;
   void *dma_buffer;
+  int irq;
 };
 
 static DEFINE_MUTEX(dma_lock);
@@ -82,7 +83,7 @@ static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
     return -ENOMEM;
 
   memset(desc, 0, sizeof(*desc));
-  desc->fst = (0xad4b << 16);
+  desc->fst = (0xad4b << 16) | (1 << 1);
   desc->len = count;
   desc->src_lo = lower_32_bits(pcie->dma_handle);
   desc->src_hi = upper_32_bits(pcie->dma_handle);
@@ -171,7 +172,7 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
 }
 
 static irqreturn_t pcie_interrupt_handler(int irq, void *dev_id) {
-  printk("Interrupt handled\n");
+  printk("MSI interrupt received on IRQ %d\n", irq);
   return IRQ_HANDLED;
 }
 
@@ -258,12 +259,20 @@ static int pcie_probe(struct pci_dev *pdev, const struct pci_device_id *id) {
     goto err_unmap_bar1;
   }
 
-  if (request_irq(pdev->irq, pcie_interrupt_handler, IRQF_SHARED, "fpga_driver",
-                  pdev)) {
-    dev_err(&pdev->dev, "Unable to request IRQ");
-    ret = -EBUSY;
+  if (pci_alloc_irq_vectors(pdev, 1, 1, PCI_IRQ_MSI) != 1) {
+    dev_err(&pdev->dev, "Failed to allocate MSI vector");
     goto err_free_dma;
   }
+
+  dev->irq = pci_irq_vector(pdev, 0);
+
+  if (request_irq(pdev->irq, pcie_interrupt_handler, 0, "fpga_driver", pdev)) {
+    dev_err(&pdev->dev, "Unable to request IRQ");
+    ret = -EBUSY;
+    goto err_free_irq_errors;
+  }
+
+  iowrite32(0x1, dev->bar1_base + 0x2004); //enable user interrupts
 
   alloc_chrdev_region(&dev->devt, 0, 1, DEVICE_NAME);
   cdev_init(&dev->cdev, &pcie_fops);
@@ -273,8 +282,11 @@ static int pcie_probe(struct pci_dev *pdev, const struct pci_device_id *id) {
   dev->device = device_create(dev->class, NULL, dev->devt, NULL, DEVICE_NAME);
 
   pci_set_drvdata(pdev, dev);
+  printk("FPGA Driver Loaded Successfully");
   return 0;
 
+err_free_irq_errors:
+  pci_free_irq_vectors(pdev);
 err_free_dma:
   dma_free_coherent(&pdev->dev, DMA_BUFFER_SIZE, dev->dma_buffer,
                     dev->dma_handle);
@@ -300,6 +312,7 @@ static void pcie_remove(struct pci_dev *pdev) {
   unregister_chrdev_region(dev->devt, 1);
 
   free_irq(pdev->irq, pdev);
+  pci_free_irq_vectors(pdev);
   dma_free_coherent(&pdev->dev, DMA_BUFFER_SIZE, dev->dma_buffer,
                     dev->dma_handle);
   pci_iounmap(pdev, dev->bar1_base);
