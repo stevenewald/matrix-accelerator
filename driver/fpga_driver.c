@@ -152,6 +152,7 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
 
   while (atomic_read(&pcie->dma_in_progress) == 1) {
   }
+
   write_dma_reg(pcie->bar1_base, C2H_CTRL, 0); // stop engine
 
   if (copy_to_user(buf, pcie->dma_buffer, count)) {
@@ -269,8 +270,8 @@ static int pcie_probe(struct pci_dev *pdev, const struct pci_device_id *id) {
     goto err_free_dma;
   }
 
-  dev->dma_irq = pci_irq_vector(pdev, 0);
-  dev->usr_irq = pci_irq_vector(pdev, 1);
+  dev->usr_irq = pci_irq_vector(pdev, 0);
+  dev->dma_irq = pci_irq_vector(pdev, 1);
 
   if (request_irq(dev->usr_irq, pcie_interrupt_handler, 0, "fpga_driver",
                   dev)) {
@@ -289,7 +290,7 @@ static int pcie_probe(struct pci_dev *pdev, const struct pci_device_id *id) {
   write_dma_reg(dev->bar1_base, IRQ_USR_VECTOR_NUMBER, 0);
 
   write_dma_reg(dev->bar1_base, IRQ_CHANNEL_INT_ENABLE, 0b11);
-  write_dma_reg(dev->bar1_base, IRQ_CHANNEL_VECTOR_NUMBER, 1);
+  write_dma_reg(dev->bar1_base, IRQ_CHANNEL_VECTOR_NUMBER, (1 << 8) | 1);
 
   alloc_chrdev_region(&dev->devt, 0, 1, DEVICE_NAME);
   cdev_init(&dev->cdev, &pcie_fops);
