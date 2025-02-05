@@ -13,3 +13,6 @@ board/*.log
 board/*.str
 board/ip_upgrade.log
 board/*.xpr.old
+board/.Xil
+board/blink_chkpt2_def_val.txt
+board/blink_chkpt2_dump.txt

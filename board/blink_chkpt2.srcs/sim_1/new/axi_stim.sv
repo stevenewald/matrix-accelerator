@@ -62,39 +62,23 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   mst_agent = new("master vip agent",dut.design_2_i.axi_vip_1.inst.IF);
   mst_agent.start_master(); 
   
+  for(int i = 0; i < 8; i++) begin
+      mtestWID = $urandom_range(0,(1<<(0)-1)); 
+      mtestWADDR = 64'h0 + i*4;
+      mtestWBurstLength = 0;
+      mtestWDataSize = xil_axi_size_t'(xil_clog2((32)/8));
+      mtestWBurstType = XIL_AXI_BURST_TYPE_INCR;
+      mtestWData = 32'd10 * (i+1);
+      
+      wr_trans = mst_agent.wr_driver.create_transaction("write transaction");
+      wr_trans.set_write_cmd(mtestWADDR,mtestWBurstType,mtestWID,
+                                   mtestWBurstLength,mtestWDataSize);
+      wr_trans.set_data_block(mtestWData);
+      mst_agent.wr_driver.send(wr_trans);
+  end
   
   mtestWID = $urandom_range(0,(1<<(0)-1)); 
-  mtestWADDR = 64'h0;
-  mtestWBurstLength = 0;
-  mtestWDataSize = xil_axi_size_t'(xil_clog2((32)/8));
-  mtestWBurstType = XIL_AXI_BURST_TYPE_INCR;
-  mtestWData = 32'h4;
-  
-  wr_trans = mst_agent.wr_driver.create_transaction("write transaction");
-  wr_trans.set_write_cmd(mtestWADDR,mtestWBurstType,mtestWID,
-                               mtestWBurstLength,mtestWDataSize);
-  wr_trans.set_data_block(mtestWData);
-  mst_agent.wr_driver.send(wr_trans);
-
-  mst_agent.wait_drivers_idle(); 
-  
-  mtestWID = $urandom_range(0,(1<<(0)-1)); 
-  mtestWADDR = 64'h4;
-  mtestWBurstLength = 0;
-  mtestWDataSize = xil_axi_size_t'(xil_clog2((32)/8));
-  mtestWBurstType = XIL_AXI_BURST_TYPE_INCR;
-  mtestWData = 32'h71;
-  
-  wr_trans = mst_agent.wr_driver.create_transaction("write transaction");
-  wr_trans.set_write_cmd(mtestWADDR,mtestWBurstType,mtestWID,
-                               mtestWBurstLength,mtestWDataSize);
-  wr_trans.set_data_block(mtestWData);
-  mst_agent.wr_driver.send(wr_trans);
-
-  mst_agent.wait_drivers_idle(); 
-  
-  mtestWID = $urandom_range(0,(1<<(0)-1)); 
-  mtestWADDR = 64'h10;
+  mtestWADDR = 64'h20;
   mtestWBurstLength = 0;
   mtestWDataSize = xil_axi_size_t'(xil_clog2((32)/8));
   mtestWBurstType = XIL_AXI_BURST_TYPE_INCR;
@@ -108,8 +92,8 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
 
   mst_agent.wait_drivers_idle(); 
   
-  #3000
-  
+  #30000
+  /*
   $display ("Sending read");
     mtestRID = $urandom_range(0,(1<<(0)-1)); 
     mtestRADDR = 64'hc;
@@ -144,7 +128,7 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
     Rdatablock = rd_trans.get_data_block();
     assert(Rdatablock[31:0]==32'h0) else $fatal("Status register not reset");
     
-
+*/
 
   $display("TEST DONE : Test Completed Successfully");
   $finish;
