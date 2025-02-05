@@ -146,14 +146,13 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
   while (atomic_read(&pcie->dma_in_progress) == 1) {
   }
   atomic_set(&pcie->dma_in_progress, 1);
-  iowrite32((1 << 1),
-            pcie->bar1_base + 0x1090);         // enable C2H interrupts
-  iowrite32(1 << 1, pcie->bar1_base + 0x1040); // clear status
-  iowrite32(0x4FFFE7F, pcie->bar1_base + 0x1004);
+  write_dma_reg(pcie->bar1_base, C2H_INT_ENABLE, 1 << 1); // enable interrupts
+  write_dma_reg(pcie->bar1_base, C2H_STATUS, 1 << 1);     // clear status
+  write_dma_reg(pcie->bar1_base, C2H_CTRL, 0x4FFFE7F);    // start engine
 
   while (atomic_read(&pcie->dma_in_progress) == 1) {
   }
-  iowrite32(0, pcie->bar1_base + 0x1004); // stop engine
+  write_dma_reg(pcie->bar1_base, C2H_CTRL, 0); // stop engine
 
   if (copy_to_user(buf, pcie->dma_buffer, count)) {
     dev_err(pcie->device, "Unable to copy buffer to userspace");
@@ -286,13 +285,11 @@ static int pcie_probe(struct pci_dev *pdev, const struct pci_device_id *id) {
     goto err_free_irq_vectors;
   }
 
-  iowrite32((uint32_t)-1, dev->bar1_base + 0x2004); // enable user interrupts
-  iowrite32(0, dev->bar1_base +
-                   0x2080); // set user interrupts to trigger on msi vector 0
-  iowrite32((uint32_t)-1,
-            dev->bar1_base + 0x2010); // enable dma engine interrupts
-  iowrite32(1, dev->bar1_base +
-                   0x20A0); // set dma interrupts to trigger on msi vector 1
+  write_dma_reg(dev->bar1_base, IRQ_USR_INT_ENABLE, 1);
+  write_dma_reg(dev->bar1_base, IRQ_USR_VECTOR_NUMBER, 0);
+
+  write_dma_reg(dev->bar1_base, IRQ_CHANNEL_INT_ENABLE, 0b11);
+  write_dma_reg(dev->bar1_base, IRQ_CHANNEL_VECTOR_NUMBER, 1);
 
   alloc_chrdev_region(&dev->devt, 0, 1, DEVICE_NAME);
   cdev_init(&dev->cdev, &pcie_fops);
