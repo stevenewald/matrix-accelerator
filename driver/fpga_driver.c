@@ -1,3 +1,4 @@
+#include "dma_regs.h"
 #include <linux/atomic.h>
 #include <linux/cdev.h>
 #include <linux/delay.h>
@@ -86,7 +87,7 @@ static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
     return -ENOMEM;
 
   memset(desc, 0, sizeof(*desc));
-  desc->fst = (0xad4b << 16) | (1 << 1) | 1;
+  desc->fst = (0xad4b << 16) | 1;
   desc->len = count;
   desc->src_lo = lower_32_bits(pcie->dma_handle);
   desc->src_hi = upper_32_bits(pcie->dma_handle);
@@ -107,17 +108,19 @@ static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
                              DMA_TO_DEVICE);
 
   wmb();
-  iowrite32(lower_32_bits(dma_desc_phys), pcie->bar1_base + 0x4080);
-  iowrite32(upper_32_bits(dma_desc_phys), pcie->bar1_base + 0x4084);
+  write_dma_reg(pcie->bar1_base, H2C_DESCRIPTOR_LOW_ADDR,
+                lower_32_bits(dma_desc_phys));
+  write_dma_reg(pcie->bar1_base, H2C_DESCRIPTOR_HIGH_ADDR,
+                upper_32_bits(dma_desc_phys));
 
   wmb();
   while (atomic_read(&pcie->dma_in_progress) == 1) {
   }
   atomic_set(&pcie->dma_in_progress, 1);
-  iowrite32((1 << 2) | (1 << 1) | 1,
+  iowrite32((1 << 1),
             pcie->bar1_base + 0x90); // enable H2C interrupts
 
-  iowrite32(1 << 1 | 1 << 2, pcie->bar1_base + 0x40); // clear status
+  iowrite32(1 << 1, pcie->bar1_base + 0x40); // clear status
   iowrite32(0x4FFFE7F, pcie->bar1_base + 0x04);
 
   // todo: replace with interrupts
@@ -151,7 +154,7 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
     return -ENOMEM;
 
   memset(desc, 0, sizeof(*desc));
-  desc->fst = (0xad4b << 16) | (1 << 1) | 1;
+  desc->fst = (0xad4b << 16) | 1;
   desc->len = count;
   desc->src_lo = *ppos;
   desc->src_hi = 0x0;
@@ -160,14 +163,16 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
 
   mutex_lock(&dma_lock);
 
-  iowrite32(lower_32_bits(dma_desc_phys), pcie->bar1_base + 0x5080);
-  iowrite32(upper_32_bits(dma_desc_phys), pcie->bar1_base + 0x5084);
+  write_dma_reg(pcie->bar1_base, C2H_DESCRIPTOR_LOW_ADDR,
+                lower_32_bits(dma_desc_phys));
+  write_dma_reg(pcie->bar1_base, C2H_DESCRIPTOR_HIGH_ADDR,
+                upper_32_bits(dma_desc_phys));
   while (atomic_read(&pcie->dma_in_progress) == 1) {
   }
   atomic_set(&pcie->dma_in_progress, 1);
-  iowrite32((1 << 2) | (1 << 1) | 1,
-            pcie->bar1_base + 0x1090);                  // enable C2H interrupts
-  iowrite32(1 << 1 | 1 << 2, pcie->bar1_base + 0x1040); // clear status
+  iowrite32((1 << 1),
+            pcie->bar1_base + 0x1090);         // enable C2H interrupts
+  iowrite32(1 << 1, pcie->bar1_base + 0x1040); // clear status
   iowrite32(0x4FFFE7F, pcie->bar1_base + 0x1004);
 
   while (atomic_read(&pcie->dma_in_progress) == 1) {
