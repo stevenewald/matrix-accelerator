@@ -83,7 +83,7 @@ static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
     return -ENOMEM;
 
   memset(desc, 0, sizeof(*desc));
-  desc->fst = (0xad4b << 16) | (1 << 1);
+  desc->fst = (0xad4b << 16) | (1 << 1) | 1;
   desc->len = count;
   desc->src_lo = lower_32_bits(pcie->dma_handle);
   desc->src_hi = upper_32_bits(pcie->dma_handle);
@@ -112,8 +112,9 @@ static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
   mutex_unlock(&dma_lock);
 
   // todo: replace with interrupts
-  while (ioread32(pcie->bar1_base + 0x4) & 1) {
+  while (ioread32(pcie->bar1_base + 0x40) & 1) {
   }
+  iowrite32(0, pcie->bar1_base + 0x04);
 
   dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
   memset(pcie->dma_buffer, 0, DMA_BUFFER_SIZE);
@@ -140,7 +141,7 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
     return -ENOMEM;
 
   memset(desc, 0, sizeof(*desc));
-  desc->fst = (0xad4b << 16);
+  desc->fst = (0xad4b << 16) | (1 << 1) | 1;
   desc->len = count;
   desc->src_lo = *ppos;
   desc->src_hi = 0x0;
@@ -154,8 +155,9 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
   iowrite32(0x4FFFE7F, pcie->bar1_base + 0x1004);
 
   // todo: replace with interrupts
-  while (ioread32(pcie->bar1_base + 0x1004) & 1) {
+  while (ioread32(pcie->bar1_base + 0x1040) & 1) {
   }
+  iowrite32(0, pcie->bar1_base + 0x1004);
 
   if (copy_to_user(buf, pcie->dma_buffer, count)) {
     dev_err(pcie->device, "Unable to copy buffer to userspace");
@@ -272,7 +274,7 @@ static int pcie_probe(struct pci_dev *pdev, const struct pci_device_id *id) {
     goto err_free_irq_errors;
   }
 
-  iowrite32(0x1, dev->bar1_base + 0x2004); //enable user interrupts
+  iowrite32(0x1, dev->bar1_base + 0x2004); // enable user interrupts
 
   alloc_chrdev_region(&dev->devt, 0, 1, DEVICE_NAME);
   cdev_init(&dev->cdev, &pcie_fops);
