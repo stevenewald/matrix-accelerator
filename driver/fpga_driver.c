@@ -1,5 +1,6 @@
-#include "dma_regs.h"
-#include "dma_util.h"
+#include "dma_descriptor.h"
+#include "dma_operations.h"
+#include "util.h"
 #include <linux/atomic.h>
 #include <linux/cdev.h>
 #include <linux/delay.h>
@@ -13,11 +14,10 @@
 #define DEVICE_NAME "fpga"
 #define VENDOR_ID 0x10ee
 #define DEVICE_ID 0x7013
-#define REG_OFFSET 0x00
 #define DMA_BUFFER_SIZE 4096
 
 struct pcie_dev {
-  void __iomem *bar0_base, *bar1_base;
+  mmio_base bar0_base, bar1_base;
   unsigned long bar0_len, bar1_len;
   struct pci_dev *pdev;
   struct cdev cdev;
@@ -29,6 +29,8 @@ struct pcie_dev {
   atomic_t dma_in_progress;
   int dma_irq;
   int usr_irq;
+  bool bar0_requested;
+  bool bar1_requested;
 };
 
 static DEFINE_MUTEX(dma_lock);
@@ -61,18 +63,16 @@ static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
                               size_t count, loff_t *ppos) {
   struct pcie_dev *pcie = filp->private_data;
   dma_addr_t dma_desc_phys;
-  struct descriptor *desc;
 
   if (*ppos >= DMA_BUFFER_SIZE)
     return 0;
 
   if (*ppos + count > DMA_BUFFER_SIZE) {
-    printk("Write size too large\n");
     count = DMA_BUFFER_SIZE - *ppos;
   }
 
-  desc = dma_alloc_coherent(&pcie->pdev->dev, sizeof(*desc), &dma_desc_phys,
-                            GFP_KERNEL);
+  struct descriptor *desc = dma_alloc_coherent(&pcie->pdev->dev, sizeof(*desc),
+                                               &dma_desc_phys, GFP_KERNEL);
   if (!desc)
     return -ENOMEM;
 
@@ -80,8 +80,6 @@ static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
 
   mutex_lock(&dma_lock);
 
-  dma_sync_single_for_cpu(&pcie->pdev->dev, pcie->dma_handle, count,
-                          DMA_TO_DEVICE);
   if (copy_from_user(pcie->dma_buffer, buf, count)) {
     mutex_unlock(&dma_lock);
     dev_err(pcie->device, "Unable to copy buffer to userspace");
@@ -91,29 +89,13 @@ static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
   dma_sync_single_for_device(&pcie->pdev->dev, pcie->dma_handle, count,
                              DMA_TO_DEVICE);
 
-  wmb();
-  write_dma_reg(pcie->bar1_base, H2C_DESCRIPTOR_LOW_ADDR,
-                lower_32_bits(dma_desc_phys));
-  write_dma_reg(pcie->bar1_base, H2C_DESCRIPTOR_HIGH_ADDR,
-                upper_32_bits(dma_desc_phys));
+  set_dma_descriptor_addr(H2C, pcie->bar1_base, dma_desc_phys);
 
-  wmb();
-  while (atomic_read(&pcie->dma_in_progress) == 1) {
-  }
-  atomic_set(&pcie->dma_in_progress, 1);
-  write_dma_reg(pcie->bar1_base, H2C_INT_ENABLE, 1 << 1); // enable int on stop
-  write_dma_reg(pcie->bar1_base, H2C_STATUS, 1 << 1);     // clear stop bit
-  write_dma_reg(pcie->bar1_base, H2C_CTRL, 0x4FFFE7F);
+  execute_dma_transfer(H2C, pcie->bar1_base, &pcie->dma_in_progress);
 
-  // todo: replace with interrupts
-  while (atomic_read(&pcie->dma_in_progress) == 1) {
-  }
-  write_dma_reg(pcie->bar1_base, H2C_CTRL, 0); // stop engine
-
+  *ppos += count;
   mutex_unlock(&dma_lock);
   dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
-  memset(pcie->dma_buffer, 0, DMA_BUFFER_SIZE);
-  *ppos += count;
 
   return count;
 }
@@ -122,7 +104,6 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
                              loff_t *ppos) {
   struct pcie_dev *pcie = file->private_data;
   dma_addr_t dma_desc_phys;
-  struct descriptor *desc;
 
   if (*ppos >= DMA_BUFFER_SIZE)
     return 0;
@@ -130,8 +111,8 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
   if (*ppos + count > DMA_BUFFER_SIZE)
     count = DMA_BUFFER_SIZE - *ppos;
 
-  desc = dma_alloc_coherent(&pcie->pdev->dev, sizeof(*desc), &dma_desc_phys,
-                            GFP_KERNEL);
+  struct descriptor *desc = dma_alloc_coherent(&pcie->pdev->dev, sizeof(*desc),
+                                               &dma_desc_phys, GFP_KERNEL);
   if (!desc)
     return -ENOMEM;
 
@@ -139,21 +120,12 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
 
   mutex_lock(&dma_lock);
 
-  write_dma_reg(pcie->bar1_base, C2H_DESCRIPTOR_LOW_ADDR,
-                lower_32_bits(dma_desc_phys));
-  write_dma_reg(pcie->bar1_base, C2H_DESCRIPTOR_HIGH_ADDR,
-                upper_32_bits(dma_desc_phys));
-  while (atomic_read(&pcie->dma_in_progress) == 1) {
-  }
-  atomic_set(&pcie->dma_in_progress, 1);
-  write_dma_reg(pcie->bar1_base, C2H_INT_ENABLE, 1 << 1); // enable interrupts
-  write_dma_reg(pcie->bar1_base, C2H_STATUS, 1 << 1);     // clear status
-  write_dma_reg(pcie->bar1_base, C2H_CTRL, 0x4FFFE7F);    // start engine
+  set_dma_descriptor_addr(C2H, pcie->bar1_base, dma_desc_phys);
 
-  while (atomic_read(&pcie->dma_in_progress) == 1) {
-  }
+  execute_dma_transfer(C2H, pcie->bar1_base, &pcie->dma_in_progress);
 
-  write_dma_reg(pcie->bar1_base, C2H_CTRL, 0); // stop engine
+  dma_sync_single_for_cpu(&pcie->pdev->dev, pcie->dma_handle, count,
+                          DMA_FROM_DEVICE);
 
   if (copy_to_user(buf, pcie->dma_buffer, count)) {
     dev_err(pcie->device, "Unable to copy buffer to userspace");
@@ -162,10 +134,10 @@ static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
     return -EFAULT;
   }
 
+  *ppos += count;
   mutex_unlock(&dma_lock);
   dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
 
-  *ppos += count;
   return count;
 }
 
@@ -203,142 +175,253 @@ static struct file_operations pcie_fops = {.owner = THIS_MODULE,
 
 // DRIVER OPS
 
+/* Forward declaration for interrupt handler and file operations */
+static irqreturn_t pcie_interrupt_handler(int irq, void *dev_id);
+extern struct file_operations pcie_fops;
+
+/* Helper: Enable PCI device and request BAR regions */
+static int pcie_enable_and_request_regions(struct pci_dev *pdev,
+                                           struct pcie_dev *dev) {
+  int ret;
+
+  ret = pci_enable_device(pdev);
+  if (ret)
+    return ret;
+
+  ret = pci_request_region(pdev, 0, "MMIO Interface");
+  if (ret) {
+    pci_disable_device(pdev);
+    return ret;
+  }
+  dev->bar0_requested = true;
+
+  ret = pci_request_region(pdev, 1, "DMA Interface");
+  if (ret) {
+    pci_release_region(pdev, 0);
+    dev->bar0_requested = false;
+    pci_disable_device(pdev);
+    return ret;
+  }
+  dev->bar1_requested = true;
+
+  pci_set_master(pdev);
+  return 0;
+}
+
+/* Helper: Map BAR0 and BAR1 */
+static int pcie_map_bars(struct pci_dev *pdev, struct pcie_dev *dev) {
+  dev->bar0_len = pci_resource_len(pdev, 0);
+  dev_info(&pdev->dev, "Detected BAR0 with size %pa\n", &dev->bar0_len);
+  dev->bar0_base = pci_iomap(pdev, 0, dev->bar0_len);
+  if (!dev->bar0_base)
+    return -ENOMEM;
+
+  dev->bar1_len = pci_resource_len(pdev, 1);
+  dev_info(&pdev->dev, "Detected BAR1 with size %pa\n", &dev->bar1_len);
+  dev->bar1_base = pci_iomap(pdev, 1, dev->bar1_len);
+  if (!dev->bar1_base) {
+    pci_iounmap(pdev, dev->bar0_base);
+    dev->bar0_base = NULL;
+    return -ENOMEM;
+  }
+
+  return 0;
+}
+
+/* Helper: Set up DMA mask and allocate a coherent DMA buffer */
+static int pcie_setup_dma(struct pci_dev *pdev, struct pcie_dev *dev) {
+  int ret;
+
+  ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
+  if (ret) {
+    dev_err(&pdev->dev, "No suitable DMA mask available");
+    return ret;
+  }
+
+  dev->dma_buffer = dma_alloc_coherent(&pdev->dev, DMA_BUFFER_SIZE,
+                                       &dev->dma_handle, GFP_KERNEL);
+  if (!dev->dma_buffer)
+    return -ENOMEM;
+
+  return 0;
+}
+
+/* Helper: Allocate MSI IRQ vectors and request IRQs */
+static int pcie_setup_irqs(struct pci_dev *pdev, struct pcie_dev *dev) {
+  int ret;
+
+  /* Request exactly 2 MSI vectors */
+  if (pci_alloc_irq_vectors(pdev, 2, 2, PCI_IRQ_MSI) != 2) {
+    dev_err(&pdev->dev, "Failed to allocate MSI vectors");
+    return -EINVAL;
+  }
+
+  dev->usr_irq = pci_irq_vector(pdev, 0);
+  dev->dma_irq = pci_irq_vector(pdev, 1);
+
+  ret = request_irq(dev->usr_irq, pcie_interrupt_handler, 0, DEVICE_NAME, dev);
+  if (ret) {
+    dev_err(&pdev->dev, "Unable to request user IRQ");
+    goto err_free_irq_vectors;
+  }
+
+  ret = request_irq(dev->dma_irq, pcie_interrupt_handler, 0, DEVICE_NAME, dev);
+  if (ret) {
+    dev_err(&pdev->dev, "Unable to request DMA IRQ");
+    free_irq(dev->usr_irq, dev);
+    goto err_free_irq_vectors;
+  }
+
+  return 0;
+
+err_free_irq_vectors:
+  pci_free_irq_vectors(pdev);
+  return ret;
+}
+
+/* Helper: Set up character device and sysfs entries */
+static int pcie_setup_chrdev(struct pcie_dev *dev) {
+  int ret;
+
+  ret = alloc_chrdev_region(&dev->devt, 0, 1, DEVICE_NAME);
+  if (ret)
+    return ret;
+
+  cdev_init(&dev->cdev, &pcie_fops);
+  ret = cdev_add(&dev->cdev, dev->devt, 1);
+  if (ret) {
+    unregister_chrdev_region(dev->devt, 1);
+    return ret;
+  }
+
+  dev->class = class_create(DEVICE_NAME);
+  if (IS_ERR(dev->class)) {
+    ret = PTR_ERR(dev->class);
+    cdev_del(&dev->cdev);
+    unregister_chrdev_region(dev->devt, 1);
+    return ret;
+  }
+
+  dev->device = device_create(dev->class, NULL, dev->devt, NULL, DEVICE_NAME);
+  if (IS_ERR(dev->device)) {
+    ret = PTR_ERR(dev->device);
+    class_destroy(dev->class);
+    cdev_del(&dev->cdev);
+    unregister_chrdev_region(dev->devt, 1);
+    return ret;
+  }
+
+  return 0;
+}
+
+/* Unified cleanup function for probe failure (or removal) */
+static void pcie_cleanup(struct pci_dev *pdev) {
+  struct pcie_dev *dev = pci_get_drvdata(pdev);
+  printk("Removing pcie driver");
+  if (!dev)
+    return;
+
+  if (dev->device)
+    device_destroy(dev->class, dev->devt);
+  if (dev->class)
+    class_destroy(dev->class);
+  cdev_del(&dev->cdev);
+  unregister_chrdev_region(dev->devt, 1);
+
+  if (dev->usr_irq)
+    free_irq(dev->usr_irq, dev);
+  if (dev->dma_irq)
+    free_irq(dev->dma_irq, dev);
+  pci_free_irq_vectors(pdev);
+
+  if (dev->dma_buffer)
+    dma_free_coherent(&pdev->dev, DMA_BUFFER_SIZE, dev->dma_buffer,
+                      dev->dma_handle);
+
+  if (dev->bar1_base)
+    pci_iounmap(pdev, dev->bar1_base);
+  if (dev->bar0_base)
+    pci_iounmap(pdev, dev->bar0_base);
+
+  if (dev->bar1_requested)
+    pci_release_region(pdev, 1);
+  if (dev->bar0_requested)
+    pci_release_region(pdev, 0);
+
+  pci_disable_device(pdev);
+}
+
+/* Main probe function */
 static int pcie_probe(struct pci_dev *pdev, const struct pci_device_id *id) {
-  dev_info(&pdev->dev, "Initializing PCIe probe");
   struct pcie_dev *dev;
   int ret;
+
+  dev_info(&pdev->dev, "Initializing PCIe probe");
 
   dev = devm_kzalloc(&pdev->dev, sizeof(*dev), GFP_KERNEL);
   if (!dev)
     return -ENOMEM;
 
   atomic_set(&dev->dma_in_progress, 0);
-
   dev->pdev = pdev;
 
-  if (pci_enable_device(pdev))
-    return -ENODEV;
+  /* Initialize resource flags and pointers */
+  dev->bar0_requested = false;
+  dev->bar1_requested = false;
+  dev->bar0_base = NULL;
+  dev->bar1_base = NULL;
+  dev->dma_buffer = NULL;
+  dev->device = NULL;
+  dev->class = NULL;
+  dev->usr_irq = 0;
+  dev->dma_irq = 0;
 
-  if (pci_request_region(pdev, 0, "MMIO Interface")) {
-    dev_err(&pdev->dev, "Failed to request BAR0");
-    ret = -ENODEV;
-    goto err_disable_device;
-  }
+  ret = pcie_enable_and_request_regions(pdev, dev);
+  if (ret)
+    return ret;
 
-  if (pci_request_region(pdev, 1, "DMA Interface")) {
-    dev_err(&pdev->dev, "Failed to request BAR1");
-    ret = -ENODEV;
-    goto err_release_bar0;
-  }
+  ret = pcie_map_bars(pdev, dev);
+  if (ret)
+    goto err_release_regions;
 
-  pci_set_master(pdev);
+  ret = pcie_setup_dma(pdev, dev);
+  if (ret)
+    goto err_unmap_bars;
 
-  dev->bar0_len = pci_resource_len(pdev, 0);
-  dev_info(&pdev->dev, "Detected bar0 with size %ld\n", dev->bar0_len);
-  dev->bar0_base = pci_iomap(pdev, 0, dev->bar0_len);
-  if (!dev->bar0_base) {
-    dev_err(&pdev->dev, "Failed to register bar0");
-    ret = -ENOMEM;
-    goto err_release_bar1;
-  }
-
-  dev->bar1_len = pci_resource_len(pdev, 1);
-  dev_info(&pdev->dev, "Detected bar1 with size %ld\n", dev->bar1_len);
-  dev->bar1_base = pci_iomap(pdev, 1, dev->bar1_len);
-  if (!dev->bar1_base) {
-    dev_err(&pdev->dev, "Failed to register bar1");
-    ret = -ENOMEM;
-    goto err_unmap_bar0;
-  }
-
-  ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
-  if (ret) {
-    dev_err(&pdev->dev, "No suitable DMA mask available\n");
-    goto err_unmap_bar1;
-  }
-
-  dev->dma_buffer = dma_alloc_coherent(&pdev->dev, DMA_BUFFER_SIZE,
-                                       &dev->dma_handle, GFP_KERNEL);
-  if (!dev->dma_buffer) {
-    dev_err(&pdev->dev, "Unable to allocate DMA buffer");
-    ret = -ENOMEM;
-    goto err_unmap_bar1;
-  }
-
-  if (pci_alloc_irq_vectors(pdev, 2, 2, PCI_IRQ_MSI) != 2) {
-    dev_err(&pdev->dev, "Failed to allocate MSI vectors");
+  ret = pcie_setup_irqs(pdev, dev);
+  if (ret)
     goto err_free_dma;
-  }
 
-  dev->usr_irq = pci_irq_vector(pdev, 0);
-  dev->dma_irq = pci_irq_vector(pdev, 1);
+  /* Configure DMA interrupts using BAR1 base */
+  configure_dma_interrupts(dev->bar1_base);
 
-  if (request_irq(dev->usr_irq, pcie_interrupt_handler, 0, "fpga_driver",
-                  dev)) {
-    dev_err(&pdev->dev, "Unable to request IRQ");
-    ret = -EBUSY;
-    goto err_free_irq_vectors;
-  }
-  if (request_irq(dev->dma_irq, pcie_interrupt_handler, 0, "fpga_driver",
-                  dev)) {
-    dev_err(&pdev->dev, "Unable to request IRQ");
-    ret = -EBUSY;
-    goto err_free_irq_vectors;
-  }
-
-  write_dma_reg(dev->bar1_base, IRQ_USR_INT_ENABLE, 1);
-  write_dma_reg(dev->bar1_base, IRQ_USR_VECTOR_NUMBER, 0);
-
-  write_dma_reg(dev->bar1_base, IRQ_CHANNEL_INT_ENABLE, 0b11);
-  write_dma_reg(dev->bar1_base, IRQ_CHANNEL_VECTOR_NUMBER, (1 << 8) | 1);
-
-  alloc_chrdev_region(&dev->devt, 0, 1, DEVICE_NAME);
-  cdev_init(&dev->cdev, &pcie_fops);
-  cdev_add(&dev->cdev, dev->devt, 1);
-
-  dev->class = class_create(DEVICE_NAME);
-  dev->device = device_create(dev->class, NULL, dev->devt, NULL, DEVICE_NAME);
+  ret = pcie_setup_chrdev(dev);
+  if (ret)
+    goto err_free_irqs;
 
   pci_set_drvdata(pdev, dev);
-  printk("FPGA Driver Loaded Successfully");
+  printk("FPGA Driver Loaded Successfully\n");
   return 0;
 
-err_free_irq_vectors:
+err_free_irqs:
+  free_irq(dev->dma_irq, dev);
+  free_irq(dev->usr_irq, dev);
   pci_free_irq_vectors(pdev);
 err_free_dma:
   dma_free_coherent(&pdev->dev, DMA_BUFFER_SIZE, dev->dma_buffer,
                     dev->dma_handle);
-err_unmap_bar1:
-  pci_iounmap(pdev, dev->bar1_base);
-err_unmap_bar0:
-  pci_iounmap(pdev, dev->bar0_base);
-err_release_bar1:
-  pci_release_region(pdev, 1);
-err_release_bar0:
-  pci_release_region(pdev, 0);
-err_disable_device:
+err_unmap_bars:
+  if (dev->bar1_base)
+    pci_iounmap(pdev, dev->bar1_base);
+  if (dev->bar0_base)
+    pci_iounmap(pdev, dev->bar0_base);
+err_release_regions:
+  if (dev->bar1_requested)
+    pci_release_region(pdev, 1);
+  if (dev->bar0_requested)
+    pci_release_region(pdev, 0);
   pci_disable_device(pdev);
   return ret;
-}
-
-static void pcie_remove(struct pci_dev *pdev) {
-  struct pcie_dev *dev = pci_get_drvdata(pdev);
-  dev_info(dev->device, "Removing pcie driver");
-  device_destroy(dev->class, dev->devt);
-  class_destroy(dev->class);
-  cdev_del(&dev->cdev);
-  unregister_chrdev_region(dev->devt, 1);
-
-  free_irq(dev->usr_irq, dev);
-  free_irq(dev->dma_irq, dev);
-  pci_free_irq_vectors(pdev);
-  dma_free_coherent(&pdev->dev, DMA_BUFFER_SIZE, dev->dma_buffer,
-                    dev->dma_handle);
-  pci_iounmap(pdev, dev->bar1_base);
-  pci_iounmap(pdev, dev->bar0_base);
-  pci_release_region(pdev, 1);
-  pci_release_region(pdev, 0);
-  pci_disable_device(pdev);
 }
 
 static struct pci_device_id pcie_device_ids[] = {
@@ -352,7 +435,7 @@ static struct pci_driver pcie_driver = {
     .name = "fpga_driver",
     .id_table = pcie_device_ids,
     .probe = pcie_probe,
-    .remove = pcie_remove,
+    .remove = pcie_cleanup,
 };
 module_pci_driver(pcie_driver);
 

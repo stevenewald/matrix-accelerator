@@ -1,6 +1,6 @@
 #pragma once
-
-#include "dma_regs.h"
+#include <linux/types.h>
+#include <linux/kernel.h>
 
 typedef struct {
   bool is_h2c;
