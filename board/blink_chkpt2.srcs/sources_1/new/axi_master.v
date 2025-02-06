@@ -26,6 +26,9 @@ module axi_master(
 		input wire  aclk,
 		input wire  aresetn,
 		
+		output wire msi_interrupt_req,
+		input wire msi_interrupt_ack,
+		
 		// WRITE ADDR
 		output wire [31:0] awaddr,
 		output wire [2:0] awprot,
@@ -114,7 +117,8 @@ module axi_master(
            S_READ_ARGS     = 3'd3,
            S_COMPUTE       = 3'd4,
            S_WRITE_RESULTS = 3'd5,
-           S_WRITE_0x20    = 3'd6;
+           S_WRITE_0x20    = 3'd6,
+           S_INTERRUPT     = 3'd7;
 
 reg [2:0] current_state;
 
@@ -127,11 +131,13 @@ reg r_start;
 reg r_write_en;
 reg [31:0] r_addr;
 reg [31:0] r_write_data;
+reg r_msi_interrupt_req;
 
 assign start      = r_start;
 assign write   = r_write_en;
 assign addr       = r_addr;
 assign write_data = r_write_data;
+assign msi_interrupt_req = r_msi_interrupt_req;
 
 integer init, p, o;
 
@@ -166,6 +172,7 @@ always @(posedge aclk or negedge aresetn) begin
         r_write_data <= {32{1'b0}};
         current_state <= S_IDLE;
         arg_num <= 0;
+        r_msi_interrupt_req <= 1'b0;
         
         for (init = 0; init < 8; init = init + 1) begin
             args[init] <= 32'h0;
@@ -237,12 +244,20 @@ always @(posedge aclk or negedge aresetn) begin
             S_WRITE_0x20: begin
                 if(done) begin
                     r_start <= 1'b0;
-                    current_state <= S_IDLE;
+                    current_state <= S_INTERRUPT;
                 end else begin
                     r_start <= 1'b1;
                     r_write_en <= 1'b1;
                     r_addr <= 32'h20;
                     r_write_data <= 32'h0;
+                end
+            end
+            S_INTERRUPT: begin
+                if(r_msi_interrupt_req && msi_interrupt_ack) begin
+                    r_msi_interrupt_req <= 1'b0;
+                    current_state <= S_IDLE;
+                end else begin
+                    r_msi_interrupt_req <= 1'b1;
                 end
             end
             default: current_state <= S_IDLE;
