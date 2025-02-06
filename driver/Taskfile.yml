@@ -13,7 +13,7 @@ tasks:
   build:
     aliases: [b]
     cmds:
-      - make all
+      - make all -j
 
   edit:
     aliases: [e]

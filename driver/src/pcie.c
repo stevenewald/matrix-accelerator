@@ -1,6 +1,7 @@
 #include "dma_descriptor.h"
 #include "dma_operations.h"
-#include "util.h"
+#include "fpga_driver.h"
+
 #include <linux/atomic.h>
 #include <linux/cdev.h>
 #include <linux/delay.h>
@@ -10,28 +11,6 @@
 #include <linux/pci.h>
 #include <linux/slab.h>
 #include <linux/string.h>
-
-#define DEVICE_NAME "fpga"
-#define VENDOR_ID 0x10ee
-#define DEVICE_ID 0x7013
-#define DMA_BUFFER_SIZE 4096
-
-struct pcie_dev {
-  mmio_base bar0_base, bar1_base;
-  unsigned long bar0_len, bar1_len;
-  struct pci_dev *pdev;
-  struct cdev cdev;
-  dev_t devt;
-  struct class *class;
-  struct device *device;
-  dma_addr_t dma_handle;
-  void *dma_buffer;
-  atomic_t dma_in_progress;
-  int dma_irq;
-  int usr_irq;
-  bool bar0_requested;
-  bool bar1_requested;
-};
 
 static DEFINE_MUTEX(dma_lock);
 

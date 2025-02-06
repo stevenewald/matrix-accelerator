@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util.h"
+#include "fpga_driver.h"
 #include <linux/dma-mapping.h>
 #include <linux/types.h>
 
@@ -27,11 +27,6 @@ typedef struct {
 #define C2H_DESCRIPTOR_LOW_ADDR ((dma_reg_addr_t){.addr = 0x5080})
 #define C2H_DESCRIPTOR_HIGH_ADDR ((dma_reg_addr_t){.addr = 0x5084})
 
-inline void write_dma_reg(mmio_base dma_cfg_base_addr, dma_reg_addr_t addr,
-                          u32 value) {
-  iowrite32(value, dma_cfg_base_addr + addr.addr);
-}
+void write_dma_reg(mmio_base dma_cfg_base_addr, dma_reg_addr_t addr, u32 value);
 
-inline u32 read_dma_reg(mmio_base dma_cfg_base_addr, dma_reg_addr_t addr) {
-  return ioread32(dma_cfg_base_addr + addr.addr);
-}
+u32 read_dma_reg(mmio_base dma_cfg_base_addr, dma_reg_addr_t addr);
