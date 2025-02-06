@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0xA1C234979E7CC2BE",
+      "boundary_crc": "0xFE7F3C875718E8D3",
       "device": "xc7a35tfgg484-2",
       "gen_directory": "../../../../blink_chkpt2.gen/sources_1/bd/design_1",
       "name": "design_1",
@@ -342,6 +342,28 @@
             "value_src": "const_prop"
           }
         }
+      },
+      "msi_interrupt_req": {
+        "type": "intr",
+        "direction": "I",
+        "parameters": {
+          "PortWidth": {
+            "value": "1",
+            "value_src": "default_prop"
+          },
+          "SENSITIVITY": {
+            "value": "LEVEL_HIGH",
+            "value_src": "default"
+          }
+        }
+      },
+      "msi_interrupt_ack": {
+        "direction": "O",
+        "left": "0",
+        "right": "0"
+      },
+      "msi_enabled": {
+        "direction": "O"
       }
     },
     "components": {
@@ -488,8 +510,26 @@
           "axist_bypass_en": {
             "value": "false"
           },
+          "cfg_mgmt_if": {
+            "value": "false"
+          },
+          "pcie_extended_tag": {
+            "value": "true"
+          },
           "pf0_device_id": {
             "value": "7013"
+          },
+          "pf0_interrupt_pin": {
+            "value": "NONE"
+          },
+          "pf0_msi_cap_multimsgcap": {
+            "value": "2_vectors"
+          },
+          "pf0_msi_enabled": {
+            "value": "true"
+          },
+          "pf0_msix_enabled": {
+            "value": "false"
           },
           "xdma_rnum_chnl": {
             "value": "1"
@@ -523,10 +563,6 @@
         "addressing": {
           "address_spaces": {
             "M_AXI": {
-              "range": "16E",
-              "width": "64"
-            },
-            "M_AXI_BYPASS": {
               "range": "16E",
               "width": "64"
             },
@@ -584,6 +620,12 @@
       }
     },
     "nets": {
+      "msi_interrupt_1": {
+        "ports": [
+          "msi_interrupt_req",
+          "xdma_0/usr_irq_req"
+        ]
+      },
       "proc_sys_reset_0_interconnect_aresetn": {
         "ports": [
           "proc_sys_reset_0/interconnect_aresetn",
@@ -625,10 +667,22 @@
           "proc_sys_reset_0/aux_reset_in"
         ]
       },
+      "xdma_0_msi_enable": {
+        "ports": [
+          "xdma_0/msi_enable",
+          "msi_enabled"
+        ]
+      },
       "xdma_0_user_lnk_up": {
         "ports": [
           "xdma_0/user_lnk_up",
           "link_up"
+        ]
+      },
+      "xdma_0_usr_irq_ack": {
+        "ports": [
+          "xdma_0/usr_irq_ack",
+          "msi_interrupt_ack"
         ]
       }
     },
@@ -651,15 +705,6 @@
       "/xdma_0": {
         "address_spaces": {
           "M_AXI": {
-            "segments": {
-              "SEG_axi_bram_ctrl_0_Mem0": {
-                "address_block": "/axi_bram_ctrl_0/S_AXI/Mem0",
-                "offset": "0x0000000000000000",
-                "range": "8K"
-              }
-            }
-          },
-          "M_AXI_BYPASS": {
             "segments": {
               "SEG_axi_bram_ctrl_0_Mem0": {
                 "address_block": "/axi_bram_ctrl_0/S_AXI/Mem0",

@@ -51,6 +51,8 @@ module test();
         .axi_in_rready(axi_rready)
     );
     
+    wire msi_req;
+    
     axi_master master_2(
         .aclk(axi_clk),
         .aresetn(axi_rst),
@@ -72,7 +74,9 @@ module test();
         .rdata(axi_rdata),
         .rresp(axi_rresp),
         .rvalid(axi_rvalid),
-        .rready(axi_rready)
+        .rready(axi_rready),
+        .msi_interrupt_req(msi_req),
+        .msi_interrupt_ack(msi_req)
     );
   
   axi_stim stim();

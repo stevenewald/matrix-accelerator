@@ -24,7 +24,7 @@ module top(
     input sys_clk_p,
     input sys_clk_n,
     output [1:0] group_led,
-    //output corner_led,
+    output corner_led,
     input [0:0] pci_exp_rxn,
     input [0:0] pci_exp_rxp,
     output [0:0] pci_exp_txp,
@@ -39,7 +39,9 @@ module top(
     .refclk(refclk)
     );
     
+    
     wire reset = 1;
+    
     
     wire axi_clk;
     wire [0:0] axi_rst;
@@ -62,6 +64,8 @@ module top(
     wire axi_wready;
     wire [3:0] axi_wstrb;
     wire axi_wvalid;
+    wire msi_interrupt_req;
+    wire msi_interrupt_ack;
 
     design_1_wrapper des(
     .aresetn(axi_rst),
@@ -91,7 +95,10 @@ module top(
     .pcie_7x_mgt_0_rxp(pci_exp_rxp),
     .pcie_7x_mgt_0_txn(pci_exp_txn),
     .pcie_7x_mgt_0_txp(pci_exp_txp),
-    .link_up(group_led[1])
+    .link_up(group_led[1]),
+    .msi_interrupt_req(msi_interrupt_req),
+    .msi_interrupt_ack(msi_interrupt_ack),
+    .msi_enabled(corner_led)
     );
     
     axi_master master_2(
@@ -115,7 +122,9 @@ module top(
         .rdata(axi_rdata),
         .rresp(axi_rresp),
         .rvalid(axi_rvalid),
-        .rready(axi_rready)
+        .rready(axi_rready),
+        .msi_interrupt_req(msi_interrupt_req),
+        .msi_interrupt_ack(msi_interrupt_ack)
     );
     
     turn_on_led_after_bil_cycles(
