@@ -1,6 +1,11 @@
 version: '3'
 
 tasks:
+  init-cc:
+    cmds:
+      - cmd: make clean
+      - cmd: bear -- make all
+
   clean:
     aliases: [c]
     cmds:
