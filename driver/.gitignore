@@ -1,12 +1,10 @@
-fpga_driver.ko
-fpga_driver.mod
-fpga_driver.mod.c
-fpga_driver.mod.o
-fpga_driver.o
+.fpga_driver*
+fpga_driver*
 modules.order
 Module.symvers
 .Module.symvers.cmd
 .modules.order.cmd
-.fpga_driver*
+src/*.o
+src/*.o*
 .cache/
 compile_commands.json
