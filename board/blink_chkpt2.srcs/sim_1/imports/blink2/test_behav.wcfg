@@ -17,14 +17,14 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0.000000 us"></ZoomStartTime>
-      <ZoomEndTime time="27.379640 us"></ZoomEndTime>
-      <Cursor1Time time="11.000000 us"></Cursor1Time>
+      <ZoomEndTime time="11.000001 us"></ZoomEndTime>
+      <Cursor1Time time="7.520567 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="243"></NameColumnWidth>
-      <ValueColumnWidth column_width="136"></ValueColumnWidth>
+      <ValueColumnWidth column_width="120"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="54" />
+   <WVObjectSize size="6" />
    <wvobject fp_name="/test/dut/design_2_i/axi_vip_0/S_AXI" type="protoinst">
       <obj_property name="DisplayName">label</obj_property>
       <obj_property name="children_use_element_short_name">true</obj_property>
@@ -63,334 +63,190 @@
    <wvobject fp_name="group1065" type="group">
       <obj_property name="label">FSEMst</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject fp_name="/test/master_2/fse/clk" type="logic">
-         <obj_property name="ElementShortName">clk</obj_property>
-         <obj_property name="ObjectShortName">clk</obj_property>
+      <wvobject fp_name="/test/master_2/aclk" type="logic">
+         <obj_property name="ElementShortName">aclk</obj_property>
+         <obj_property name="ObjectShortName">aclk</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/resetn" type="logic">
-         <obj_property name="ElementShortName">resetn</obj_property>
-         <obj_property name="ObjectShortName">resetn</obj_property>
+      <wvobject fp_name="/test/master_2/aresetn" type="logic">
+         <obj_property name="ElementShortName">aresetn</obj_property>
+         <obj_property name="ObjectShortName">aresetn</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/start" type="logic">
+      <wvobject fp_name="/test/master_2/msi_interrupt_req" type="logic">
+         <obj_property name="ElementShortName">msi_interrupt_req</obj_property>
+         <obj_property name="ObjectShortName">msi_interrupt_req</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/msi_interrupt_ack" type="logic">
+         <obj_property name="ElementShortName">msi_interrupt_ack</obj_property>
+         <obj_property name="ObjectShortName">msi_interrupt_ack</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/awaddr" type="array">
+         <obj_property name="ElementShortName">awaddr[31:0]</obj_property>
+         <obj_property name="ObjectShortName">awaddr[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/awprot" type="array">
+         <obj_property name="ElementShortName">awprot[2:0]</obj_property>
+         <obj_property name="ObjectShortName">awprot[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/awvalid" type="logic">
+         <obj_property name="ElementShortName">awvalid</obj_property>
+         <obj_property name="ObjectShortName">awvalid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/awready" type="logic">
+         <obj_property name="ElementShortName">awready</obj_property>
+         <obj_property name="ObjectShortName">awready</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/wdata" type="array">
+         <obj_property name="ElementShortName">wdata[31:0]</obj_property>
+         <obj_property name="ObjectShortName">wdata[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/wstrb" type="array">
+         <obj_property name="ElementShortName">wstrb[3:0]</obj_property>
+         <obj_property name="ObjectShortName">wstrb[3:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/wvalid" type="logic">
+         <obj_property name="ElementShortName">wvalid</obj_property>
+         <obj_property name="ObjectShortName">wvalid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/wready" type="logic">
+         <obj_property name="ElementShortName">wready</obj_property>
+         <obj_property name="ObjectShortName">wready</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/bresp" type="array">
+         <obj_property name="ElementShortName">bresp[1:0]</obj_property>
+         <obj_property name="ObjectShortName">bresp[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/bvalid" type="logic">
+         <obj_property name="ElementShortName">bvalid</obj_property>
+         <obj_property name="ObjectShortName">bvalid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/bready" type="logic">
+         <obj_property name="ElementShortName">bready</obj_property>
+         <obj_property name="ObjectShortName">bready</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/araddr" type="array">
+         <obj_property name="ElementShortName">araddr[31:0]</obj_property>
+         <obj_property name="ObjectShortName">araddr[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/arprot" type="array">
+         <obj_property name="ElementShortName">arprot[2:0]</obj_property>
+         <obj_property name="ObjectShortName">arprot[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/arvalid" type="logic">
+         <obj_property name="ElementShortName">arvalid</obj_property>
+         <obj_property name="ObjectShortName">arvalid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/arready" type="logic">
+         <obj_property name="ElementShortName">arready</obj_property>
+         <obj_property name="ObjectShortName">arready</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/rdata" type="array">
+         <obj_property name="ElementShortName">rdata[31:0]</obj_property>
+         <obj_property name="ObjectShortName">rdata[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/rresp" type="array">
+         <obj_property name="ElementShortName">rresp[1:0]</obj_property>
+         <obj_property name="ObjectShortName">rresp[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/rvalid" type="logic">
+         <obj_property name="ElementShortName">rvalid</obj_property>
+         <obj_property name="ObjectShortName">rvalid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/rready" type="logic">
+         <obj_property name="ElementShortName">rready</obj_property>
+         <obj_property name="ObjectShortName">rready</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/start" type="logic">
          <obj_property name="ElementShortName">start</obj_property>
          <obj_property name="ObjectShortName">start</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/write_en" type="logic">
-         <obj_property name="ElementShortName">write_en</obj_property>
-         <obj_property name="ObjectShortName">write_en</obj_property>
+      <wvobject fp_name="/test/master_2/write" type="logic">
+         <obj_property name="ElementShortName">write</obj_property>
+         <obj_property name="ObjectShortName">write</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/addr" type="array">
+      <wvobject fp_name="/test/master_2/addr" type="array">
          <obj_property name="ElementShortName">addr[31:0]</obj_property>
          <obj_property name="ObjectShortName">addr[31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/write_data" type="array">
+      <wvobject fp_name="/test/master_2/write_data" type="array">
          <obj_property name="ElementShortName">write_data[31:0]</obj_property>
          <obj_property name="ObjectShortName">write_data[31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/read_data" type="array">
+      <wvobject fp_name="/test/master_2/read_data" type="array">
          <obj_property name="ElementShortName">read_data[31:0]</obj_property>
          <obj_property name="ObjectShortName">read_data[31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/done" type="logic">
+      <wvobject fp_name="/test/master_2/done" type="logic">
          <obj_property name="ElementShortName">done</obj_property>
          <obj_property name="ObjectShortName">done</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_awaddr" type="array">
-         <obj_property name="ElementShortName">m_axi_awaddr[31:0]</obj_property>
-         <obj_property name="ObjectShortName">m_axi_awaddr[31:0]</obj_property>
+      <wvobject fp_name="/test/master_2/current_state" type="array">
+         <obj_property name="ElementShortName">current_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">current_state[2:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_awvalid" type="logic">
-         <obj_property name="ElementShortName">m_axi_awvalid</obj_property>
-         <obj_property name="ObjectShortName">m_axi_awvalid</obj_property>
+      <wvobject fp_name="/test/master_2/args" type="array">
+         <obj_property name="ElementShortName">args[0:7][31:0]</obj_property>
+         <obj_property name="ObjectShortName">args[0:7][31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_awready" type="logic">
-         <obj_property name="ElementShortName">m_axi_awready</obj_property>
-         <obj_property name="ObjectShortName">m_axi_awready</obj_property>
+      <wvobject fp_name="/test/master_2/arg_num" type="array">
+         <obj_property name="ElementShortName">arg_num[8:0]</obj_property>
+         <obj_property name="ObjectShortName">arg_num[8:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_wdata" type="array">
-         <obj_property name="ElementShortName">m_axi_wdata[31:0]</obj_property>
-         <obj_property name="ObjectShortName">m_axi_wdata[31:0]</obj_property>
+      <wvobject fp_name="/test/master_2/outputs" type="array">
+         <obj_property name="ElementShortName">outputs[0:3][31:0]</obj_property>
+         <obj_property name="ObjectShortName">outputs[0:3][31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_wstrb" type="array">
-         <obj_property name="ElementShortName">m_axi_wstrb[4:0]</obj_property>
-         <obj_property name="ObjectShortName">m_axi_wstrb[4:0]</obj_property>
+      <wvobject fp_name="/test/master_2/r_start" type="logic">
+         <obj_property name="ElementShortName">r_start</obj_property>
+         <obj_property name="ObjectShortName">r_start</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_wvalid" type="logic">
-         <obj_property name="ElementShortName">m_axi_wvalid</obj_property>
-         <obj_property name="ObjectShortName">m_axi_wvalid</obj_property>
+      <wvobject fp_name="/test/master_2/r_write_en" type="logic">
+         <obj_property name="ElementShortName">r_write_en</obj_property>
+         <obj_property name="ObjectShortName">r_write_en</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_wready" type="logic">
-         <obj_property name="ElementShortName">m_axi_wready</obj_property>
-         <obj_property name="ObjectShortName">m_axi_wready</obj_property>
+      <wvobject fp_name="/test/master_2/r_addr" type="array">
+         <obj_property name="ElementShortName">r_addr[31:0]</obj_property>
+         <obj_property name="ObjectShortName">r_addr[31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_bresp" type="array">
-         <obj_property name="ElementShortName">m_axi_bresp[1:0]</obj_property>
-         <obj_property name="ObjectShortName">m_axi_bresp[1:0]</obj_property>
+      <wvobject fp_name="/test/master_2/r_write_data" type="array">
+         <obj_property name="ElementShortName">r_write_data[31:0]</obj_property>
+         <obj_property name="ObjectShortName">r_write_data[31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_bvalid" type="logic">
-         <obj_property name="ElementShortName">m_axi_bvalid</obj_property>
-         <obj_property name="ObjectShortName">m_axi_bvalid</obj_property>
+      <wvobject fp_name="/test/master_2/init" type="array">
+         <obj_property name="ElementShortName">init[31:0]</obj_property>
+         <obj_property name="ObjectShortName">init[31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_bready" type="logic">
-         <obj_property name="ElementShortName">m_axi_bready</obj_property>
-         <obj_property name="ObjectShortName">m_axi_bready</obj_property>
+      <wvobject fp_name="/test/master_2/S_IDLE" type="array">
+         <obj_property name="ElementShortName">S_IDLE[2:0]</obj_property>
+         <obj_property name="ObjectShortName">S_IDLE[2:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_araddr" type="array">
-         <obj_property name="ElementShortName">m_axi_araddr[31:0]</obj_property>
-         <obj_property name="ObjectShortName">m_axi_araddr[31:0]</obj_property>
+      <wvobject fp_name="/test/master_2/S_CHECK_0x20" type="array">
+         <obj_property name="ElementShortName">S_CHECK_0x20[2:0]</obj_property>
+         <obj_property name="ObjectShortName">S_CHECK_0x20[2:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_arvalid" type="logic">
-         <obj_property name="ElementShortName">m_axi_arvalid</obj_property>
-         <obj_property name="ObjectShortName">m_axi_arvalid</obj_property>
+      <wvobject fp_name="/test/master_2/S_DECIDE" type="array">
+         <obj_property name="ElementShortName">S_DECIDE[2:0]</obj_property>
+         <obj_property name="ObjectShortName">S_DECIDE[2:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_arready" type="logic">
-         <obj_property name="ElementShortName">m_axi_arready</obj_property>
-         <obj_property name="ObjectShortName">m_axi_arready</obj_property>
+      <wvobject fp_name="/test/master_2/S_READ_ARGS" type="array">
+         <obj_property name="ElementShortName">S_READ_ARGS[2:0]</obj_property>
+         <obj_property name="ObjectShortName">S_READ_ARGS[2:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_rdata" type="array">
-         <obj_property name="ElementShortName">m_axi_rdata[31:0]</obj_property>
-         <obj_property name="ObjectShortName">m_axi_rdata[31:0]</obj_property>
+      <wvobject fp_name="/test/master_2/S_COMPUTE" type="array">
+         <obj_property name="ElementShortName">S_COMPUTE[2:0]</obj_property>
+         <obj_property name="ObjectShortName">S_COMPUTE[2:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_rresp" type="array">
-         <obj_property name="ElementShortName">m_axi_rresp[1:0]</obj_property>
-         <obj_property name="ObjectShortName">m_axi_rresp[1:0]</obj_property>
+      <wvobject fp_name="/test/master_2/S_WRITE_RESULTS" type="array">
+         <obj_property name="ElementShortName">S_WRITE_RESULTS[2:0]</obj_property>
+         <obj_property name="ObjectShortName">S_WRITE_RESULTS[2:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_rvalid" type="logic">
-         <obj_property name="ElementShortName">m_axi_rvalid</obj_property>
-         <obj_property name="ObjectShortName">m_axi_rvalid</obj_property>
+      <wvobject fp_name="/test/master_2/S_WRITE_0x20" type="array">
+         <obj_property name="ElementShortName">S_WRITE_0x20[2:0]</obj_property>
+         <obj_property name="ObjectShortName">S_WRITE_0x20[2:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/m_axi_rready" type="logic">
-         <obj_property name="ElementShortName">m_axi_rready</obj_property>
-         <obj_property name="ObjectShortName">m_axi_rready</obj_property>
+      <wvobject fp_name="/test/master_2/S_INTERRUPT" type="array">
+         <obj_property name="ElementShortName">S_INTERRUPT[2:0]</obj_property>
+         <obj_property name="ObjectShortName">S_INTERRUPT[2:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/fse/state" type="array">
-         <obj_property name="ElementShortName">state[3:0]</obj_property>
-         <obj_property name="ObjectShortName">state[3:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/master_2/fse/STATE_IDLE" type="array">
-         <obj_property name="ElementShortName">STATE_IDLE[3:0]</obj_property>
-         <obj_property name="ObjectShortName">STATE_IDLE[3:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/master_2/fse/STATE_WRITE_ADDR" type="array">
-         <obj_property name="ElementShortName">STATE_WRITE_ADDR[3:0]</obj_property>
-         <obj_property name="ObjectShortName">STATE_WRITE_ADDR[3:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/master_2/fse/STATE_WRITE_DATA" type="array">
-         <obj_property name="ElementShortName">STATE_WRITE_DATA[3:0]</obj_property>
-         <obj_property name="ObjectShortName">STATE_WRITE_DATA[3:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/master_2/fse/STATE_WRITE_RESP" type="array">
-         <obj_property name="ElementShortName">STATE_WRITE_RESP[3:0]</obj_property>
-         <obj_property name="ObjectShortName">STATE_WRITE_RESP[3:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/master_2/fse/STATE_READ_ADDR" type="array">
-         <obj_property name="ElementShortName">STATE_READ_ADDR[3:0]</obj_property>
-         <obj_property name="ObjectShortName">STATE_READ_ADDR[3:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/master_2/fse/STATE_READ_DATA" type="array">
-         <obj_property name="ElementShortName">STATE_READ_DATA[3:0]</obj_property>
-         <obj_property name="ObjectShortName">STATE_READ_DATA[3:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/master_2/fse/STATE_DONE" type="array">
-         <obj_property name="ElementShortName">STATE_DONE[3:0]</obj_property>
-         <obj_property name="ObjectShortName">STATE_DONE[3:0]</obj_property>
-      </wvobject>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/aclk" type="logic">
-      <obj_property name="ElementShortName">aclk</obj_property>
-      <obj_property name="ObjectShortName">aclk</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/aresetn" type="logic">
-      <obj_property name="ElementShortName">aresetn</obj_property>
-      <obj_property name="ObjectShortName">aresetn</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/msi_interrupt_req" type="logic">
-      <obj_property name="ElementShortName">msi_interrupt_req</obj_property>
-      <obj_property name="ObjectShortName">msi_interrupt_req</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/msi_interrupt_ack" type="logic">
-      <obj_property name="ElementShortName">msi_interrupt_ack</obj_property>
-      <obj_property name="ObjectShortName">msi_interrupt_ack</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/awaddr" type="array">
-      <obj_property name="ElementShortName">awaddr[31:0]</obj_property>
-      <obj_property name="ObjectShortName">awaddr[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/awprot" type="array">
-      <obj_property name="ElementShortName">awprot[2:0]</obj_property>
-      <obj_property name="ObjectShortName">awprot[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/awvalid" type="logic">
-      <obj_property name="ElementShortName">awvalid</obj_property>
-      <obj_property name="ObjectShortName">awvalid</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/awready" type="logic">
-      <obj_property name="ElementShortName">awready</obj_property>
-      <obj_property name="ObjectShortName">awready</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/wdata" type="array">
-      <obj_property name="ElementShortName">wdata[31:0]</obj_property>
-      <obj_property name="ObjectShortName">wdata[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/wstrb" type="array">
-      <obj_property name="ElementShortName">wstrb[3:0]</obj_property>
-      <obj_property name="ObjectShortName">wstrb[3:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/wvalid" type="logic">
-      <obj_property name="ElementShortName">wvalid</obj_property>
-      <obj_property name="ObjectShortName">wvalid</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/wready" type="logic">
-      <obj_property name="ElementShortName">wready</obj_property>
-      <obj_property name="ObjectShortName">wready</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/bresp" type="array">
-      <obj_property name="ElementShortName">bresp[1:0]</obj_property>
-      <obj_property name="ObjectShortName">bresp[1:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/bvalid" type="logic">
-      <obj_property name="ElementShortName">bvalid</obj_property>
-      <obj_property name="ObjectShortName">bvalid</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/bready" type="logic">
-      <obj_property name="ElementShortName">bready</obj_property>
-      <obj_property name="ObjectShortName">bready</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/araddr" type="array">
-      <obj_property name="ElementShortName">araddr[31:0]</obj_property>
-      <obj_property name="ObjectShortName">araddr[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/arprot" type="array">
-      <obj_property name="ElementShortName">arprot[2:0]</obj_property>
-      <obj_property name="ObjectShortName">arprot[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/arvalid" type="logic">
-      <obj_property name="ElementShortName">arvalid</obj_property>
-      <obj_property name="ObjectShortName">arvalid</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/arready" type="logic">
-      <obj_property name="ElementShortName">arready</obj_property>
-      <obj_property name="ObjectShortName">arready</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/rdata" type="array">
-      <obj_property name="ElementShortName">rdata[31:0]</obj_property>
-      <obj_property name="ObjectShortName">rdata[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/rresp" type="array">
-      <obj_property name="ElementShortName">rresp[1:0]</obj_property>
-      <obj_property name="ObjectShortName">rresp[1:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/rvalid" type="logic">
-      <obj_property name="ElementShortName">rvalid</obj_property>
-      <obj_property name="ObjectShortName">rvalid</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/rready" type="logic">
-      <obj_property name="ElementShortName">rready</obj_property>
-      <obj_property name="ObjectShortName">rready</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/start" type="logic">
-      <obj_property name="ElementShortName">start</obj_property>
-      <obj_property name="ObjectShortName">start</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/write" type="logic">
-      <obj_property name="ElementShortName">write</obj_property>
-      <obj_property name="ObjectShortName">write</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/addr" type="array">
-      <obj_property name="ElementShortName">addr[31:0]</obj_property>
-      <obj_property name="ObjectShortName">addr[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/write_data" type="array">
-      <obj_property name="ElementShortName">write_data[31:0]</obj_property>
-      <obj_property name="ObjectShortName">write_data[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/read_data" type="array">
-      <obj_property name="ElementShortName">read_data[31:0]</obj_property>
-      <obj_property name="ObjectShortName">read_data[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/done" type="logic">
-      <obj_property name="ElementShortName">done</obj_property>
-      <obj_property name="ObjectShortName">done</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/current_state" type="array">
-      <obj_property name="ElementShortName">current_state[2:0]</obj_property>
-      <obj_property name="ObjectShortName">current_state[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/args" type="array">
-      <obj_property name="ElementShortName">args[0:7][31:0]</obj_property>
-      <obj_property name="ObjectShortName">args[0:7][31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/arg_num" type="array">
-      <obj_property name="ElementShortName">arg_num[8:0]</obj_property>
-      <obj_property name="ObjectShortName">arg_num[8:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/outputs" type="array">
-      <obj_property name="ElementShortName">outputs[0:3][31:0]</obj_property>
-      <obj_property name="ObjectShortName">outputs[0:3][31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/r_start" type="logic">
-      <obj_property name="ElementShortName">r_start</obj_property>
-      <obj_property name="ObjectShortName">r_start</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/r_write_en" type="logic">
-      <obj_property name="ElementShortName">r_write_en</obj_property>
-      <obj_property name="ObjectShortName">r_write_en</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/r_addr" type="array">
-      <obj_property name="ElementShortName">r_addr[31:0]</obj_property>
-      <obj_property name="ObjectShortName">r_addr[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/r_write_data" type="array">
-      <obj_property name="ElementShortName">r_write_data[31:0]</obj_property>
-      <obj_property name="ObjectShortName">r_write_data[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/init" type="array">
-      <obj_property name="ElementShortName">init[31:0]</obj_property>
-      <obj_property name="ObjectShortName">init[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/p" type="array">
-      <obj_property name="ElementShortName">p[31:0]</obj_property>
-      <obj_property name="ObjectShortName">p[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/o" type="array">
-      <obj_property name="ElementShortName">o[31:0]</obj_property>
-      <obj_property name="ObjectShortName">o[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/prod" type="array">
-      <obj_property name="ElementShortName">prod[0:1][0:1][0:1][63:0]</obj_property>
-      <obj_property name="ObjectShortName">prod[0:1][0:1][0:1][63:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/S_IDLE" type="array">
-      <obj_property name="ElementShortName">S_IDLE[2:0]</obj_property>
-      <obj_property name="ObjectShortName">S_IDLE[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/S_CHECK_0x20" type="array">
-      <obj_property name="ElementShortName">S_CHECK_0x20[2:0]</obj_property>
-      <obj_property name="ObjectShortName">S_CHECK_0x20[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/S_DECIDE" type="array">
-      <obj_property name="ElementShortName">S_DECIDE[2:0]</obj_property>
-      <obj_property name="ObjectShortName">S_DECIDE[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/S_READ_ARGS" type="array">
-      <obj_property name="ElementShortName">S_READ_ARGS[2:0]</obj_property>
-      <obj_property name="ObjectShortName">S_READ_ARGS[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/S_COMPUTE" type="array">
-      <obj_property name="ElementShortName">S_COMPUTE[2:0]</obj_property>
-      <obj_property name="ObjectShortName">S_COMPUTE[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/S_WRITE_RESULTS" type="array">
-      <obj_property name="ElementShortName">S_WRITE_RESULTS[2:0]</obj_property>
-      <obj_property name="ObjectShortName">S_WRITE_RESULTS[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/S_WRITE_0x20" type="array">
-      <obj_property name="ElementShortName">S_WRITE_0x20[2:0]</obj_property>
-      <obj_property name="ObjectShortName">S_WRITE_0x20[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/test/master_2/S_INTERRUPT" type="array">
-      <obj_property name="ElementShortName">S_INTERRUPT[2:0]</obj_property>
-      <obj_property name="ObjectShortName">S_INTERRUPT[2:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/test/dut/design_2_i/axi_bram_ctrl_0/S_AXI" type="protoinst">
       <obj_property name="DisplayName">label</obj_property>
@@ -406,6 +262,62 @@
       <obj_property name="ElementShortName">S_AXI</obj_property>
       <obj_property name="ObjectShortName">S_AXI</obj_property>
       <obj_property name="label">BRAM</obj_property>
+   </wvobject>
+   <wvobject fp_name="group1227" type="group">
+      <obj_property name="label">multiplier</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
       <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/test/master_2/multiplier/clk" type="logic">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/multiplier/rst" type="logic">
+         <obj_property name="ElementShortName">rst</obj_property>
+         <obj_property name="ObjectShortName">rst</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/multiplier/mat_a" type="array">
+         <obj_property name="ElementShortName">mat_a[3:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">mat_a[3:0][31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/multiplier/mat_b" type="array">
+         <obj_property name="ElementShortName">mat_b[3:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">mat_b[3:0][31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/multiplier/out" type="array">
+         <obj_property name="ElementShortName">out[3:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">out[3:0][31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/multiplier/start" type="logic">
+         <obj_property name="ElementShortName">start</obj_property>
+         <obj_property name="ObjectShortName">start</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/multiplier/done" type="logic">
+         <obj_property name="ElementShortName">done</obj_property>
+         <obj_property name="ObjectShortName">done</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/multiplier/running" type="logic">
+         <obj_property name="ElementShortName">running</obj_property>
+         <obj_property name="ObjectShortName">running</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/multiplier/cycle_count" type="array">
+         <obj_property name="ElementShortName">cycle_count[2:0]</obj_property>
+         <obj_property name="ObjectShortName">cycle_count[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/multiplier/a_in" type="array">
+         <obj_property name="ElementShortName">a_in[1:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">a_in[1:0][31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/multiplier/b_in" type="array">
+         <obj_property name="ElementShortName">b_in[1:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">b_in[1:0][31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/multiplier/a_out" type="array">
+         <obj_property name="ElementShortName">a_out[1:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">a_out[1:0][31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/multiplier/b_out" type="array">
+         <obj_property name="ElementShortName">b_out[1:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">b_out[1:0][31:0]</obj_property>
+      </wvobject>
    </wvobject>
 </wave_config>

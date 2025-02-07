@@ -124,7 +124,8 @@ reg [2:0] current_state;
 
 reg [31:0] args [0:7];
 reg [8:0] arg_num;
-wire [31:0] outputs [0:3];
+wire [31:0] tmp_outputs [0:3];
+reg [31:0] outputs [0:3];
 
 // Control signals for the AXI-Lite master
 reg r_start;
@@ -139,26 +140,20 @@ assign addr       = r_addr;
 assign write_data = r_write_data;
 assign msi_interrupt_req = r_msi_interrupt_req;
 
-integer init, p, o;
+integer init;
 
-wire [63:0] prod [0:1][0:1][0:1];
-genvar i, j, k;
-generate
-for (i = 0; i < 2; i = i + 1) begin : row
-    for (j = 0; j < 2; j = j + 1) begin : col
-        for (k = 0; k < 2; k = k + 1) begin : inner
-            assign prod[i][j][k] = args[i * 2 + k] * args[4 + k * 2 + j];
-        end
-    end
-end
-endgenerate
-generate
-for (i = 0; i < 2; i = i + 1) begin : row2
-    for (j = 0; j < 2; j = j + 1) begin : col2
-            assign outputs[i * 2 + j] = prod[i][j][0] + prod[i][j][1];
-    end
-end
-endgenerate
+reg start_mul;
+wire mul_done;
+
+systolic_array multiplier(
+    .clk(aclk),
+    .rst(aresetn),
+    .mat_a({args[0], args[1], args[2], args[3]}),
+    .mat_b({args[4], args[5], args[6], args[7]}),
+    .out({tmp_outputs[0], tmp_outputs[1], tmp_outputs[2], tmp_outputs[3]}),
+    .start(start_mul),
+    .done(mul_done)
+    );
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -173,6 +168,7 @@ always @(posedge aclk or negedge aresetn) begin
         current_state <= S_IDLE;
         arg_num <= 0;
         r_msi_interrupt_req <= 1'b0;
+        start_mul <= 1'b0;
         
         for (init = 0; init < 8; init = init + 1) begin
             args[init] <= 32'h0;
@@ -221,7 +217,18 @@ always @(posedge aclk or negedge aresetn) begin
                 end
             end
             
-            S_COMPUTE: current_state <= S_WRITE_RESULTS;
+            S_COMPUTE: begin
+                if(mul_done) begin
+                    outputs[0] <= tmp_outputs[0];
+                    outputs[1] <= tmp_outputs[1];
+                    outputs[2] <= tmp_outputs[2];
+                    outputs[3] <= tmp_outputs[3];
+                    start_mul <= 0;
+                    current_state <= S_WRITE_RESULTS;
+                end else begin
+                    start_mul <= 1;
+                end
+            end
 
             S_WRITE_RESULTS: begin
                 if(done) begin
