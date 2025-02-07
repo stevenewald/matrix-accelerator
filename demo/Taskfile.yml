@@ -1,0 +1,12 @@
+version: '3'
+
+tasks:
+  build:
+    aliases: [b]
+    cmds:
+      - g++ demo.cpp -o demo
+
+  test:
+    aliases: [t]
+    cmds:
+      - g++ demo.cpp -o demo && sudo ./demo; sudo dmesg | tail -n 5
