@@ -30,8 +30,6 @@ module systolic_array(
     output reg done
     );
     
-    reg running;
-    
     reg [2:0] cycle_count;
     reg [31:0] a_in [2:0];
     reg [31:0] b_in [2:0];
@@ -39,85 +37,88 @@ module systolic_array(
     wire [31:0] a_out [8:0];
     wire [31:0] b_out [8:0];
     
+    reg [2:0] state;
+    
+    localparam S_IDLE       = 3'd0,
+               S_RUNNING    = 3'd1,
+               S_COMPLETE   = 3'd2;
+    
     always @(posedge clk) begin
         if(!rst) begin
             cycle_count <= 0;
-            running <= 0;
-            a_in[0] <= 32'b0;
-            a_in[1] <= 32'b0;
-            a_in[2] <= 32'b0;
-            b_in[0] <= 32'b0;
-            b_in[1] <= 32'b0;
-            b_in[2] <= 32'b0;
             done <= 0;
-        end else if(done) begin
-            done <= 0;
-        end else if(!running && !start) begin
-        end else if(!running && start) begin
-            running <= 1;
-            cycle_count <= 0;
-            a_in[0] <= mat_a[0];
-            b_in[0] <= mat_b[0];
-            
-            a_in[1] <= 0;
-            b_in[1] <= 0;
-            
-            a_in[2] <= 0;
-            a_in[2] <= 0;
-            
-            cycle_count <= 1;
-        end else if(cycle_count == 1) begin
-            a_in[0] <= mat_a[1];
-            b_in[0] <= mat_b[3];
-            
-            a_in[1] <= mat_a[3];
-            b_in[1] <= mat_b[1];
-            
-            a_in[2] <= 0;
-            b_in[2] <= 0;
-            
-            cycle_count <= 2;
-        end else if(cycle_count == 2) begin
-            a_in[0] <= mat_a[2];
-            b_in[0] <= mat_b[6];
-            
-            a_in[1] <= mat_a[4];
-            b_in[1] <= mat_b[4];
-            
-            a_in[2] <= mat_a[6];
-            b_in[2] <= mat_b[2];
-            
-            cycle_count <= 3;
-        end else if (cycle_count == 3) begin
-            a_in[0] <= 32'b0;
-            b_in[0] <= 32'b0;
-            
-            a_in[1] <= mat_a[5];
-            b_in[1] <= mat_b[7];
-            
-            a_in[2] <= mat_a[7];
-            b_in[2] <= mat_b[5];
-            
-            cycle_count <= 4;
-        end else if(cycle_count == 4) begin
-            a_in[1] <= 32'b0;
-            b_in[1] <= 32'b0;
-            
-            a_in[2] <= mat_a[8];
-            b_in[2] <= mat_b[8];
-            
-            cycle_count <= 5;
-        end else if(cycle_count == 5) begin
-            a_in[2] <= 32'b0;
-            b_in[2] <= 32'b0;
-            cycle_count <= 6;
-        end else if(cycle_count==6) begin
-            cycle_count <= 7;
+            state <= S_IDLE;
+            for(int i = 0; i < 4; i++) begin
+                a_in[i] <= 32'b0;
+                b_in[i] <= 32'b0;
+            end
         end else begin
-            done <= 1;
-            running <= 0;
+            case (state)
+                S_IDLE: begin
+                    done <= 0;
+                    if(start) begin
+                        cycle_count <= 0;
+                        state <= S_RUNNING;
+                    end
+                end
+                S_RUNNING: begin
+                    cycle_count <= cycle_count + 1;
+                    if(cycle_count == 0) begin
+                        a_in[0] <= mat_a[0];
+                        b_in[0] <= mat_b[0];
+                        
+                        a_in[1] <= 0;
+                        b_in[1] <= 0;
+                        
+                        a_in[2] <= 0;
+                        b_in[2] <= 0;
+                    end else if(cycle_count==1) begin
+                        a_in[0] <= mat_a[1];
+                        b_in[0] <= mat_b[3];
+                        
+                        a_in[1] <= mat_a[3];
+                        b_in[1] <= mat_b[1];
+                        
+                        a_in[2] <= 0;
+                        b_in[2] <= 0;
+                    end else if(cycle_count==2) begin
+                        a_in[0] <= mat_a[2];
+                        b_in[0] <= mat_b[6];
+                        
+                        a_in[1] <= mat_a[4];
+                        b_in[1] <= mat_b[4];
+                        
+                        a_in[2] <= mat_a[6];
+                        b_in[2] <= mat_b[2];
+                    end else if(cycle_count==3) begin
+                        a_in[0] <= 32'b0;
+                        b_in[0] <= 32'b0;
+                        
+                        a_in[1] <= mat_a[5];
+                        b_in[1] <= mat_b[7];
+                        
+                        a_in[2] <= mat_a[7];
+                        b_in[2] <= mat_b[5];
+                    end else if(cycle_count==4) begin
+                        a_in[1] <= 32'b0;
+                        b_in[1] <= 32'b0;
+                        
+                        a_in[2] <= mat_a[8];
+                        b_in[2] <= mat_b[8];
+                    end else if(cycle_count==5) begin
+                        a_in[2] <= 32'b0;
+                        b_in[2] <= 32'b0;
+                    end else if(cycle_count==6) begin
+                    end else if(cycle_count==7) begin
+                        done <= 1;
+                        state <= S_IDLE;
+                    end
+                end
+            endcase
         end
     end
+    
+    wire running = state != S_IDLE;
     
     // 100
     // 000
