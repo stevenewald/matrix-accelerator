@@ -5,9 +5,9 @@ module systolic_array_test_1;
     // Testbench signals
     reg clk;
     reg rst;
-    reg [3:0][31:0] mat_a;
-    reg [3:0][31:0] mat_b;
-    wire [3:0][31:0] out;
+    reg [8:0][31:0] mat_a;
+    reg [8:0][31:0] mat_b;
+    wire [8:0][31:0] out;
     reg start;
     wire done;
 
@@ -27,14 +27,10 @@ module systolic_array_test_1;
         clk <= 0;
         rst <= 1;
         start <= 0;
-        mat_a[0] <= 31'b0;
-        mat_a[1] <= 31'b0;
-        mat_a[2] <= 31'b0;
-        mat_a[3] <= 31'b0;
-        mat_b[0] <= 31'b0;
-        mat_b[1] <= 31'b0;
-        mat_b[2] <= 31'b0;
-        mat_b[3] <= 31'b0;
+        for(int i = 0; i < 9; i++) begin
+            mat_a[i] <= 31'b0;
+            mat_b[i] <= 31'b0;
+        end
     end
 
     // Clock generation
@@ -48,15 +44,10 @@ module systolic_array_test_1;
         #10 rst = 1;
 
         // Set input matrices
-        mat_a[0] = 32'ha1;
-        mat_a[1] = 32'ha2;
-        mat_a[2] = 32'ha3;
-        mat_a[3] = 32'ha4;
-
-        mat_b[0] = 32'hb1;
-        mat_b[1] = 32'hb2;
-        mat_b[2] = 32'hb3;
-        mat_b[3] = 32'hb4;
+        for(int i = 0; i < 9; i++) begin
+            mat_a[i] = 32'ha1+i;
+            mat_b[i] = 32'hb1+i;
+        end
 
         // Assert start signal
         #10 start = 1;
@@ -66,7 +57,7 @@ module systolic_array_test_1;
         wait (done);
 
         // Display results
-        $display("Output: %d, %d, %d, %d", out[0], out[1], out[2], out[3]);
+        $display("Output: %d, %d, %d, %d, %d, %d, %d, %d, %d", out[0], out[1], out[2], out[3], out[4], out[5], out[6], out[7], out[8]);
 
         // Finish simulation
         #20 $finish;

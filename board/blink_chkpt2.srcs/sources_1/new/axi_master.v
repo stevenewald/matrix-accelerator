@@ -112,20 +112,20 @@ module axi_master(
     
     
     localparam S_IDLE      = 3'd0,
-           S_CHECK_0x20    = 3'd1,
+           S_CHECK_0x48    = 3'd1,
            S_DECIDE        = 3'd2,
            S_READ_ARGS     = 3'd3,
            S_COMPUTE       = 3'd4,
            S_WRITE_RESULTS = 3'd5,
-           S_WRITE_0x20    = 3'd6,
+           S_WRITE_0x48    = 3'd6,
            S_INTERRUPT     = 3'd7;
 
 reg [2:0] current_state;
 
-reg [31:0] args [0:7];
+reg [31:0] args [0:17];
 reg [8:0] arg_num;
-wire [31:0] tmp_outputs [0:3];
-reg [31:0] outputs [0:3];
+wire [31:0] tmp_outputs [0:8];
+reg [31:0] outputs [0:8];
 
 // Control signals for the AXI-Lite master
 reg r_start;
@@ -148,9 +148,9 @@ wire mul_done;
 systolic_array multiplier(
     .clk(aclk),
     .rst(aresetn),
-    .mat_a({args[0], args[1], args[2], args[3]}),
-    .mat_b({args[4], args[5], args[6], args[7]}),
-    .out({tmp_outputs[0], tmp_outputs[1], tmp_outputs[2], tmp_outputs[3]}),
+    .mat_a({args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]}),
+    .mat_b({args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17]}),
+    .out({tmp_outputs[0], tmp_outputs[1], tmp_outputs[2], tmp_outputs[3], tmp_outputs[4], tmp_outputs[5], tmp_outputs[6], tmp_outputs[7], tmp_outputs[8]}),
     .start(start_mul),
     .done(mul_done)
     );
@@ -170,7 +170,7 @@ always @(posedge aclk or negedge aresetn) begin
         r_msi_interrupt_req <= 1'b0;
         start_mul <= 1'b0;
         
-        for (init = 0; init < 8; init = init + 1) begin
+        for (init = 0; init < 18; init = init + 1) begin
             args[init] <= 32'h0;
         end
     end else begin
@@ -180,24 +180,24 @@ always @(posedge aclk or negedge aresetn) begin
 
         case (current_state)
             S_IDLE: begin
-                current_state <= S_CHECK_0x20;
+                current_state <= S_CHECK_0x48;
             end
 
             // Initiate read of 0x10
-            S_CHECK_0x20: begin
+            S_CHECK_0x48: begin
                 if(done) begin
                     r_start <= 1'b0;
                     current_state <= S_DECIDE;
                 end else begin
                     r_start      <= 1'b1;
                     r_write_en   <= 1'b0;      // Read
-                    r_addr       <= 32'h20;
+                    r_addr       <= 32'h48;
                 end
             end
 
             // Evaluate data from 0x10
             S_DECIDE: begin
-                current_state <= (read_data == 32'd1) ? S_READ_ARGS : S_CHECK_0x20;
+                current_state <= (read_data == 32'd1) ? S_READ_ARGS : S_CHECK_0x48;
             end
 
             // Read from 0x0 -> reg_A
@@ -206,7 +206,7 @@ always @(posedge aclk or negedge aresetn) begin
                     args[arg_num] <= read_data;
                     arg_num<=arg_num+1;
                     r_start <= 1'b0;
-                    if(arg_num==7) begin
+                    if(arg_num==17) begin
                         arg_num <= 0;
                         current_state <= S_COMPUTE;
                     end
@@ -223,6 +223,11 @@ always @(posedge aclk or negedge aresetn) begin
                     outputs[1] <= tmp_outputs[1];
                     outputs[2] <= tmp_outputs[2];
                     outputs[3] <= tmp_outputs[3];
+                    outputs[4] <= tmp_outputs[4];
+                    outputs[5] <= tmp_outputs[5];
+                    outputs[6] <= tmp_outputs[6];
+                    outputs[7] <= tmp_outputs[7];
+                    outputs[8] <= tmp_outputs[8];
                     start_mul <= 0;
                     current_state <= S_WRITE_RESULTS;
                 end else begin
@@ -234,28 +239,28 @@ always @(posedge aclk or negedge aresetn) begin
                 if(done) begin
                     arg_num <= arg_num+1;
                     r_start <= 1'b0;
-                    if(arg_num==3) begin
+                    if(arg_num==8) begin
                         arg_num <= 0;
-                        current_state <= S_WRITE_0x20;
+                        current_state <= S_WRITE_0x48;
                     end
                 end else begin
                     r_start      <= 1'b1;
                     r_write_en   <= 1'b1;
-                    r_addr       <= 32'h24 + arg_num * 4;
+                    r_addr       <= 32'h4c + arg_num * 4;
                     r_write_data <= outputs[arg_num];
                 end
             end
             
 
             // Write 0 to 0x20
-            S_WRITE_0x20: begin
+            S_WRITE_0x48: begin
                 if(done) begin
                     r_start <= 1'b0;
                     current_state <= S_INTERRUPT;
                 end else begin
                     r_start <= 1'b1;
                     r_write_en <= 1'b1;
-                    r_addr <= 32'h20;
+                    r_addr <= 32'h48;
                     r_write_data <= 32'h0;
                 end
             end

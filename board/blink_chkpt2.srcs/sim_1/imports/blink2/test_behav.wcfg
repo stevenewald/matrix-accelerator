@@ -16,13 +16,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0.000000 us"></ZoomStartTime>
-      <ZoomEndTime time="11.000001 us"></ZoomEndTime>
-      <Cursor1Time time="7.520567 us"></Cursor1Time>
+      <ZoomStartTime time="2.213629 us"></ZoomStartTime>
+      <ZoomEndTime time="24.757275 us"></ZoomEndTime>
+      <Cursor1Time time="13.160000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="243"></NameColumnWidth>
-      <ValueColumnWidth column_width="120"></ValueColumnWidth>
+      <ValueColumnWidth column_width="112"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="6" />
    <wvobject fp_name="/test/dut/design_2_i/axi_vip_0/S_AXI" type="protoinst">
@@ -39,6 +39,7 @@
       <obj_property name="ElementShortName">S_AXI</obj_property>
       <obj_property name="ObjectShortName">S_AXI</obj_property>
       <obj_property name="label">MyMstMonitor</obj_property>
+      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject fp_name="/test/dut/design_2_i/axi_vip_1/M_AXI" type="protoinst">
       <obj_property name="DisplayName">label</obj_property>
@@ -184,16 +185,16 @@
          <obj_property name="ObjectShortName">current_state[2:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/args" type="array">
-         <obj_property name="ElementShortName">args[0:7][31:0]</obj_property>
-         <obj_property name="ObjectShortName">args[0:7][31:0]</obj_property>
+         <obj_property name="ElementShortName">args[0:17][31:0]</obj_property>
+         <obj_property name="ObjectShortName">args[0:17][31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/arg_num" type="array">
          <obj_property name="ElementShortName">arg_num[8:0]</obj_property>
          <obj_property name="ObjectShortName">arg_num[8:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/outputs" type="array">
-         <obj_property name="ElementShortName">outputs[0:3][31:0]</obj_property>
-         <obj_property name="ObjectShortName">outputs[0:3][31:0]</obj_property>
+         <obj_property name="ElementShortName">outputs[0:8][31:0]</obj_property>
+         <obj_property name="ObjectShortName">outputs[0:8][31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/r_start" type="logic">
          <obj_property name="ElementShortName">r_start</obj_property>
@@ -219,10 +220,6 @@
          <obj_property name="ElementShortName">S_IDLE[2:0]</obj_property>
          <obj_property name="ObjectShortName">S_IDLE[2:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/S_CHECK_0x20" type="array">
-         <obj_property name="ElementShortName">S_CHECK_0x20[2:0]</obj_property>
-         <obj_property name="ObjectShortName">S_CHECK_0x20[2:0]</obj_property>
-      </wvobject>
       <wvobject fp_name="/test/master_2/S_DECIDE" type="array">
          <obj_property name="ElementShortName">S_DECIDE[2:0]</obj_property>
          <obj_property name="ObjectShortName">S_DECIDE[2:0]</obj_property>
@@ -238,10 +235,6 @@
       <wvobject fp_name="/test/master_2/S_WRITE_RESULTS" type="array">
          <obj_property name="ElementShortName">S_WRITE_RESULTS[2:0]</obj_property>
          <obj_property name="ObjectShortName">S_WRITE_RESULTS[2:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/master_2/S_WRITE_0x20" type="array">
-         <obj_property name="ElementShortName">S_WRITE_0x20[2:0]</obj_property>
-         <obj_property name="ObjectShortName">S_WRITE_0x20[2:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/S_INTERRUPT" type="array">
          <obj_property name="ElementShortName">S_INTERRUPT[2:0]</obj_property>
@@ -276,16 +269,62 @@
          <obj_property name="ObjectShortName">rst</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/multiplier/mat_a" type="array">
-         <obj_property name="ElementShortName">mat_a[3:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">mat_a[3:0][31:0]</obj_property>
+         <obj_property name="ElementShortName">mat_a[8:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">mat_a[8:0][31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/multiplier/mat_b" type="array">
-         <obj_property name="ElementShortName">mat_b[3:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">mat_b[3:0][31:0]</obj_property>
+         <obj_property name="ElementShortName">mat_b[8:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">mat_b[8:0][31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/multiplier/out" type="array">
-         <obj_property name="ElementShortName">out[3:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">out[3:0][31:0]</obj_property>
+         <obj_property name="ElementShortName">out[8:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">out[8:0][31:0]</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+         <wvobject fp_name="/test/master_2/multiplier/out[8]" type="array">
+            <obj_property name="ElementShortName">[8][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[8][31:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[7]" type="array">
+            <obj_property name="ElementShortName">[7][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[7][31:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[6]" type="array">
+            <obj_property name="ElementShortName">[6][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[6][31:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[5]" type="array">
+            <obj_property name="ElementShortName">[5][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[5][31:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[4]" type="array">
+            <obj_property name="ElementShortName">[4][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[4][31:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[3]" type="array">
+            <obj_property name="ElementShortName">[3][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[3][31:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[2]" type="array">
+            <obj_property name="ElementShortName">[2][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[2][31:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[1]" type="array">
+            <obj_property name="ElementShortName">[1][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[1][31:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[0]" type="array">
+            <obj_property name="ElementShortName">[0][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[0][31:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
       </wvobject>
       <wvobject fp_name="/test/master_2/multiplier/start" type="logic">
          <obj_property name="ElementShortName">start</obj_property>
@@ -304,20 +343,20 @@
          <obj_property name="ObjectShortName">cycle_count[2:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/multiplier/a_in" type="array">
-         <obj_property name="ElementShortName">a_in[1:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">a_in[1:0][31:0]</obj_property>
+         <obj_property name="ElementShortName">a_in[2:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">a_in[2:0][31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/multiplier/b_in" type="array">
-         <obj_property name="ElementShortName">b_in[1:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">b_in[1:0][31:0]</obj_property>
+         <obj_property name="ElementShortName">b_in[2:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">b_in[2:0][31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/multiplier/a_out" type="array">
-         <obj_property name="ElementShortName">a_out[1:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">a_out[1:0][31:0]</obj_property>
+         <obj_property name="ElementShortName">a_out[8:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">a_out[8:0][31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/multiplier/b_out" type="array">
-         <obj_property name="ElementShortName">b_out[1:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">b_out[1:0][31:0]</obj_property>
+         <obj_property name="ElementShortName">b_out[8:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">b_out[8:0][31:0]</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>
