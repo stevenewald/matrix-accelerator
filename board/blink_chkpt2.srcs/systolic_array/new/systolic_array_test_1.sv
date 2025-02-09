@@ -2,64 +2,97 @@
 
 module systolic_array_test_1;
 
-    localparam DIM = 5;
+    localparam LARGE_DIM = 5;
+    localparam SMALL_DIM = 2;
 
     reg clk;
     reg rst;
-    reg [(DIM*DIM)-1:0][31:0] mat_a;
-    reg [(DIM*DIM)-1:0][31:0] mat_b;
-    wire [(DIM*DIM)-1:0][31:0] out;
-    reg start;
-    wire done;
+    
+    reg [(LARGE_DIM*LARGE_DIM)-1:0][31:0] l_mat_a;
+    reg [(LARGE_DIM*LARGE_DIM)-1:0][31:0] l_mat_b;
+    wire [(LARGE_DIM*LARGE_DIM)-1:0][31:0] l_out;
+    
+    reg [(SMALL_DIM*SMALL_DIM)-1:0][31:0] s_mat_a;
+    reg [(SMALL_DIM*SMALL_DIM)-1:0][31:0] s_mat_b;
+    wire [(SMALL_DIM*SMALL_DIM)-1:0][31:0] s_out;
+    
+    reg l_start;
+    wire l_done;
+    
+    reg s_start;
+    wire s_done;
 
-    systolic_array #(.DIM(DIM)
-    ) uut (
+    systolic_array #(.DIM(LARGE_DIM)
+    ) large_arr (
         .clk(clk),
         .rst(rst),
-        .mat_a(mat_a),
-        .mat_b(mat_b),
-        .out(out),
-        .start(start),
-        .done(done)
+        .mat_a(l_mat_a),
+        .mat_b(l_mat_b),
+        .out(l_out),
+        .start(l_start),
+        .done(l_done)
+    );
+    
+    systolic_array #(.DIM(SMALL_DIM)
+    ) small_arr (
+        .clk(clk),
+        .rst(rst),
+        .mat_a(s_mat_a),
+        .mat_b(s_mat_b),
+        .out(s_out),
+        .start(s_start),
+        .done(s_done)
     );
     
     initial begin
         clk <= 0;
         rst <= 1;
-        start <= 0;
-        for(int i = 0; i < DIM*DIM; i++) begin
-            mat_a[i] <= 31'b0;
-            mat_b[i] <= 31'b0;
+        s_start <= 0;
+        l_start <= 0;
+        for(int i = 0; i < LARGE_DIM*LARGE_DIM; i++) begin
+            l_mat_a[i] <= 31'b0;
+            l_mat_b[i] <= 31'b0;
+        end
+        for(int i = 0; i < SMALL_DIM*SMALL_DIM; i++) begin
+            s_mat_a[i] <= 31'b0;
+            s_mat_b[i] <= 31'b0;
         end
     end
     
-    reg [31:0] expected [0:(DIM*DIM)-1];
+    reg [31:0] l_expected [0:(LARGE_DIM*LARGE_DIM)-1];
+    reg [31:0] s_expected [0:(SMALL_DIM*SMALL_DIM)-1];
+    
     initial begin
-        expected[0] = 152455;
-        expected[1] = 153270;
-        expected[2] = 154085;
-        expected[3] = 154900;
-        expected[4] = 155715;
-        expected[5] = 157130;
-        expected[6] = 157970;
-        expected[7] = 158810;
-        expected[8] = 159650;
-        expected[9] = 160490;
-        expected[10] = 161805;
-        expected[11] = 162670;
-        expected[12] = 163535;
-        expected[13] = 164400;
-        expected[14] = 165265;
-        expected[15] = 166480;
-        expected[16] = 167370;
-        expected[17] = 168260;
-        expected[18] = 169150;
-        expected[19] = 170040;
-        expected[20] = 171155;
-        expected[21] = 172070;
-        expected[22] = 172985;
-        expected[23] = 173900;
-        expected[24] = 174815;
+        s_expected[0] = 57495;
+        s_expected[1] = 57818;
+        s_expected[2] = 58207;
+        s_expected[3] = 58534;
+    
+        l_expected[0] = 152455;
+        l_expected[1] = 153270;
+        l_expected[2] = 154085;
+        l_expected[3] = 154900;
+        l_expected[4] = 155715;
+        l_expected[5] = 157130;
+        l_expected[6] = 157970;
+        l_expected[7] = 158810;
+        l_expected[8] = 159650;
+        l_expected[9] = 160490;
+        l_expected[10] = 161805;
+        l_expected[11] = 162670;
+        l_expected[12] = 163535;
+        l_expected[13] = 164400;
+        l_expected[14] = 165265;
+        l_expected[15] = 166480;
+        l_expected[16] = 167370;
+        l_expected[17] = 168260;
+        l_expected[18] = 169150;
+        l_expected[19] = 170040;
+        l_expected[20] = 171155;
+        l_expected[21] = 172070;
+        l_expected[22] = 172985;
+        l_expected[23] = 173900;
+        l_expected[24] = 174815;
     end
 
     // Clock generation
@@ -71,28 +104,39 @@ module systolic_array_test_1;
         // Reset pulse
         #10 rst = 0;
         #10 rst = 1;
+        
+        for(int i = 0; i < SMALL_DIM*SMALL_DIM; i++) begin
+            s_mat_a[i] = 32'ha1+i;
+            s_mat_b[i] = 32'hb1+i;
+        end
+        
+        #10 s_start = 1;
+        #10 s_start = 0;
+        
+        wait(s_done);
+        
+        for(int i = 0; i < SMALL_DIM*SMALL_DIM; i++) begin
+            if(s_out[i]!=s_expected[i]) $fatal("UNEXPECTED SMALL RESULT. EXECTED %d GOT %d", s_expected[i], s_out[i]);
+        end
+        $display("SMALL PASSED");
 
         // Set input matrices
-        for(int i = 0; i < DIM*DIM; i++) begin
-            mat_a[i] = 32'ha1+i;
-            mat_b[i] = 32'hb1+i;
+        for(int i = 0; i < LARGE_DIM*LARGE_DIM; i++) begin
+            l_mat_a[i] = 32'ha1+i;
+            l_mat_b[i] = 32'hb1+i;
         end
 
         // Assert start signal
-        #10 start = 1;
-        #10 start = 0;  // De-assert start after one cycle
+        #10 l_start = 1;
+        #10 l_start = 0;  // De-assert start after one cycle
 
         // Wait for the done signal
-        wait (done);
-        
-        for(int i = 0; i < DIM*DIM; i++) begin
-            $display("Output: %d", out[i]);
-        end
+        wait (l_done);
 
-        for(int i = 0; i < DIM*DIM; i++) begin
-            if(out[i]!=expected[i]) $fatal("UNEXPECTED RESULT");
+        for(int i = 0; i < LARGE_DIM*LARGE_DIM; i++) begin
+            if(l_out[i]!=l_expected[i]) $fatal("UNEXPECTED LARGE RESULT. EXECTED %d GOT %d", l_expected[i], l_out[i]);
         end
-        $display("PASSED");
+        $display("LARGE PASSED");
 
         // Finish simulation
         #20 $finish;

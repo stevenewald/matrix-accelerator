@@ -122,7 +122,7 @@ module axi_master(
 
 reg [2:0] current_state;
 
-reg [18:0][31:0] args;
+reg [17:0][31:0] args;
 reg [8:0] arg_num;
 wire [8:0][31:0] tmp_outputs;
 reg [8:0][31:0] outputs;
@@ -132,6 +132,8 @@ reg r_start;
 reg r_write_en;
 reg [31:0] r_addr;
 reg [31:0] r_write_data;
+reg [3:0] tile_num;
+reg [1:0] sub_tile_num;
 reg r_msi_interrupt_req;
 
 assign start      = r_start;
@@ -167,6 +169,8 @@ always @(posedge aclk or negedge aresetn) begin
         r_addr       <= {32{1'b0}};
         r_write_data <= {32{1'b0}};
         current_state <= S_IDLE;
+        tile_num <= 0;
+        sub_tile_num <= 0;
         arg_num <= 0;
         r_msi_interrupt_req <= 1'b0;
         start_mul <= 1'b0;
@@ -192,7 +196,7 @@ always @(posedge aclk or negedge aresetn) begin
                 end else begin
                     r_start      <= 1'b1;
                     r_write_en   <= 1'b0;      // Read
-                    r_addr       <= 32'h48;
+                    r_addr       <= 32'd162;
                 end
             end
 
@@ -254,7 +258,7 @@ always @(posedge aclk or negedge aresetn) begin
                 end else begin
                     r_start <= 1'b1;
                     r_write_en <= 1'b1;
-                    r_addr <= 32'h48;
+                    r_addr <= 32'd162;
                     r_write_data <= 32'h0;
                 end
             end

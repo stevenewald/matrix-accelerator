@@ -79,7 +79,7 @@ module systolic_array #(
                 end
                 S_RUNNING: begin
                     cycle_count <= cycle_count + 1;
-                    if(cycle_count == 2*DIM+2) begin
+                    if(cycle_count == 2*DIM+2) begin // this is kinda manual/should be tweaked i think
                         state <= S_COMPLETE;
                     end
                 end
