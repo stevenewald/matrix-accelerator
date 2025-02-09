@@ -40,7 +40,7 @@ module pe_grid_generator #(
         for(y = 0; y < DIM; y = y + 1) begin : gen1
             for(x = 0; x < DIM; x = x + 1) begin : gen2
                 wire [31:0] _a_in = (x==0) ? a_in[y] : a_out[x+(y*(DIM-1))-1];
-                wire [31:0] _b_in = (y==0) ? b_in[x] : b_out[x+(y*DIM)-3];
+                wire [31:0] _b_in = (y==0) ? b_in[x] : b_out[x+(y*DIM)-DIM];
                 
                 if(x==DIM-1 && y==DIM-1) begin
                     systolic_PE sys_pe(

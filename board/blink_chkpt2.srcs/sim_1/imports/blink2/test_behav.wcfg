@@ -16,13 +16,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="2.213629 us"></ZoomStartTime>
-      <ZoomEndTime time="24.757275 us"></ZoomEndTime>
+      <ZoomStartTime time="0.794341 us"></ZoomStartTime>
+      <ZoomEndTime time="25.041132 us"></ZoomEndTime>
       <Cursor1Time time="13.160000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="243"></NameColumnWidth>
-      <ValueColumnWidth column_width="112"></ValueColumnWidth>
+      <ValueColumnWidth column_width="108"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="6" />
    <wvobject fp_name="/test/dut/design_2_i/axi_vip_0/S_AXI" type="protoinst">
@@ -325,6 +325,42 @@
             <obj_property name="ObjectShortName">[0][31:0]</obj_property>
             <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
          </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[8]" type="array">
+            <obj_property name="ElementShortName">[8][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[8][31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[7]" type="array">
+            <obj_property name="ElementShortName">[7][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[7][31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[6]" type="array">
+            <obj_property name="ElementShortName">[6][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[6][31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[5]" type="array">
+            <obj_property name="ElementShortName">[5][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[5][31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[4]" type="array">
+            <obj_property name="ElementShortName">[4][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[4][31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[3]" type="array">
+            <obj_property name="ElementShortName">[3][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[3][31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[2]" type="array">
+            <obj_property name="ElementShortName">[2][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[2][31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[1]" type="array">
+            <obj_property name="ElementShortName">[1][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[1][31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/test/master_2/multiplier/out[0]" type="array">
+            <obj_property name="ElementShortName">[0][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[0][31:0]</obj_property>
+         </wvobject>
       </wvobject>
       <wvobject fp_name="/test/master_2/multiplier/start" type="logic">
          <obj_property name="ElementShortName">start</obj_property>
@@ -349,14 +385,6 @@
       <wvobject fp_name="/test/master_2/multiplier/b_in" type="array">
          <obj_property name="ElementShortName">b_in[2:0][31:0]</obj_property>
          <obj_property name="ObjectShortName">b_in[2:0][31:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/master_2/multiplier/a_out" type="array">
-         <obj_property name="ElementShortName">a_out[8:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">a_out[8:0][31:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/master_2/multiplier/b_out" type="array">
-         <obj_property name="ElementShortName">b_out[8:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">b_out[8:0][31:0]</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>
