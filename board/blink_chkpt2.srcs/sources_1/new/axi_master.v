@@ -208,6 +208,7 @@ always @(posedge aclk or negedge aresetn) begin
                     r_start <= 1'b0;
                     if(arg_num==17) begin
                         arg_num <= 0;
+                        start_mul <= 1;
                         current_state <= S_COMPUTE;
                     end
                 end else begin
@@ -218,6 +219,7 @@ always @(posedge aclk or negedge aresetn) begin
             end
             
             S_COMPUTE: begin
+                start_mul <= 0;
                 if(mul_done) begin
                     outputs[0] <= tmp_outputs[0];
                     outputs[1] <= tmp_outputs[1];
@@ -228,10 +230,7 @@ always @(posedge aclk or negedge aresetn) begin
                     outputs[6] <= tmp_outputs[6];
                     outputs[7] <= tmp_outputs[7];
                     outputs[8] <= tmp_outputs[8];
-                    start_mul <= 0;
                     current_state <= S_WRITE_RESULTS;
-                end else begin
-                    start_mul <= 1;
                 end
             end
 
