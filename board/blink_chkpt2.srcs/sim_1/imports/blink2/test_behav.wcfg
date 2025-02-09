@@ -16,13 +16,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0.794341 us"></ZoomStartTime>
-      <ZoomEndTime time="25.041132 us"></ZoomEndTime>
+      <ZoomStartTime time="0.000000 us"></ZoomStartTime>
+      <ZoomEndTime time="26.109102 us"></ZoomEndTime>
       <Cursor1Time time="13.160000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="243"></NameColumnWidth>
-      <ValueColumnWidth column_width="108"></ValueColumnWidth>
+      <ValueColumnWidth column_width="104"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="6" />
    <wvobject fp_name="/test/dut/design_2_i/axi_vip_0/S_AXI" type="protoinst">
@@ -185,16 +185,16 @@
          <obj_property name="ObjectShortName">current_state[2:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/args" type="array">
-         <obj_property name="ElementShortName">args[0:17][31:0]</obj_property>
-         <obj_property name="ObjectShortName">args[0:17][31:0]</obj_property>
+         <obj_property name="ElementShortName">args[17:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">args[17:0][31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/arg_num" type="array">
          <obj_property name="ElementShortName">arg_num[8:0]</obj_property>
          <obj_property name="ObjectShortName">arg_num[8:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/outputs" type="array">
-         <obj_property name="ElementShortName">outputs[0:8][31:0]</obj_property>
-         <obj_property name="ObjectShortName">outputs[0:8][31:0]</obj_property>
+         <obj_property name="ElementShortName">outputs[8:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">outputs[8:0][31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/r_start" type="logic">
          <obj_property name="ElementShortName">r_start</obj_property>

@@ -122,10 +122,10 @@ module axi_master(
 
 reg [2:0] current_state;
 
-reg [31:0] args [0:17];
+reg [18:0][31:0] args;
 reg [8:0] arg_num;
-wire [31:0] tmp_outputs [0:8];
-reg [31:0] outputs [0:8];
+wire [8:0][31:0] tmp_outputs;
+reg [8:0][31:0] outputs;
 
 // Control signals for the AXI-Lite master
 reg r_start;
@@ -145,12 +145,13 @@ integer init;
 reg start_mul;
 wire mul_done;
 
-systolic_array multiplier(
+systolic_array #(
+    .DIM(3)) multiplier (
     .clk(aclk),
     .rst(aresetn),
-    .mat_a({args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]}),
-    .mat_b({args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17]}),
-    .out({tmp_outputs[0], tmp_outputs[1], tmp_outputs[2], tmp_outputs[3], tmp_outputs[4], tmp_outputs[5], tmp_outputs[6], tmp_outputs[7], tmp_outputs[8]}),
+    .mat_a(args[8:0]),
+    .mat_b(args[17:9]),
+    .out(tmp_outputs[8:0]),
     .start(start_mul),
     .done(mul_done)
     );
@@ -221,15 +222,9 @@ always @(posedge aclk or negedge aresetn) begin
             S_COMPUTE: begin
                 start_mul <= 0;
                 if(mul_done) begin
-                    outputs[0] <= tmp_outputs[0];
-                    outputs[1] <= tmp_outputs[1];
-                    outputs[2] <= tmp_outputs[2];
-                    outputs[3] <= tmp_outputs[3];
-                    outputs[4] <= tmp_outputs[4];
-                    outputs[5] <= tmp_outputs[5];
-                    outputs[6] <= tmp_outputs[6];
-                    outputs[7] <= tmp_outputs[7];
-                    outputs[8] <= tmp_outputs[8];
+                    for(int i = 0; i < 9; i++) begin
+                        outputs[i] <= tmp_outputs[i];
+                    end
                     current_state <= S_WRITE_RESULTS;
                 end
             end

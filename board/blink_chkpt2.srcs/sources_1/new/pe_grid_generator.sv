@@ -21,7 +21,7 @@
 
 
 module pe_grid_generator #(
-    parameter DIM = 3
+    parameter DIM
     )(
         input wire clk,
         input wire rst, 

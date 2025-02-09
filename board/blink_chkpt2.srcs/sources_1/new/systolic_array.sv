@@ -20,76 +20,68 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module systolic_array(
+module systolic_array #(
+    parameter DIM
+    ) (
     input wire clk,
     input wire rst,
-    input wire [8:0][31:0] mat_a,
-    input wire [8:0][31:0] mat_b,
-    output wire [8:0][31:0] out,
+    input wire [(DIM*DIM)-1:0][31:0] mat_a,
+    input wire [(DIM*DIM)-1:0][31:0] mat_b,
+    output wire [(DIM*DIM)-1:0][31:0] out,
     input wire start,
     output reg done
     );
     
-    localparam DIM = 2'd3;
-    
-    reg [2:0] cycle_count;
+    reg [$clog2(DIM*2+1):0] cycle_count;
     reg [31:0] a_in [DIM-1:0];
     reg [31:0] b_in [DIM-1:0];
     
+    // Number of bits needed to represent DIM*2
     reg [2:0] state;
+    
+    wire running = state != S_IDLE;
     
     localparam S_IDLE       = 3'd0,
                S_RUNNING    = 3'd1,
                S_COMPLETE   = 3'd2;
+               
+               
+    generate
+    for(genvar i = 0; i < DIM; i++) begin
+        always @(posedge clk) begin
+            if(!rst) begin
+                a_in[i] <= 0;
+                b_in[i] <= 0;
+            end else if(running && i <= cycle_count && cycle_count <= DIM+i-1) begin
+                a_in[i] <= mat_a[i*DIM+(cycle_count-i)];
+                b_in[i] <= mat_b[i+(cycle_count-i)*DIM];
+            end else begin
+                a_in[i] <= 0;
+                b_in[i] <= 0;
+            end
+        end
+    end
+    endgenerate
     
     always @(posedge clk) begin
         if(!rst) begin
             cycle_count <= 0;
             done <= 0;
             state <= S_IDLE;
-            for(int i = 0; i < DIM; i++) begin
-                a_in[i] <= 32'b0;
-                b_in[i] <= 32'b0;
-            end
         end else begin
             case (state)
                 S_IDLE: begin
                     done <= 0;
                     if(start) begin
-                        cycle_count <= 0;
                         state <= S_RUNNING;
+                        cycle_count <= 0;
                     end
                 end
                 S_RUNNING: begin
-
-                    if(cycle_count <= 2) begin
-                        a_in[0] <= mat_a[cycle_count];
-                        b_in[0] <= mat_b[cycle_count*3];
-                    end else begin
-                        a_in[0] <= 0;
-                        b_in[0] <= 0;
-                    end
-                    
-                    if(1 <= cycle_count && cycle_count <= 3) begin
-                        a_in[1] <= mat_a[3+(cycle_count-1)];
-                        b_in[1] <= mat_b[1+(cycle_count-1)*3];
-                    end else begin
-                        a_in[1] <= 0;
-                        b_in[1] <= 0;
-                    end
-                    
-                    if(2 <= cycle_count && cycle_count <= 4) begin
-                        a_in[2] <= mat_a[6+(cycle_count-2)];
-                        b_in[2] <= mat_b[2+(cycle_count-2)*3];
-                    end else begin
-                        a_in[2] <= 0;
-                        b_in[2] <= 0;
-                    end
-                    
-                    if(cycle_count == 6) begin
+                    cycle_count <= cycle_count + 1;
+                    if(cycle_count == 2*DIM+2) begin
                         state <= S_COMPLETE;
                     end
-                    cycle_count <= cycle_count + 1;
                 end
                 S_COMPLETE: begin
                     done <= 1;
@@ -99,9 +91,7 @@ module systolic_array(
         end
     end
     
-    wire running = state != S_IDLE;
-    
-    pe_grid_generator #(.DIM(3)
+    pe_grid_generator #(.DIM(DIM)
         ) pe_grid (
             .clk(clk),
             .rst(rst),
