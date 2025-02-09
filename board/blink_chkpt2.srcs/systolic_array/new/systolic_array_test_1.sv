@@ -32,6 +32,19 @@ module systolic_array_test_1;
             mat_b[i] <= 31'b0;
         end
     end
+    
+    reg [31:0] expected [0:8];
+    initial begin
+        expected[0] = 87486;
+        expected[1] = 87972;
+        expected[2] = 88458;
+        expected[3] = 89106;
+        expected[4] = 89601;
+        expected[5] = 90096;
+        expected[6] = 90726;
+        expected[7] = 91230;
+        expected[8] = 91734;
+    end
 
     // Clock generation
     always #5 clk = ~clk;  // 10 ns clock period
@@ -58,6 +71,12 @@ module systolic_array_test_1;
 
         // Display results
         $display("Output: %d, %d, %d, %d, %d, %d, %d, %d, %d", out[0], out[1], out[2], out[3], out[4], out[5], out[6], out[7], out[8]);
+        
+        
+        for(int i = 0; i < 9; i++) begin
+            if(out[i]!=expected[i]) $fatal("UNEXPECTED RESULT");
+        end
+        $display("PASSED");
 
         // Finish simulation
         #20 $finish;
