@@ -34,9 +34,6 @@ module systolic_array(
     reg [31:0] a_in [2:0];
     reg [31:0] b_in [2:0];
     
-    wire [31:0] a_out [8:0];
-    wire [31:0] b_out [8:0];
-    
     reg [2:0] state;
     
     localparam S_IDLE       = 3'd0,
@@ -103,7 +100,17 @@ module systolic_array(
     
     wire running = state != S_IDLE;
     
-    // 100
+    pe_grid_generator #(.DIM(3)
+        ) pe_grid (
+            .clk(clk),
+            .rst(rst),
+            .valid(running),
+            .a_in(a_in),
+            .b_in(b_in),
+            .result(out)
+            );
+    
+    /*// 100
     // 000
     // 000
     systolic_PE pe11(
@@ -219,6 +226,6 @@ module systolic_array(
         .b_in(b_out[5]),
         .b_out(b_out[8]),
         .valid(running),
-        .result(out[8]));
+        .result(out[8]));*/
         
 endmodule
