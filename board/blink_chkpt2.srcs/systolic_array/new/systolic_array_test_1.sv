@@ -2,17 +2,18 @@
 
 module systolic_array_test_1;
 
-    // Testbench signals
+    localparam DIM = 5;
+
     reg clk;
     reg rst;
-    reg [8:0][31:0] mat_a;
-    reg [8:0][31:0] mat_b;
-    wire [8:0][31:0] out;
+    reg [(DIM*DIM)-1:0][31:0] mat_a;
+    reg [(DIM*DIM)-1:0][31:0] mat_b;
+    wire [(DIM*DIM)-1:0][31:0] out;
     reg start;
     wire done;
 
-    // Instantiate the systolic_array module
-    systolic_array uut (
+    systolic_array #(.DIM(DIM)
+    ) uut (
         .clk(clk),
         .rst(rst),
         .mat_a(mat_a),
@@ -23,27 +24,42 @@ module systolic_array_test_1;
     );
     
     initial begin
-            // Initialize signals
         clk <= 0;
         rst <= 1;
         start <= 0;
-        for(int i = 0; i < 9; i++) begin
+        for(int i = 0; i < DIM*DIM; i++) begin
             mat_a[i] <= 31'b0;
             mat_b[i] <= 31'b0;
         end
     end
     
-    reg [31:0] expected [0:8];
+    reg [31:0] expected [0:(DIM*DIM)-1];
     initial begin
-        expected[0] = 87486;
-        expected[1] = 87972;
-        expected[2] = 88458;
-        expected[3] = 89106;
-        expected[4] = 89601;
-        expected[5] = 90096;
-        expected[6] = 90726;
-        expected[7] = 91230;
-        expected[8] = 91734;
+        expected[0] = 152455;
+        expected[1] = 153270;
+        expected[2] = 154085;
+        expected[3] = 154900;
+        expected[4] = 155715;
+        expected[5] = 157130;
+        expected[6] = 157970;
+        expected[7] = 158810;
+        expected[8] = 159650;
+        expected[9] = 160490;
+        expected[10] = 161805;
+        expected[11] = 162670;
+        expected[12] = 163535;
+        expected[13] = 164400;
+        expected[14] = 165265;
+        expected[15] = 166480;
+        expected[16] = 167370;
+        expected[17] = 168260;
+        expected[18] = 169150;
+        expected[19] = 170040;
+        expected[20] = 171155;
+        expected[21] = 172070;
+        expected[22] = 172985;
+        expected[23] = 173900;
+        expected[24] = 174815;
     end
 
     // Clock generation
@@ -57,7 +73,7 @@ module systolic_array_test_1;
         #10 rst = 1;
 
         // Set input matrices
-        for(int i = 0; i < 9; i++) begin
+        for(int i = 0; i < DIM*DIM; i++) begin
             mat_a[i] = 32'ha1+i;
             mat_b[i] = 32'hb1+i;
         end
@@ -68,12 +84,12 @@ module systolic_array_test_1;
 
         // Wait for the done signal
         wait (done);
+        
+        for(int i = 0; i < DIM*DIM; i++) begin
+            $display("Output: %d", out[i]);
+        end
 
-        // Display results
-        $display("Output: %d, %d, %d, %d, %d, %d, %d, %d, %d", out[0], out[1], out[2], out[3], out[4], out[5], out[6], out[7], out[8]);
-        
-        
-        for(int i = 0; i < 9; i++) begin
+        for(int i = 0; i < DIM*DIM; i++) begin
             if(out[i]!=expected[i]) $fatal("UNEXPECTED RESULT");
         end
         $display("PASSED");

@@ -145,7 +145,8 @@ integer init;
 reg start_mul;
 wire mul_done;
 
-systolic_array multiplier(
+systolic_array #(
+    .DIM(3)) multiplier (
     .clk(aclk),
     .rst(aresetn),
     .mat_a(args[8:0]),
