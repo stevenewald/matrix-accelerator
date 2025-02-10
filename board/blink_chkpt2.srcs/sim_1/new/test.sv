@@ -26,6 +26,9 @@ module test();
     wire axi_wvalid;
     
     wire [1:0] group_led;
+    
+    assign axi_arprot = 3'b0;
+    assign axi_awprot = 3'b0;
 
     design_2_wrapper dut(
         .axi_clk_out(axi_clk),
@@ -53,31 +56,56 @@ module test();
     
     wire msi_req;
     
-    axi_master master_2(
+    wire start;
+    wire write;
+    wire [31:0] addr;
+    wire [31:0] write_data;
+    wire [31:0] read_data;
+    wire done;
+    
+    axi_master_fse master_2(
+        .clk(axi_clk),
+        .resetn(axi_rst),
+        .m_axi_awaddr(axi_awaddr),
+        .m_axi_awvalid(axi_awvalid),
+        .m_axi_awready(axi_awready),
+        .m_axi_wdata(axi_wdata),
+        .m_axi_wstrb(axi_wstrb),
+        .m_axi_wvalid(axi_wvalid),
+        .m_axi_wready(axi_wready),
+        .m_axi_bresp(axi_bresp),
+        .m_axi_bvalid(axi_bvalid),
+        .m_axi_bready(axi_bready),
+        .m_axi_araddr(axi_araddr),
+        .m_axi_arvalid(axi_arvalid),
+        .m_axi_arready(axi_arready),
+        .m_axi_rdata(axi_rdata),
+        .m_axi_rresp(axi_rresp),
+        .m_axi_rvalid(axi_rvalid),
+        .m_axi_rready(axi_rready),
+        
+        .start(start),
+        .write_en(write),
+        .addr(addr),
+        .write_data(write_data),
+        .read_data(read_data),
+        .done(done)
+    );
+    
+    
+    
+    matrix_multiplier multiplier(
         .aclk(axi_clk),
         .aresetn(axi_rst),
-        .awaddr(axi_awaddr),
-        .awprot(axi_awprot),
-        .awvalid(axi_awvalid),
-        .awready(axi_awready),
-        .wdata(axi_wdata),
-        .wstrb(axi_wstrb),
-        .wvalid(axi_wvalid),
-        .wready(axi_wready),
-        .bresp(axi_bresp),
-        .bvalid(axi_bvalid),
-        .bready(axi_bready),
-        .araddr(axi_araddr),
-        .arprot(axi_arprot),
-        .arvalid(axi_arvalid),
-        .arready(axi_arready),
-        .rdata(axi_rdata),
-        .rresp(axi_rresp),
-        .rvalid(axi_rvalid),
-        .rready(axi_rready),
         .msi_interrupt_req(msi_req),
-        .msi_interrupt_ack(msi_req)
-    );
+        .msi_interrupt_ack(msi_req),
+        .start(start),
+        .write(write),
+        .addr(addr),
+        .write_data(write_data),
+        .read_data(read_data),
+        .done(done)
+        );
   
   axi_stim stim();
   initial begin

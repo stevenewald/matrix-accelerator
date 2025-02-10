@@ -1,0 +1,152 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 02/10/2025 01:58:57 PM
+// Design Name: 
+// Module Name: axi_master
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module pcie_master(
+    input wire sys_clk_p,
+    input wire sys_clk_n,
+    input wire sys_rst_n,
+    
+    output wire sys_clk,
+    output wire axi_clk,
+    output wire axi_rst_n,
+    
+    input wire [0:0] pci_exp_rxn,
+    input wire [0:0] pci_exp_rxp,
+    output wire [0:0] pci_exp_txp,
+    output wire [0:0] pci_exp_txn,
+    
+    input wire msi_interrupt_req,
+    output wire msi_interrupt_ack,
+    output wire msi_enabled,
+    
+    output wire link_up,
+    
+    input wire start,
+    input wire write,
+    input wire [31:0] addr,
+    input wire [31:0] write_data,
+    output wire [31:0] read_data,
+    output wire done 
+    );
+    
+    refclk clk(
+    .sys_clk_p(sys_clk_p),
+    .sys_clk_n(sys_clk_n),
+    .refclk(sys_clk)
+    );
+    
+    wire [31:0] axi_araddr;
+    wire [2:0] axi_arprot;
+    wire axi_arvalid;
+    wire axi_arready;
+    wire [31:0] axi_awaddr;
+    wire [2:0] axi_awprot;
+    wire axi_awready;
+    wire axi_awvalid;
+    wire axi_bready;
+    wire [1:0] axi_bresp;
+    wire axi_bvalid;
+    wire [31:0] axi_rdata;
+    wire axi_rready;
+    wire [1:0] axi_rresp;
+    wire axi_rvalid;
+    wire [31:0] axi_wdata;
+    wire axi_wready;
+    wire [3:0] axi_wstrb;
+    wire axi_wvalid;
+    
+    assign axi_arprot = 3'b0;
+    assign axi_awprot = 3'b0;
+    
+    design_1_wrapper des(
+    .aresetn(axi_rst_n),
+    .axi_clk(axi_clk),
+    .axi_in_araddr(axi_araddr),
+    .axi_in_arprot(axi_arprot),
+    .axi_in_arready(axi_arready),
+    .axi_in_arvalid(axi_arvalid),
+    .axi_in_awaddr(axi_awaddr),
+    .axi_in_awprot(axi_awprot),
+    .axi_in_awready(axi_awready),
+    .axi_in_awvalid(axi_awvalid),
+    .axi_in_bready(axi_bready),
+    .axi_in_bresp(axi_bresp),
+    .axi_in_bvalid(axi_bvalid),
+    .axi_in_rdata(axi_rdata),
+    .axi_in_rready(axi_rready),
+    .axi_in_rresp(axi_rresp),
+    .axi_in_rvalid(axi_rvalid),
+    .axi_in_wdata(axi_wdata),
+    .axi_in_wready(axi_wready),
+    .axi_in_wstrb(axi_wstrb),
+    .axi_in_wvalid(axi_wvalid),
+    .refclk(sys_clk),
+    .sys_reset(sys_rst_n),
+    .pcie_7x_mgt_0_rxn(pci_exp_rxn),
+    .pcie_7x_mgt_0_rxp(pci_exp_rxp),
+    .pcie_7x_mgt_0_txn(pci_exp_txn),
+    .pcie_7x_mgt_0_txp(pci_exp_txp),
+    .link_up(link_up),
+    .msi_interrupt_req(msi_interrupt_req),
+    .msi_interrupt_ack(msi_interrupt_ack),
+    .msi_enabled(msi_enabled)
+    );
+    
+    axi_master_fse fse (
+        .clk(axi_clk),
+        .resetn(axi_rst_n),
+        
+        .start(start),
+        .write_en(write),
+        .addr(addr),
+        .write_data(write_data),
+        .read_data(read_data),
+        .done(done),
+    
+        // Write Address Channel
+        .m_axi_awaddr(axi_awaddr),
+        .m_axi_awvalid(axi_awvalid),
+        .m_axi_awready(axi_awready),
+    
+        // Write Data Channel
+        .m_axi_wdata(axi_wdata),
+        .m_axi_wstrb(axi_wstrb),
+        .m_axi_wvalid(axi_wvalid),
+        .m_axi_wready(axi_wready),
+    
+        // Write Response Channel
+        .m_axi_bresp(axi_bresp),
+        .m_axi_bvalid(axi_bvalid),
+        .m_axi_bready(axi_bready),
+    
+        // Read Address Channel
+        .m_axi_araddr(axi_araddr),
+        .m_axi_arvalid(axi_arvalid),
+        .m_axi_arready(axi_arready),
+    
+        // Read Data Channel
+        .m_axi_rdata(axi_rdata),
+        .m_axi_rresp(axi_rresp),
+        .m_axi_rvalid(axi_rvalid),
+        .m_axi_rready(axi_rready)
+    );
+endmodule
