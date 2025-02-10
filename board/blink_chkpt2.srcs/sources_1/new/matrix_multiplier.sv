@@ -53,10 +53,6 @@ reg [8:0] arg_num;
 wire [8:0][31:0] tmp_outputs;
 reg [8:0][31:0] outputs;
 
-
-
-integer init;
-
 reg start_mul;
 wire mul_done;
 
@@ -67,6 +63,7 @@ systolic_array #(
     .mat_a(args[8:0]),
     .mat_b(args[17:9]),
     .out(tmp_outputs[8:0]),
+    .accumulate(0),
     .start(start_mul),
     .done(mul_done)
     );
@@ -86,7 +83,7 @@ always @(posedge aclk or negedge aresetn) begin
         msi_interrupt_req <= 1'b0;
         start_mul <= 1'b0;
         
-        for (init = 0; init < 18; init = init + 1) begin
+        for (int init = 0; init < 18; init = init + 1) begin
             args[init] <= 32'h0;
         end
     end else begin

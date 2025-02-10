@@ -28,6 +28,7 @@ module systolic_array #(
     input wire [(DIM*DIM)-1:0][31:0] mat_a,
     input wire [(DIM*DIM)-1:0][31:0] mat_b,
     output wire [(DIM*DIM)-1:0][31:0] out,
+    input wire accumulate,
     input wire start,
     output reg done
     );
@@ -95,7 +96,7 @@ module systolic_array #(
         ) pe_grid (
             .clk(clk),
             .rst(rst),
-            .valid(running),
+            .valid(accumulate || running),
             .a_in(a_in),
             .b_in(b_in),
             .result(out)
