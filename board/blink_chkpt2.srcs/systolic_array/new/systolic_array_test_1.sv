@@ -116,30 +116,29 @@ module systolic_array_test_1;
         
         s_accumulate = 1;
         
-        #10 s_start = 1;
-        #10 s_start = 0;
-        
+        s_start = 1;        
         wait(s_done);
+        s_start = 0;
         
         for(int i = 0; i < SMALL_DIM*SMALL_DIM; i++) begin
             if(s_out[i]!=s_expected[i]) $fatal("UNEXPECTED SMALL RESULT. EXECTED %d GOT %d", s_expected[i], s_out[i]);
         end
         $display("SMALL PASSED");
         
-        #10 s_start = 1;
-        #10 s_start = 0;
-        
+        wait(!s_done);
+        s_start = 1;
         wait(s_done);
+        s_start = 0;
         
         for(int i = 0; i < SMALL_DIM*SMALL_DIM; i++) begin
             if(s_out[i]!=2*s_expected[i]) $fatal("UNEXPECTED SMALL RESULT ACCUMULATION. EXECTED %d GOT %d", 2*s_expected[i], s_out[i]);
         end
         
         s_accumulate = 0;
-        #10 s_start = 1;
-        #10 s_start = 0;
-        
+        wait(!s_done);
+        s_start = 1;
         wait(s_done);
+        s_start = 0;
         
         for(int i = 0; i < SMALL_DIM*SMALL_DIM; i++) begin
             if(s_out[i]!=s_expected[i]) $fatal("UNEXPECTED SMALL RESULT RESET AFTER ACCUMULATION OFF. EXECTED %d GOT %d", 2*s_expected[i], s_out[i]);
@@ -152,12 +151,10 @@ module systolic_array_test_1;
             l_mat_b[i] = 32'hb1+i;
         end
 
-        // Assert start signal
-        #10 l_start = 1;
-        #10 l_start = 0;  // De-assert start after one cycle
-
-        // Wait for the done signal
-        wait (l_done);
+        wait(!l_done);
+        l_start = 1;
+        wait(l_done);
+        l_start = 0;
 
         for(int i = 0; i < LARGE_DIM*LARGE_DIM; i++) begin
             if(l_out[i]!=l_expected[i]) $fatal("UNEXPECTED LARGE RESULT. EXECTED %d GOT %d", l_expected[i], l_out[i]);
