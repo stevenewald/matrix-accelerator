@@ -28,6 +28,7 @@ module systolic_array #(
     input wire [(DIM*DIM)-1:0][31:0] mat_a,
     input wire [(DIM*DIM)-1:0][31:0] mat_b,
     output wire [(DIM*DIM)-1:0][31:0] out,
+    input wire accumulate,
     input wire start,
     output reg done
     );
@@ -39,13 +40,13 @@ module systolic_array #(
     // Number of bits needed to represent DIM*2
     reg [2:0] state;
     
-    wire running = state != S_IDLE;
-    
     localparam S_IDLE       = 3'd0,
                S_RUNNING    = 3'd1,
                S_COMPLETE   = 3'd2;
-               
-               
+    
+    wire running = state != S_IDLE;
+    
+       
     generate
     for(genvar i = 0; i < DIM; i++) begin
         always @(posedge clk) begin
@@ -79,12 +80,13 @@ module systolic_array #(
                 end
                 S_RUNNING: begin
                     cycle_count <= cycle_count + 1;
-                    if(cycle_count == 2*DIM+2) begin // this is kinda manual/should be tweaked i think
+                    if(cycle_count == 3*DIM) begin // this is kinda manual/should be tweaked i think
                         state <= S_COMPLETE;
+                        done <= 1;
                     end
                 end
                 S_COMPLETE: begin
-                    done <= 1;
+                    done <= 0;
                     state <= S_IDLE;
                 end
             endcase
@@ -95,7 +97,7 @@ module systolic_array #(
         ) pe_grid (
             .clk(clk),
             .rst(rst),
-            .valid(running),
+            .valid(accumulate || running),
             .a_in(a_in),
             .b_in(b_in),
             .result(out)

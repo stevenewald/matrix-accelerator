@@ -92,7 +92,24 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
 
   mst_agent.wait_drivers_idle(); 
   
-  #30000
+  #20000
+  $display("STARTING AGAIN");
+  mtestWID = $urandom_range(0,(1<<(0)-1)); 
+  mtestWADDR = 64'h48;
+  mtestWBurstLength = 0;
+  mtestWDataSize = xil_axi_size_t'(xil_clog2((32)/8));
+  mtestWBurstType = XIL_AXI_BURST_TYPE_INCR;
+  mtestWData = 32'h1;
+  
+  wr_trans = mst_agent.wr_driver.create_transaction("write transaction");
+  wr_trans.set_write_cmd(mtestWADDR,mtestWBurstType,mtestWID,
+                               mtestWBurstLength,mtestWDataSize);
+  wr_trans.set_data_block(mtestWData);
+  mst_agent.wr_driver.send(wr_trans);
+
+  mst_agent.wait_drivers_idle(); 
+  
+  #10000
   /*
   $display ("Sending read");
     mtestRID = $urandom_range(0,(1<<(0)-1)); 
