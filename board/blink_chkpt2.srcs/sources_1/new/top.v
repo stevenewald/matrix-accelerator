@@ -31,27 +31,27 @@ module top(
     output [0:0] pci_exp_txn
     );
     
-    
+    localparam DIM = 3;
+      
     wire reset = 1;
-    wire sys_clk;
     wire axi_clk;
     wire axi_rst_n;
     wire msi_int_req;
     wire msi_int_ack;
-     //link up group led 1
      
-     wire start;
-     wire write;
-     wire [31:0] addr;
-     wire [31:0] read_data;
-     wire [31:0] write_data;
-     wire done;
+     wire axi_start;
+     wire axi_write;
+     wire [31:0] axi_addr;
+     wire [31:0] axi_read_data;
+     wire [31:0] axi_write_data;
+     wire axi_done;
     
+    wire sys_clk;
     pcie_master pcie(
         .sys_clk_p(sys_clk_p),
         .sys_clk_n(sys_clk_n),
-        .sys_rst_n(reset),
         .sys_clk(sys_clk),
+        .sys_rst_n(reset),
         .axi_clk(axi_clk),
         .axi_rst_n(axi_rst_n),
         .pci_exp_rxn(pci_exp_rxn),
@@ -64,25 +64,48 @@ module top(
         .msi_interrupt_ack(msi_int_ack),
         .msi_enabled(corner_led),
         
-        .start(start),
-        .write(write),
-        .addr(addr),
-        .write_data(write_data),
-        .read_data(read_data),
-        .done(done)
+        .start(axi_start),
+        .write(axi_write),
+        .addr(axi_addr),
+        .write_data(axi_write_data),
+        .read_data(axi_read_data),
+        .done(axi_done)
     );
     
-    matrix_multiplier multiplier(
+    wire matrix_done;
+    wire [2:0] matrix_command;
+    wire [DIM*DIM-1:0][31:0] matrix_write_data;
+    wire [DIM*DIM-1:0][31:0] matrix_read_data;
+    wire [31:0] status_read_data;
+    
+    
+    matrix_memory_handle #(
+    .DIM(DIM)) matrix_handle (
+    .axi_start(axi_start),
+    .axi_write(axi_write),
+    .axi_addr(axi_addr),
+    .axi_write_data(axi_write_data),
+    .axi_read_data(axi_read_data),
+    .axi_done(axi_done),
+    .msi_interrupt_req(msi_int_req),
+    .msi_interrupt_ack(msi_int_ack),
+    .clk(axi_clk),
+    .rstn(axi_rst_n),
+    .matrix_done(matrix_done),
+    .command(matrix_command),
+    .status_read_data(status_read_data),
+    .matrix_write_data(matrix_write_data),
+    .matrix_read_data(matrix_read_data));
+    
+    matrix_multiplier #(
+        .DIM(DIM)) multiplier (
         .aclk(axi_clk),
         .aresetn(axi_rst_n),
-        .msi_interrupt_req(msi_int_req),
-        .msi_interrupt_ack(msi_int_ack),
-        .start(start),
-        .write(write),
-        .addr(addr),
-        .write_data(write_data),
-        .read_data(read_data),
-        .done(done)
+        .matrix_command(matrix_command),
+        .status_read_data(status_read_data),
+        .matrix_read_data(matrix_read_data),
+        .matrix_write_data(matrix_write_data),
+        .matrix_done(matrix_done)
         );
         
     

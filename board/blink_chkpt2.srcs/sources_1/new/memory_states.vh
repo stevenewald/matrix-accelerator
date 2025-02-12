@@ -7,5 +7,5 @@ parameter MHS_READ_MATRIX_A = 3'd2;
 parameter MHS_READ_MATRIX_B = 3'd3;
 parameter MHS_WRITE_RESULT  = 3'd4;
 parameter MHS_RESET_STATUS  = 3'd5;
-parameter MHS_DONE          = 3'd6;
+parameter MHS_INTERRUPT     = 3'd6;
 `endif

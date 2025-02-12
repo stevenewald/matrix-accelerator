@@ -24,8 +24,6 @@ module pcie_master(
     input wire sys_clk_p,
     input wire sys_clk_n,
     input wire sys_rst_n,
-    
-    output wire sys_clk,
     output wire axi_clk,
     output wire axi_rst_n,
     
@@ -33,6 +31,7 @@ module pcie_master(
     input wire [0:0] pci_exp_rxp,
     output wire [0:0] pci_exp_txp,
     output wire [0:0] pci_exp_txn,
+    output wire sys_clk,
     
     input wire msi_interrupt_req,
     output wire msi_interrupt_ack,

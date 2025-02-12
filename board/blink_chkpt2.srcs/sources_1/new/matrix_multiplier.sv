@@ -21,19 +21,17 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module matrix_multiplier(
+module matrix_multiplier    #(
+    parameter DIM
+    ) (
     input wire aclk,
     input wire aresetn,
     
-    output reg msi_interrupt_req,
-    input wire msi_interrupt_ack,
-    
-    output wire start,
-    output wire write,
-    output wire [31:0] addr,
-    output wire [31:0] write_data,
-    input wire [31:0] read_data,
-    input wire done
+    output reg [2:0] matrix_command,
+    input wire [31:0] status_read_data,
+    input wire [DIM*DIM-1:0][31:0] matrix_read_data,
+    output reg [DIM*DIM-1:0][31:0] matrix_write_data,
+    input wire matrix_done
     );
     
     
@@ -47,29 +45,6 @@ module matrix_multiplier(
            S_WRITE_RESULTS = 4'd5,
            S_WRITE_STATUS    = 4'd6,
            S_INTERRUPT     = 4'd7;
-
-reg [2:0] handle_command;
-wire [8:0][31:0] read_matrix;
-wire [8:0][31:0] write_matrix;
-wire [31:0] read_status;
-wire handle_done;
-
-
-matrix_memory_handle #(
-    .DIM(3)) matrix_handle (
-    .axi_start(start),
-    .axi_write(write),
-    .axi_addr(addr),
-    .axi_write_data(write_data),
-    .axi_read_data(read_data),
-    .axi_done(done),
-    .clk(aclk),
-    .matrix_done(handle_done),
-    .command(handle_command),
-    .status_read_data(read_status),
-    .matrix_write_data(write_matrix),
-    .matrix_read_data(read_matrix),
-    .rstn(aresetn));
     
 reg [3:0] current_state;
 
@@ -87,13 +62,11 @@ systolic_array #(
     .rst(aresetn),
     .mat_a(mat_a),
     .mat_b(mat_b),
-    .out(write_matrix),
+    .out(matrix_write_data),
     .accumulate(accumulate),
     .start(start_mul),
     .done(mul_done)
     );
-   
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Output and Data Handling
@@ -101,18 +74,16 @@ systolic_array #(
 always @(posedge aclk or negedge aresetn) begin
     if (!aresetn) begin
         current_state <= S_IDLE;
-
-        msi_interrupt_req <= 1'b0;
         start_mul <= 1'b0;
         accumulate <= 0;
-        
-        handle_command <= MHS_IDLE;
+        matrix_command <= MHS_IDLE;
         
         for (int init = 0; init < 9; init = init + 1) begin
             mat_a[init] <= 32'h0;
             mat_b[init] <= 32'h0;
         end
     end else begin
+        matrix_command <= MHS_IDLE;
         // Defaults for each cycle
         case (current_state)
             S_IDLE: begin
@@ -121,37 +92,34 @@ always @(posedge aclk or negedge aresetn) begin
 
             // Initiate read of 0x10
             S_CHECK_STATUS: begin
-                if(handle_done) begin
-                    handle_command <= MHS_IDLE;
+                if(matrix_done) begin
                     current_state <= S_DECIDE;
                  end else begin
-                    handle_command <= MHS_READ_STATUS;
+                    matrix_command <= MHS_READ_STATUS;
                  end
             end
 
             // Evaluate data from 0x10
             S_DECIDE: begin
-                current_state <= (read_status == 32'd1) ? S_READ_A : S_CHECK_STATUS;
+                current_state <= (status_read_data == 32'd1) ? S_READ_A : S_CHECK_STATUS;
             end
 
             // Read from 0x0 -> reg_A
             S_READ_A: begin
-                if (handle_done) begin
-                    mat_a <= read_matrix;
-                    handle_command <= MHS_IDLE;
+                if (matrix_done) begin
+                    mat_a <= matrix_read_data;
                     current_state <= S_READ_B;
                 end else begin
-                    handle_command <= MHS_READ_MATRIX_A;
+                    matrix_command <= MHS_READ_MATRIX_A;
                 end
             end
             
             S_READ_B: begin
-                if (handle_done) begin
-                    mat_b <= read_matrix;
-                    handle_command <= MHS_IDLE;
+                if (matrix_done) begin
+                    mat_b <= matrix_read_data;
                     current_state <= S_COMPUTE;
                 end else begin
-                    handle_command <= MHS_READ_MATRIX_B;
+                    matrix_command <= MHS_READ_MATRIX_B;
                 end
             end
             
@@ -166,31 +134,27 @@ always @(posedge aclk or negedge aresetn) begin
             end
 
             S_WRITE_RESULTS: begin
-                if(handle_done) begin
-                    handle_command <= MHS_IDLE;
+                if(matrix_done) begin
                     current_state <= S_WRITE_STATUS;
-                    accumulate <= 0;
+                    accumulate <= 0; // we've written results, can reset now
                 end else begin
-                    handle_command <= MHS_WRITE_RESULT;
+                    matrix_command <= MHS_WRITE_RESULT;
                 end
             end
             
-
-            // Write 0 to 0x20
             S_WRITE_STATUS: begin
-                if(handle_done) begin
-                    handle_command <= MHS_IDLE;
+                if(matrix_done) begin
                     current_state <= S_INTERRUPT;
                 end else begin
-                    handle_command <= MHS_RESET_STATUS;
+                    matrix_command <= MHS_RESET_STATUS;
                 end
             end
+            
             S_INTERRUPT: begin
-                if(msi_interrupt_req && msi_interrupt_ack) begin
-                    msi_interrupt_req <= 1'b0;
+                if(matrix_done) begin
                     current_state <= S_IDLE;
                 end else begin
-                    msi_interrupt_req <= 1'b1;
+                    matrix_command <= MHS_INTERRUPT;
                 end
             end
             default: current_state <= S_IDLE;

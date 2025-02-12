@@ -19,13 +19,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="9.052010 us"></ZoomStartTime>
-      <ZoomEndTime time="43.412011 us"></ZoomEndTime>
-      <Cursor1Time time="37.685344 us"></Cursor1Time>
+      <ZoomStartTime time="0.807692 us"></ZoomStartTime>
+      <ZoomEndTime time="21.807693 us"></ZoomEndTime>
+      <Cursor1Time time="18.307692 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="233"></NameColumnWidth>
-      <ValueColumnWidth column_width="81"></ValueColumnWidth>
+      <ValueColumnWidth column_width="61"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="7" />
    <wvobject fp_name="/test/dut/design_2_i/axi_vip_0/S_AXI" type="protoinst">
@@ -84,139 +84,6 @@
       <wvobject fp_name="/test/multiplier/aresetn" type="logic">
          <obj_property name="ElementShortName">aresetn</obj_property>
          <obj_property name="ObjectShortName">aresetn</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/multiplier/msi_interrupt_req" type="logic">
-         <obj_property name="ElementShortName">msi_interrupt_req</obj_property>
-         <obj_property name="ObjectShortName">msi_interrupt_req</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/multiplier/msi_interrupt_ack" type="logic">
-         <obj_property name="ElementShortName">msi_interrupt_ack</obj_property>
-         <obj_property name="ObjectShortName">msi_interrupt_ack</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/multiplier/start" type="logic">
-         <obj_property name="ElementShortName">start</obj_property>
-         <obj_property name="ObjectShortName">start</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/multiplier/write" type="logic">
-         <obj_property name="ElementShortName">write</obj_property>
-         <obj_property name="ObjectShortName">write</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/multiplier/addr" type="array">
-         <obj_property name="ElementShortName">addr[31:0]</obj_property>
-         <obj_property name="ObjectShortName">addr[31:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/multiplier/write_data" type="array">
-         <obj_property name="ElementShortName">write_data[31:0]</obj_property>
-         <obj_property name="ObjectShortName">write_data[31:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/multiplier/read_data" type="array">
-         <obj_property name="ElementShortName">read_data[31:0]</obj_property>
-         <obj_property name="ObjectShortName">read_data[31:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/multiplier/done" type="logic">
-         <obj_property name="ElementShortName">done</obj_property>
-         <obj_property name="ObjectShortName">done</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/multiplier/handle_command" type="array">
-         <obj_property name="ElementShortName">handle_command[2:0]</obj_property>
-         <obj_property name="ObjectShortName">handle_command[2:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/multiplier/read_matrix" type="array">
-         <obj_property name="ElementShortName">read_matrix[8:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">read_matrix[8:0][31:0]</obj_property>
-         <wvobject fp_name="/test/multiplier/read_matrix[8]" type="array">
-            <obj_property name="ElementShortName">[8][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[8][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[7]" type="array">
-            <obj_property name="ElementShortName">[7][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[7][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[6]" type="array">
-            <obj_property name="ElementShortName">[6][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[6][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[5]" type="array">
-            <obj_property name="ElementShortName">[5][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[5][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[4]" type="array">
-            <obj_property name="ElementShortName">[4][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[4][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[3]" type="array">
-            <obj_property name="ElementShortName">[3][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[3][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[2]" type="array">
-            <obj_property name="ElementShortName">[2][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[2][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[1]" type="array">
-            <obj_property name="ElementShortName">[1][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[1][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[0]" type="array">
-            <obj_property name="ElementShortName">[0][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[0][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[8]" type="array">
-            <obj_property name="ElementShortName">[8][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[8][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[7]" type="array">
-            <obj_property name="ElementShortName">[7][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[7][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[6]" type="array">
-            <obj_property name="ElementShortName">[6][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[6][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[5]" type="array">
-            <obj_property name="ElementShortName">[5][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[5][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[4]" type="array">
-            <obj_property name="ElementShortName">[4][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[4][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[3]" type="array">
-            <obj_property name="ElementShortName">[3][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[3][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[2]" type="array">
-            <obj_property name="ElementShortName">[2][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[2][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[1]" type="array">
-            <obj_property name="ElementShortName">[1][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[1][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/read_matrix[0]" type="array">
-            <obj_property name="ElementShortName">[0][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[0][31:0]</obj_property>
-         </wvobject>
-      </wvobject>
-      <wvobject fp_name="/test/multiplier/write_matrix" type="array">
-         <obj_property name="ElementShortName">write_matrix[8:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">write_matrix[8:0][31:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/multiplier/read_status" type="array">
-         <obj_property name="ElementShortName">read_status[31:0]</obj_property>
-         <obj_property name="ObjectShortName">read_status[31:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/multiplier/handle_done" type="logic">
-         <obj_property name="ElementShortName">handle_done</obj_property>
-         <obj_property name="ObjectShortName">handle_done</obj_property>
       </wvobject>
       <wvobject fp_name="/test/multiplier/current_state" type="array">
          <obj_property name="ElementShortName">current_state[3:0]</obj_property>
@@ -282,71 +149,80 @@
    <wvobject fp_name="group193" type="group">
       <obj_property name="label">MatrixMemoryHandle</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject fp_name="/test/multiplier/matrix_handle/axi_start" type="logic">
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/test/matrix_handle/axi_start" type="logic">
          <obj_property name="ElementShortName">axi_start</obj_property>
          <obj_property name="ObjectShortName">axi_start</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/multiplier/matrix_handle/axi_write" type="logic">
+      <wvobject fp_name="/test/matrix_handle/axi_write" type="logic">
          <obj_property name="ElementShortName">axi_write</obj_property>
          <obj_property name="ObjectShortName">axi_write</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/multiplier/matrix_handle/axi_addr" type="array">
+      <wvobject fp_name="/test/matrix_handle/axi_addr" type="array">
          <obj_property name="ElementShortName">axi_addr[31:0]</obj_property>
          <obj_property name="ObjectShortName">axi_addr[31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/multiplier/matrix_handle/axi_write_data" type="array">
+      <wvobject fp_name="/test/matrix_handle/axi_write_data" type="array">
          <obj_property name="ElementShortName">axi_write_data[31:0]</obj_property>
          <obj_property name="ObjectShortName">axi_write_data[31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/multiplier/matrix_handle/axi_read_data" type="array">
+      <wvobject fp_name="/test/matrix_handle/axi_read_data" type="array">
          <obj_property name="ElementShortName">axi_read_data[31:0]</obj_property>
          <obj_property name="ObjectShortName">axi_read_data[31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/multiplier/matrix_handle/axi_done" type="logic">
+      <wvobject fp_name="/test/matrix_handle/axi_done" type="logic">
          <obj_property name="ElementShortName">axi_done</obj_property>
          <obj_property name="ObjectShortName">axi_done</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/multiplier/matrix_handle/clk" type="logic">
+      <wvobject fp_name="/test/matrix_handle/msi_interrupt_req" type="logic">
+         <obj_property name="ElementShortName">msi_interrupt_req</obj_property>
+         <obj_property name="ObjectShortName">msi_interrupt_req</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/matrix_handle/msi_interrupt_ack" type="logic">
+         <obj_property name="ElementShortName">msi_interrupt_ack</obj_property>
+         <obj_property name="ObjectShortName">msi_interrupt_ack</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/matrix_handle/clk" type="logic">
          <obj_property name="ElementShortName">clk</obj_property>
          <obj_property name="ObjectShortName">clk</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/multiplier/matrix_handle/rstn" type="logic">
+      <wvobject fp_name="/test/matrix_handle/rstn" type="logic">
          <obj_property name="ElementShortName">rstn</obj_property>
          <obj_property name="ObjectShortName">rstn</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/multiplier/matrix_handle/matrix_write_data" type="array">
+      <wvobject fp_name="/test/matrix_handle/matrix_write_data" type="array">
          <obj_property name="ElementShortName">matrix_write_data[8:0][31:0]</obj_property>
          <obj_property name="ObjectShortName">matrix_write_data[8:0][31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/multiplier/matrix_handle/matrix_read_data" type="array">
+      <wvobject fp_name="/test/matrix_handle/matrix_read_data" type="array">
          <obj_property name="ElementShortName">matrix_read_data[8:0][31:0]</obj_property>
          <obj_property name="ObjectShortName">matrix_read_data[8:0][31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/multiplier/matrix_handle/status_read_data" type="array">
+      <wvobject fp_name="/test/matrix_handle/status_read_data" type="array">
          <obj_property name="ElementShortName">status_read_data[31:0]</obj_property>
          <obj_property name="ObjectShortName">status_read_data[31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/multiplier/matrix_handle/command" type="array">
+      <wvobject fp_name="/test/matrix_handle/command" type="array">
          <obj_property name="ElementShortName">command[2:0]</obj_property>
          <obj_property name="ObjectShortName">command[2:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/multiplier/matrix_handle/matrix_done" type="logic">
+      <wvobject fp_name="/test/matrix_handle/matrix_done" type="logic">
          <obj_property name="ElementShortName">matrix_done</obj_property>
          <obj_property name="ObjectShortName">matrix_done</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/multiplier/matrix_handle/state" type="array">
+      <wvobject fp_name="/test/matrix_handle/state" type="array">
          <obj_property name="ElementShortName">state[2:0]</obj_property>
          <obj_property name="ObjectShortName">state[2:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/multiplier/matrix_handle/arg_num" type="array">
+      <wvobject fp_name="/test/matrix_handle/arg_num" type="array">
          <obj_property name="ElementShortName">arg_num[3:0]</obj_property>
          <obj_property name="ObjectShortName">arg_num[3:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/multiplier/matrix_handle/DIM" type="array">
+      <wvobject fp_name="/test/matrix_handle/DIM" type="array">
          <obj_property name="ElementShortName">DIM[31:0]</obj_property>
          <obj_property name="ObjectShortName">DIM[31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/multiplier/matrix_handle/STATUS_ADDR" type="array">
+      <wvobject fp_name="/test/matrix_handle/STATUS_ADDR" type="array">
          <obj_property name="ElementShortName">STATUS_ADDR[31:0]</obj_property>
          <obj_property name="ObjectShortName">STATUS_ADDR[31:0]</obj_property>
       </wvobject>
@@ -502,87 +378,6 @@
          <obj_property name="ElementShortName">mat_a[8:0][31:0]</obj_property>
          <obj_property name="ObjectShortName">mat_a[8:0][31:0]</obj_property>
          <obj_property name="isExpanded"></obj_property>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[8]" type="array">
-            <obj_property name="ElementShortName">[8][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[8][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[7]" type="array">
-            <obj_property name="ElementShortName">[7][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[7][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[6]" type="array">
-            <obj_property name="ElementShortName">[6][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[6][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[5]" type="array">
-            <obj_property name="ElementShortName">[5][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[5][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[4]" type="array">
-            <obj_property name="ElementShortName">[4][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[4][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[3]" type="array">
-            <obj_property name="ElementShortName">[3][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[3][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[2]" type="array">
-            <obj_property name="ElementShortName">[2][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[2][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[1]" type="array">
-            <obj_property name="ElementShortName">[1][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[1][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[0]" type="array">
-            <obj_property name="ElementShortName">[0][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[0][31:0]</obj_property>
-            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[8]" type="array">
-            <obj_property name="ElementShortName">[8][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[8][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[7]" type="array">
-            <obj_property name="ElementShortName">[7][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[7][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[6]" type="array">
-            <obj_property name="ElementShortName">[6][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[6][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[5]" type="array">
-            <obj_property name="ElementShortName">[5][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[5][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[4]" type="array">
-            <obj_property name="ElementShortName">[4][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[4][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[3]" type="array">
-            <obj_property name="ElementShortName">[3][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[3][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[2]" type="array">
-            <obj_property name="ElementShortName">[2][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[2][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[1]" type="array">
-            <obj_property name="ElementShortName">[1][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[1][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/test/multiplier/multiplier/mat_a[0]" type="array">
-            <obj_property name="ElementShortName">[0][31:0]</obj_property>
-            <obj_property name="ObjectShortName">[0][31:0]</obj_property>
-         </wvobject>
       </wvobject>
       <wvobject fp_name="/test/multiplier/multiplier/mat_b" type="array">
          <obj_property name="ElementShortName">mat_b[8:0][31:0]</obj_property>
