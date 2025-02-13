@@ -64,7 +64,7 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   
   for(int i = 0; i < 18; i++) begin
       mtestWID = $urandom_range(0,(1<<(0)-1)); 
-      mtestWADDR = 64'h0 + i*4;
+      mtestWADDR = 64'h4 + i*4;
       mtestWBurstLength = 0;
       mtestWDataSize = xil_axi_size_t'(xil_clog2((32)/8));
       mtestWBurstType = XIL_AXI_BURST_TYPE_INCR;
@@ -78,7 +78,7 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   end
   
   mtestWID = $urandom_range(0,(1<<(0)-1)); 
-  mtestWADDR = 64'h48;
+  mtestWADDR = 64'h0;
   mtestWBurstLength = 0;
   mtestWDataSize = xil_axi_size_t'(xil_clog2((32)/8));
   mtestWBurstType = XIL_AXI_BURST_TYPE_INCR;
@@ -95,7 +95,7 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   #20000
   $display("STARTING AGAIN");
   mtestWID = $urandom_range(0,(1<<(0)-1)); 
-  mtestWADDR = 64'h48;
+  mtestWADDR = 64'h0;
   mtestWBurstLength = 0;
   mtestWDataSize = xil_axi_size_t'(xil_clog2((32)/8));
   mtestWBurstType = XIL_AXI_BURST_TYPE_INCR;

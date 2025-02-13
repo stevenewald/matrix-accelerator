@@ -43,6 +43,7 @@ module matrix_master #(
     wire [DIM*DIM-1:0][31:0] matrix_read_data;
     wire [31:0] status_read_data;
     
+    wire [DIM*DIM-1:0] matrix_num;
     
     matrix_memory_handle #(
     .DIM(DIM)) matrix_handle (
@@ -54,6 +55,7 @@ module matrix_master #(
     .axi_done(axi_done),
     .msi_interrupt_req(msi_interrupt_req),
     .msi_interrupt_ack(msi_interrupt_ack),
+    .matrix_num(matrix_num),
     .clk(axi_clk),
     .rstn(axi_rst_n),
     .matrix_done(matrix_done),
@@ -67,6 +69,7 @@ module matrix_master #(
         .aclk(axi_clk),
         .aresetn(axi_rst_n),
         .matrix_command(matrix_command),
+        .matrix_num(matrix_num),
         .status_read_data(status_read_data),
         .matrix_read_data(matrix_read_data),
         .matrix_write_data(matrix_write_data),

@@ -28,6 +28,7 @@ module matrix_multiplier    #(
     input wire aresetn,
     
     output reg [2:0] matrix_command,
+    output reg [DIM*DIM-1:0] matrix_num,
     input wire [31:0] status_read_data,
     input wire [DIM*DIM-1:0][31:0] matrix_read_data,
     output reg [DIM*DIM-1:0][31:0] matrix_write_data,
@@ -76,6 +77,7 @@ always @(posedge aclk or negedge aresetn) begin
         current_state <= S_IDLE;
         start_mul <= 1'b0;
         accumulate <= 0;
+        matrix_num <= 0;
         matrix_command <= MHS_IDLE;
         
         for (int init = 0; init < 9; init = init + 1) begin
@@ -110,6 +112,7 @@ always @(posedge aclk or negedge aresetn) begin
                     mat_a <= matrix_read_data;
                     current_state <= S_READ_B;
                 end else begin
+                    matrix_num <= 0;
                     matrix_command <= MHS_READ_MATRIX_A;
                 end
             end
@@ -119,6 +122,7 @@ always @(posedge aclk or negedge aresetn) begin
                     mat_b <= matrix_read_data;
                     current_state <= S_COMPUTE;
                 end else begin
+                    matrix_num <= 1;
                     matrix_command <= MHS_READ_MATRIX_B;
                 end
             end
@@ -138,6 +142,7 @@ always @(posedge aclk or negedge aresetn) begin
                     current_state <= S_WRITE_STATUS;
                     accumulate <= 0; // we've written results, can reset now
                 end else begin
+                    matrix_num <= 2;
                     matrix_command <= MHS_WRITE_RESULT;
                 end
             end

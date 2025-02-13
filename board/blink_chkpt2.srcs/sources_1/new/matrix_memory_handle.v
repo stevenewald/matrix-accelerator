@@ -23,7 +23,7 @@
 
 module matrix_memory_handle #(
     parameter DIM = 3,
-    parameter STATUS_ADDR = 32'h48
+    parameter STATUS_ADDR = 32'h0
     ) (
     output reg axi_start,
     output reg axi_write,
@@ -38,9 +38,7 @@ module matrix_memory_handle #(
     input wire clk,
     input wire rstn,
     
-    // ignored for now
-    //input wire [DIM-1:0] matrix_i,
-    //input wire [DIM-1:0] matrix_j,
+    input wire [DIM*DIM-1:0] matrix_num,
     input wire [DIM*DIM-1:0][31:0] matrix_write_data,
     output reg [DIM*DIM-1:0][31:0] matrix_read_data,
     output reg [31:0] status_read_data,
@@ -50,6 +48,8 @@ module matrix_memory_handle #(
     
     reg [2:0] state;
     reg [3:0] arg_num;
+    
+    wire [31:0] matrix_offset = DIM*DIM*matrix_num + 1; //+1 for status_addr
     
     always @(posedge clk or negedge rstn) begin
         if(!rstn) begin
@@ -98,7 +98,7 @@ module matrix_memory_handle #(
                         end
                     end else begin
                         axi_start <= 1;
-                        axi_addr <= 4*arg_num;
+                        axi_addr <= 4*(matrix_offset + arg_num);
                         axi_write <= 0;
                     end                            
                 end
@@ -115,7 +115,7 @@ module matrix_memory_handle #(
                         end
                     end else begin
                         axi_start <= 1;
-                        axi_addr <= 4*(DIM*DIM+arg_num);
+                        axi_addr <= 4*(matrix_offset+arg_num);
                         axi_write <= 0;
                     end                            
                 end
@@ -135,7 +135,7 @@ module matrix_memory_handle #(
                         axi_start <= 1;
                         axi_write <= 1;
                         axi_write_data <= matrix_write_data[arg_num];
-                        axi_addr <= STATUS_ADDR + 4*(arg_num+1);
+                        axi_addr <= 4*(matrix_offset + arg_num);
                     end
                 end
                 MHS_INTERRUPT: begin
