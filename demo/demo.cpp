@@ -64,7 +64,7 @@ int main() {
     return 1;
   }
 
-  matrix mat_a = {20, 20, 30, 40, 50, 60, 70, 80, 90};
+  matrix mat_a = {10, 20, 30, 40, 50, 60, 70, 80, 90};
   matrix mat_b = {100, 110, 120, 130, 140, 150, 160, 170, 180};
 
   if (!write_matrices(fd, mat_a, mat_b)) {

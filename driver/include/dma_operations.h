@@ -19,3 +19,5 @@ void configure_dma_interrupts(mmio_base dma_reg_base);
 
 size_t dma_write(struct pcie_dev *pcie, const char __user *buf, size_t count,
                  loff_t *ppos);
+size_t dma_read(struct pcie_dev *pcie, char __user *buf, size_t count,
+                loff_t *ppos);

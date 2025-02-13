@@ -29,9 +29,6 @@ static long pcie_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
   return 0;
 }
 
-// todo: can we remove this now?
-static DEFINE_MUTEX(dma_lock);
-
 static loff_t pcie_llseek(struct file *file, loff_t offset, int whence) {
   loff_t new_pos;
 
@@ -65,42 +62,7 @@ static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
 static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
                              loff_t *ppos) {
   struct pcie_dev *pcie = file->private_data;
-  dma_addr_t dma_desc_phys;
-
-  if (*ppos >= DMA_BUFFER_SIZE)
-    return 0;
-
-  if (*ppos + count > DMA_BUFFER_SIZE)
-    count = DMA_BUFFER_SIZE - *ppos;
-
-  struct descriptor *desc = dma_alloc_coherent(&pcie->pdev->dev, sizeof(*desc),
-                                               &dma_desc_phys, GFP_KERNEL);
-  if (!desc)
-    return -ENOMEM;
-
-  *desc = create_descriptor(C2H, pcie->dma_handle, *ppos, count);
-
-  mutex_lock(&dma_lock);
-
-  set_dma_descriptor_addr(C2H, pcie->bar1_base, dma_desc_phys);
-
-  execute_dma_transfer(C2H, pcie->bar1_base, &pcie->dma_in_progress);
-
-  dma_sync_single_for_cpu(&pcie->pdev->dev, pcie->dma_handle, count,
-                          DMA_FROM_DEVICE);
-
-  if (copy_to_user(buf, pcie->dma_buffer, count)) {
-    dev_err(pcie->device, "Unable to copy buffer to userspace");
-    mutex_unlock(&dma_lock);
-    dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
-    return -EFAULT;
-  }
-
-  *ppos += count;
-  mutex_unlock(&dma_lock);
-  dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
-
-  return count;
+  return dma_read(pcie, buf, count, ppos);
 }
 
 static irqreturn_t pcie_interrupt_handler(int irq, void *dev_id) {
