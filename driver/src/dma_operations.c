@@ -1,5 +1,6 @@
 #include "dma_operations.h"
 #include <linux/delay.h>
+#include <linux/pci.h>
 
 void block_until_dma_complete(atomic_t *dma_in_progress) {
   while (atomic_read(dma_in_progress)) {
@@ -66,4 +67,43 @@ void configure_dma_interrupts(mmio_base dma_reg_base) {
 
   // Enable interrupt on stop signal
   write_dma_reg(dma_reg_base, C2H_INT_ENABLE, 1 << 1);
+}
+
+size_t dma_write(struct pcie_dev *pcie, const char __user *buf, size_t count,
+                 loff_t *ppos) {
+  dma_addr_t dma_desc_phys;
+
+  if (*ppos >= DMA_BUFFER_SIZE)
+    return 0;
+
+  if (*ppos + count > DMA_BUFFER_SIZE) {
+    count = DMA_BUFFER_SIZE - *ppos;
+  }
+
+  struct descriptor *desc = dma_alloc_coherent(&pcie->pdev->dev, sizeof(*desc),
+                                               &dma_desc_phys, GFP_KERNEL);
+  if (!desc)
+    return -ENOMEM;
+
+  *desc = create_descriptor(H2C, pcie->dma_handle, *ppos, count);
+
+  block_until_dma_complete(&pcie->dma_in_progress);
+  if (copy_from_user(pcie->dma_buffer, buf, count)) {
+    // unlock dma
+    dev_err(pcie->device, "Unable to copy buffer to userspace");
+    dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
+    return -EFAULT;
+  }
+  dma_sync_single_for_device(&pcie->pdev->dev, pcie->dma_handle, count,
+                             DMA_TO_DEVICE);
+
+  set_dma_descriptor_addr(H2C, pcie->bar1_base, dma_desc_phys);
+
+  execute_dma_transfer(H2C, pcie->bar1_base, &pcie->dma_in_progress);
+
+  *ppos += count;
+  // unlock dma
+  dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
+
+  return count;
 }

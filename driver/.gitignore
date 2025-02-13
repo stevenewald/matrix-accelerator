@@ -1,5 +1,5 @@
 .fpga_driver*
-fpga_driver*
+fpga_driver.*o*
 modules.order
 Module.symvers
 .Module.symvers.cmd

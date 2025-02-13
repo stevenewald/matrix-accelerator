@@ -2,6 +2,7 @@
 
 #include "dma_descriptor.h"
 #include "dma_regs.h"
+#include "fpga_driver.h"
 
 void block_until_dma_complete(atomic_t *dma_in_progress);
 
@@ -15,3 +16,6 @@ void set_dma_descriptor_addr(transfer_type_t transfer_type, mmio_base dma_regs,
                              dma_addr_t addr);
 
 void configure_dma_interrupts(mmio_base dma_reg_base);
+
+size_t dma_write(struct pcie_dev *pcie, const char __user *buf, size_t count,
+                 loff_t *ppos);
