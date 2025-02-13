@@ -72,42 +72,21 @@ module top(
         .done(axi_done)
     );
     
-    wire matrix_done;
-    wire [2:0] matrix_command;
-    wire [DIM*DIM-1:0][31:0] matrix_write_data;
-    wire [DIM*DIM-1:0][31:0] matrix_read_data;
-    wire [31:0] status_read_data;
-    
-    
-    matrix_memory_handle #(
-    .DIM(DIM)) matrix_handle (
-    .axi_start(axi_start),
-    .axi_write(axi_write),
-    .axi_addr(axi_addr),
-    .axi_write_data(axi_write_data),
-    .axi_read_data(axi_read_data),
-    .axi_done(axi_done),
-    .msi_interrupt_req(msi_int_req),
-    .msi_interrupt_ack(msi_int_ack),
-    .clk(axi_clk),
-    .rstn(axi_rst_n),
-    .matrix_done(matrix_done),
-    .command(matrix_command),
-    .status_read_data(status_read_data),
-    .matrix_write_data(matrix_write_data),
-    .matrix_read_data(matrix_read_data));
-    
-    matrix_multiplier #(
-        .DIM(DIM)) multiplier (
-        .aclk(axi_clk),
-        .aresetn(axi_rst_n),
-        .matrix_command(matrix_command),
-        .status_read_data(status_read_data),
-        .matrix_read_data(matrix_read_data),
-        .matrix_write_data(matrix_write_data),
-        .matrix_done(matrix_done)
-        );
+    matrix_master matrix_mst(
+        .axi_clk(axi_clk),
+        .axi_rst_n(axi_rst_n),
         
+        .msi_interrupt_req(msi_int_req),
+        .msi_interrupt_ack(msi_int_ack),
+        
+        .axi_start(axi_start),
+        .axi_write(axi_write),
+        .axi_addr(axi_addr),
+        .axi_read_data(axi_read_data),
+        .axi_write_data(axi_write_data),
+        .axi_done(axi_done)
+        );
+    
     
     turn_on_led_after_bil_cycles(
     .refclk(sys_clk),

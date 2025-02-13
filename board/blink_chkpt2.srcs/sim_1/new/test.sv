@@ -92,41 +92,19 @@ module test();
         .done(done)
     );
     
-    wire matrix_done;
-    wire [2:0] matrix_command;
-    wire [8:0][31:0] matrix_read_data;
-    wire [8:0][31:0] matrix_write_data;
-    wire [31:0] status_read_data;
-    
-     matrix_memory_handle #(
-    .DIM(3)) matrix_handle (
-    .axi_start(start),
-    .axi_write(write),
-    .axi_addr(addr),
-    .msi_interrupt_req(msi_req),
-    .msi_interrupt_ack(msi_req),
-    .axi_write_data(write_data),
-    .axi_read_data(read_data),
-    .axi_done(done), // TODO: move msi interrupts here
-    .clk(axi_clk),
-    .rstn(axi_rst),
-    
-    .matrix_done(matrix_done),
-    .command(matrix_command),
-    .status_read_data(status_read_data),
-    .matrix_write_data(matrix_write_data),
-    .matrix_read_data(matrix_read_data));
-    
-    
-    
-    matrix_multiplier #(.DIM(3)) multiplier (
-        .aclk(axi_clk),
-        .aresetn(axi_rst),
-        .matrix_command(matrix_command),
-        .status_read_data(status_read_data),
-        .matrix_read_data(matrix_read_data),
-        .matrix_write_data(matrix_write_data),
-        .matrix_done(matrix_done)
+    matrix_master matrix_mst(
+        .axi_clk(axi_clk),
+        .axi_rst_n(axi_rst),
+        
+        .msi_interrupt_req(msi_req),
+        .msi_interrupt_ack(msi_req),
+        
+        .axi_start(start),
+        .axi_write(write),
+        .axi_addr(addr),
+        .axi_read_data(read_data),
+        .axi_write_data(write_data),
+        .axi_done(done)
         );
   
   axi_stim stim();
