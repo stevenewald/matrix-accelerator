@@ -1,6 +1,7 @@
 #include "dma_descriptor.h"
 #include "dma_operations.h"
 #include "fpga_driver.h"
+#include "mmio_operations.h"
 
 #include <linux/atomic.h>
 #include <linux/cdev.h>
@@ -12,7 +13,25 @@
 #include <linux/slab.h>
 #include <linux/string.h>
 
-static DEFINE_MUTEX(dma_lock);
+// todo: move this to driver
+#define PCIE_IOC_MAGIC 'k'
+#define PCIE_SET_DMA _IOW(PCIE_IOC_MAGIC, 1, int)
+
+static long pcie_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
+  struct pcie_dev *pcie = file->private_data;
+  int value;
+  switch (cmd) {
+  case PCIE_SET_DMA:
+    if (copy_from_user(&value, (int __user *)arg, sizeof(int)))
+      return -EFAULT;
+    dev_info(&pcie->pdev->dev, "Setting dma to %d\n", value);
+    pcie->use_dma = value;
+    break;
+  default:
+    return -ENOTTY;
+  }
+  return 0;
+}
 
 static loff_t pcie_llseek(struct file *file, loff_t offset, int whence) {
   loff_t new_pos;
@@ -41,83 +60,25 @@ static loff_t pcie_llseek(struct file *file, loff_t offset, int whence) {
 static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
                               size_t count, loff_t *ppos) {
   struct pcie_dev *pcie = filp->private_data;
-  dma_addr_t dma_desc_phys;
-
-  if (*ppos >= DMA_BUFFER_SIZE)
-    return 0;
-
-  if (*ppos + count > DMA_BUFFER_SIZE) {
-    count = DMA_BUFFER_SIZE - *ppos;
+  if (pcie->use_dma) {
+    printk("Writing with DMA");
+    return dma_write(pcie, buf, count, ppos);
+  } else {
+    printk("Writing with mmio");
+    return mmio_write(pcie, buf, count, ppos);
   }
-
-  struct descriptor *desc = dma_alloc_coherent(&pcie->pdev->dev, sizeof(*desc),
-                                               &dma_desc_phys, GFP_KERNEL);
-  if (!desc)
-    return -ENOMEM;
-
-  *desc = create_descriptor(H2C, pcie->dma_handle, *ppos, count);
-
-  mutex_lock(&dma_lock);
-
-  if (copy_from_user(pcie->dma_buffer, buf, count)) {
-    mutex_unlock(&dma_lock);
-    dev_err(pcie->device, "Unable to copy buffer to userspace");
-    dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
-    return -EFAULT;
-  }
-  dma_sync_single_for_device(&pcie->pdev->dev, pcie->dma_handle, count,
-                             DMA_TO_DEVICE);
-
-  set_dma_descriptor_addr(H2C, pcie->bar1_base, dma_desc_phys);
-
-  execute_dma_transfer(H2C, pcie->bar1_base, &pcie->dma_in_progress);
-
-  *ppos += count;
-  mutex_unlock(&dma_lock);
-  dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
-
-  return count;
 }
 
 static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
                              loff_t *ppos) {
   struct pcie_dev *pcie = file->private_data;
-  dma_addr_t dma_desc_phys;
-
-  if (*ppos >= DMA_BUFFER_SIZE)
-    return 0;
-
-  if (*ppos + count > DMA_BUFFER_SIZE)
-    count = DMA_BUFFER_SIZE - *ppos;
-
-  struct descriptor *desc = dma_alloc_coherent(&pcie->pdev->dev, sizeof(*desc),
-                                               &dma_desc_phys, GFP_KERNEL);
-  if (!desc)
-    return -ENOMEM;
-
-  *desc = create_descriptor(C2H, pcie->dma_handle, *ppos, count);
-
-  mutex_lock(&dma_lock);
-
-  set_dma_descriptor_addr(C2H, pcie->bar1_base, dma_desc_phys);
-
-  execute_dma_transfer(C2H, pcie->bar1_base, &pcie->dma_in_progress);
-
-  dma_sync_single_for_cpu(&pcie->pdev->dev, pcie->dma_handle, count,
-                          DMA_FROM_DEVICE);
-
-  if (copy_to_user(buf, pcie->dma_buffer, count)) {
-    dev_err(pcie->device, "Unable to copy buffer to userspace");
-    mutex_unlock(&dma_lock);
-    dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
-    return -EFAULT;
+  if (pcie->use_dma) {
+    printk("Reading with DMA");
+    return dma_read(pcie, buf, count, ppos);
+  } else {
+    printk("Reading with mmio");
+    return mmio_read(pcie, buf, count, ppos);
   }
-
-  *ppos += count;
-  mutex_unlock(&dma_lock);
-  dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
-
-  return count;
 }
 
 static irqreturn_t pcie_interrupt_handler(int irq, void *dev_id) {
@@ -150,6 +111,7 @@ static struct file_operations pcie_fops = {.owner = THIS_MODULE,
                                            .release = pcie_release,
                                            .read = pcie_dma_read,
                                            .write = pcie_dma_write,
+                                           .unlocked_ioctl = pcie_ioctl,
                                            .llseek = pcie_llseek};
 
 // DRIVER OPS
