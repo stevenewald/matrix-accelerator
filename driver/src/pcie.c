@@ -1,6 +1,7 @@
 #include "dma_descriptor.h"
 #include "dma_operations.h"
 #include "fpga_driver.h"
+#include "mmio_operations.h"
 
 #include <linux/atomic.h>
 #include <linux/cdev.h>
@@ -18,10 +19,13 @@
 
 static long pcie_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
   struct pcie_dev *pcie = file->private_data;
+  int value;
   switch (cmd) {
   case PCIE_SET_DMA:
-    dev_info(&pcie->pdev->dev, "Setting dma to %d\n", arg != 0);
-    pcie->use_dma = arg;
+    if (copy_from_user(&value, (int __user *)arg, sizeof(int)))
+      return -EFAULT;
+    dev_info(&pcie->pdev->dev, "Setting dma to %d\n", value);
+    pcie->use_dma = value;
     break;
   default:
     return -ENOTTY;
@@ -56,13 +60,25 @@ static loff_t pcie_llseek(struct file *file, loff_t offset, int whence) {
 static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
                               size_t count, loff_t *ppos) {
   struct pcie_dev *pcie = filp->private_data;
-  return dma_write(pcie, buf, count, ppos);
+  if (pcie->use_dma) {
+    printk("Writing with DMA");
+    return dma_write(pcie, buf, count, ppos);
+  } else {
+    printk("Writing with mmio");
+    return mmio_write(pcie, buf, count, ppos);
+  }
 }
 
 static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
                              loff_t *ppos) {
   struct pcie_dev *pcie = file->private_data;
-  return dma_read(pcie, buf, count, ppos);
+  if (pcie->use_dma) {
+    printk("Reading with DMA");
+    return dma_read(pcie, buf, count, ppos);
+  } else {
+    printk("Reading with mmio");
+    return mmio_read(pcie, buf, count, ppos);
+  }
 }
 
 static irqreturn_t pcie_interrupt_handler(int irq, void *dev_id) {

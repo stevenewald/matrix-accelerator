@@ -9,7 +9,7 @@
 #define DEVICE_PATH "/dev/fpga"
 #define PCIE_SET_DMA (_IOW('k', 1, int))
 
-void set_write_mode(int fd, bool dma_on) {
+void set_write_mode(int fd, int dma_on) {
   if (ioctl(fd, PCIE_SET_DMA, &dma_on) < 0) {
     perror("ioctl failed");
   }
