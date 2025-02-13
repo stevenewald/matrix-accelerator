@@ -3,6 +3,7 @@
 #include <cstring>
 #include <fcntl.h>
 #include <iostream>
+#include <random>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
@@ -57,6 +58,19 @@ std::array<uint32_t, 9> get_result(int fd) {
   return res;
 }
 
+bool verify_result(const matrix &a, const matrix &b, const matrix &res) {
+  for (int row = 0; row < 3; row++) {
+    for (int col = 0; col < 3; col++) {
+      if (res[row * 3 + col] != a[row * 3 + 0] * b[0 * 3 + col] +
+                                    a[row * 3 + 1] * b[1 * 3 + col] +
+                                    a[row * 3 + 2] * b[2 * 3 + col]) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 int main() {
   int fd = open(DEVICE_PATH, O_RDWR);
   if (fd < 0) {
@@ -64,8 +78,17 @@ int main() {
     return 1;
   }
 
-  matrix mat_a = {10, 20, 30, 40, 50, 60, 70, 80, 90};
-  matrix mat_b = {100, 110, 120, 130, 140, 150, 160, 170, 180};
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<int> dist(0, 100);
+
+  matrix mat_a;
+  matrix mat_b;
+
+  for (int i = 0; i < 9; i++) {
+    mat_a[i] = dist(gen);
+    mat_b[i] = dist(gen);
+  }
 
   if (!write_matrices(fd, mat_a, mat_b)) {
     return 1;
@@ -78,6 +101,12 @@ int main() {
   usleep(1000);
 
   auto res = get_result(fd);
+
+  if (verify_result(mat_a, mat_b, res)) {
+    std::cout << "PASS\n";
+  } else {
+    std::cout << "FAIL\n";
+  }
 
   for (auto r : res) {
     std::cout << "val: " << r << "\n";
