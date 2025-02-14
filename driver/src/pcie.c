@@ -1,4 +1,3 @@
-#include "dma_descriptor.h"
 #include "dma_operations.h"
 #include "fpga_driver.h"
 #include "mmio_operations.h"
@@ -10,6 +9,7 @@
 #include <linux/dma-mapping.h>
 #include <linux/module.h>
 #include <linux/pci.h>
+#include <linux/poll.h>
 #include <linux/slab.h>
 #include <linux/string.h>
 
@@ -60,6 +60,7 @@ static loff_t pcie_llseek(struct file *file, loff_t offset, int whence) {
 static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
                               size_t count, loff_t *ppos) {
   struct pcie_dev *pcie = filp->private_data;
+  pcie->matrix_done = false;
   if (pcie->use_dma) {
     printk("Writing with DMA");
     return dma_write(pcie, buf, count, ppos);
@@ -85,9 +86,11 @@ static irqreturn_t pcie_interrupt_handler(int irq, void *dev_id) {
   struct pcie_dev *dev = (struct pcie_dev *)dev_id;
   if (irq == dev->dma_irq) {
     printk("DMA interrupt received on IRQ %d\n", irq);
-    atomic_set(&dev->dma_in_progress, 0);
+    complete(&dev->dma_transfer_done);
   } else {
     printk("USR interrupt received on IRQ %d\n", irq);
+    dev->matrix_done = true;
+    wake_up_interruptible(&dev->matrix_wait_queue);
   }
   return IRQ_HANDLED;
 }
@@ -106,18 +109,30 @@ static int pcie_release(struct inode *inode, struct file *filp) {
   return 0;
 }
 
+static unsigned int pcie_poll(struct file *file, poll_table *wait) {
+  struct pcie_dev *pcie = file->private_data;
+  unsigned int mask = 0;
+
+  poll_wait(file, &pcie->matrix_wait_queue, wait);
+  printk("Ready!");
+
+  if (pcie->matrix_done)
+    mask |= POLLIN | POLLRDNORM;
+
+  return mask;
+}
+
 static struct file_operations pcie_fops = {.owner = THIS_MODULE,
                                            .open = pcie_open,
                                            .release = pcie_release,
                                            .read = pcie_dma_read,
                                            .write = pcie_dma_write,
+                                           .poll = pcie_poll,
                                            .unlocked_ioctl = pcie_ioctl,
                                            .llseek = pcie_llseek};
 
 // DRIVER OPS
 
-/* Forward declaration for interrupt handler and file operations */
-static irqreturn_t pcie_interrupt_handler(int irq, void *dev_id);
 extern struct file_operations pcie_fops;
 
 /* Helper: Enable PCI device and request BAR regions */
@@ -303,7 +318,10 @@ static int pcie_probe(struct pci_dev *pdev, const struct pci_device_id *id) {
   if (!dev)
     return -ENOMEM;
 
-  atomic_set(&dev->dma_in_progress, 0);
+  init_completion(&dev->dma_transfer_done);
+  mutex_init(&dev->dma_lock);
+  init_waitqueue_head(&dev->matrix_wait_queue);
+
   dev->pdev = pdev;
 
   /* Initialize resource flags and pointers */
