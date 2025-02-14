@@ -21,8 +21,8 @@ struct pcie_dev {
   dma_addr_t dma_handle;
   void *dma_buffer;
   struct completion dma_transfer_done;
-  // wait_queue_head_t matrix_wait_queue;
-  // struct completion matrix_op_done;
+  wait_queue_head_t matrix_wait_queue;
+  bool matrix_done;
   int dma_irq;
   int usr_irq;
   bool bar0_requested;

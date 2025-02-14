@@ -20,9 +20,6 @@ void execute_dma_transfer(transfer_type_t transfer_type, mmio_base dma_regs,
   dma_reg_addr_t ctrl_addr = transfer_type.is_h2c ? H2C_CTRL : C2H_CTRL;
   dma_reg_addr_t status_addr = transfer_type.is_h2c ? H2C_STATUS : C2H_STATUS;
 
-  wait_for_completion(dma_transfer_complete);
-  reinit_completion(dma_transfer_complete);
-
   trigger_dma(dma_regs, status_addr, ctrl_addr);
 
   wait_for_completion(dma_transfer_complete);
@@ -81,7 +78,6 @@ size_t dma_write(struct pcie_dev *pcie, const char __user *buf, size_t count,
 
   mutex_lock(&pcie->dma_lock);
 
-  wait_for_completion(&pcie->dma_transfer_done);
   if (copy_from_user(pcie->dma_buffer, buf, count)) {
     mutex_unlock(&pcie->dma_lock);
     dev_err(pcie->device, "Unable to copy buffer to userspace");

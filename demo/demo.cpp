@@ -5,6 +5,7 @@
 #include <iostream>
 #include <random>
 #include <sys/ioctl.h>
+#include <sys/poll.h>
 #include <unistd.h>
 
 #define DEVICE_PATH "/dev/fpga"
@@ -71,6 +72,16 @@ bool verify_result(const matrix &a, const matrix &b, const matrix &res) {
   return true;
 }
 
+void wait_for_poll(int fd) {
+  struct pollfd pfd = {.fd = fd, .events = POLLIN};
+
+  while (true) {
+    poll(&pfd, 1, -1);
+    if (pfd.revents & POLLIN)
+      break;
+  }
+}
+
 int main() {
   int fd = open(DEVICE_PATH, O_RDWR);
   if (fd < 0) {
@@ -98,7 +109,7 @@ int main() {
     return 1;
   }
 
-  usleep(1000);
+  wait_for_poll(fd);
 
   auto res = get_result(fd);
 
