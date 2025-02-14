@@ -17,9 +17,12 @@ struct pcie_dev {
   dev_t devt;
   struct class *class;
   struct device *device;
+  struct mutex dma_lock;
   dma_addr_t dma_handle;
   void *dma_buffer;
-  atomic_t dma_in_progress;
+  struct completion dma_transfer_done;
+  // wait_queue_head_t matrix_wait_queue;
+  // struct completion matrix_op_done;
   int dma_irq;
   int usr_irq;
   bool bar0_requested;

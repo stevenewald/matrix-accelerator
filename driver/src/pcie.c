@@ -1,4 +1,3 @@
-#include "dma_descriptor.h"
 #include "dma_operations.h"
 #include "fpga_driver.h"
 #include "mmio_operations.h"
@@ -10,6 +9,7 @@
 #include <linux/dma-mapping.h>
 #include <linux/module.h>
 #include <linux/pci.h>
+#include <linux/poll.h>
 #include <linux/slab.h>
 #include <linux/string.h>
 
@@ -85,9 +85,11 @@ static irqreturn_t pcie_interrupt_handler(int irq, void *dev_id) {
   struct pcie_dev *dev = (struct pcie_dev *)dev_id;
   if (irq == dev->dma_irq) {
     printk("DMA interrupt received on IRQ %d\n", irq);
-    atomic_set(&dev->dma_in_progress, 0);
+    complete_all(&dev->dma_transfer_done);
   } else {
     printk("USR interrupt received on IRQ %d\n", irq);
+    // complete(&dev->matrix_op_done);
+    // wake_up_interruptible(&dev->matrix_wait_queue);
   }
   return IRQ_HANDLED;
 }
@@ -116,8 +118,6 @@ static struct file_operations pcie_fops = {.owner = THIS_MODULE,
 
 // DRIVER OPS
 
-/* Forward declaration for interrupt handler and file operations */
-static irqreturn_t pcie_interrupt_handler(int irq, void *dev_id);
 extern struct file_operations pcie_fops;
 
 /* Helper: Enable PCI device and request BAR regions */
@@ -220,6 +220,18 @@ err_free_irq_vectors:
   return ret;
 }
 
+/*static unsigned int pcie_poll(struct file *file, poll_table *wait) {
+  struct pcie_dev *pcie = file->private_data;
+  unsigned int mask = 0;
+
+  poll_wait(file, &pcie->matrix_wait_queue, wait);
+
+  if (completion_done(&pcie->matrix_op_done))
+    mask |= POLLIN | POLLRDNORM;
+
+  return mask;
+}*/
+
 /* Helper: Set up character device and sysfs entries */
 static int pcie_setup_chrdev(struct pcie_dev *dev) {
   int ret;
@@ -303,7 +315,12 @@ static int pcie_probe(struct pci_dev *pdev, const struct pci_device_id *id) {
   if (!dev)
     return -ENOMEM;
 
-  atomic_set(&dev->dma_in_progress, 0);
+  // init_waitqueue_head(&dev->matrix_wait_queue);
+  init_completion(&dev->dma_transfer_done);
+  complete_all(&dev->dma_transfer_done);
+  mutex_init(&dev->dma_lock);
+  // init_completion(&dev->matrix_op_done);
+
   dev->pdev = pdev;
 
   /* Initialize resource flags and pointers */

@@ -2,13 +2,6 @@
 #include <linux/delay.h>
 #include <linux/pci.h>
 
-static DEFINE_MUTEX(dma_lock);
-void block_until_dma_complete(atomic_t *dma_in_progress) {
-  while (atomic_read(dma_in_progress)) {
-    udelay(5);
-  }
-}
-
 void trigger_dma(mmio_base dma_reg_base, dma_reg_addr_t status_addr,
                  dma_reg_addr_t ctrl_addr) {
   // Clear stop bit
@@ -22,19 +15,17 @@ void trigger_dma(mmio_base dma_reg_base, dma_reg_addr_t status_addr,
 }
 
 void execute_dma_transfer(transfer_type_t transfer_type, mmio_base dma_regs,
-                          atomic_t *dma_in_progress) {
+                          struct completion *dma_transfer_complete) {
 
   dma_reg_addr_t ctrl_addr = transfer_type.is_h2c ? H2C_CTRL : C2H_CTRL;
   dma_reg_addr_t status_addr = transfer_type.is_h2c ? H2C_STATUS : C2H_STATUS;
 
-  block_until_dma_complete(dma_in_progress);
-
-  // Must be unset by interrupt handler
-  atomic_set(dma_in_progress, 1);
+  wait_for_completion(dma_transfer_complete);
+  reinit_completion(dma_transfer_complete);
 
   trigger_dma(dma_regs, status_addr, ctrl_addr);
 
-  block_until_dma_complete(dma_in_progress);
+  wait_for_completion(dma_transfer_complete);
 
   write_dma_reg(dma_regs, ctrl_addr, 0);
 }
@@ -88,11 +79,11 @@ size_t dma_write(struct pcie_dev *pcie, const char __user *buf, size_t count,
 
   *desc = create_descriptor(H2C, pcie->dma_handle, *ppos, count);
 
-  mutex_lock(&dma_lock);
+  mutex_lock(&pcie->dma_lock);
 
-  block_until_dma_complete(&pcie->dma_in_progress);
+  wait_for_completion(&pcie->dma_transfer_done);
   if (copy_from_user(pcie->dma_buffer, buf, count)) {
-    mutex_unlock(&dma_lock);
+    mutex_unlock(&pcie->dma_lock);
     dev_err(pcie->device, "Unable to copy buffer to userspace");
     dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
     return -EFAULT;
@@ -102,10 +93,10 @@ size_t dma_write(struct pcie_dev *pcie, const char __user *buf, size_t count,
 
   set_dma_descriptor_addr(H2C, pcie->bar1_base, dma_desc_phys);
 
-  execute_dma_transfer(H2C, pcie->bar1_base, &pcie->dma_in_progress);
+  execute_dma_transfer(H2C, pcie->bar1_base, &pcie->dma_transfer_done);
 
   *ppos += count;
-  mutex_unlock(&dma_lock);
+  mutex_unlock(&pcie->dma_lock);
   dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
 
   return count;
@@ -127,24 +118,24 @@ size_t dma_read(struct pcie_dev *pcie, char __user *buf, size_t count,
 
   *desc = create_descriptor(C2H, pcie->dma_handle, *ppos, count);
 
-  mutex_lock(&dma_lock);
+  mutex_lock(&pcie->dma_lock);
 
   set_dma_descriptor_addr(C2H, pcie->bar1_base, dma_desc_phys);
 
-  execute_dma_transfer(C2H, pcie->bar1_base, &pcie->dma_in_progress);
+  execute_dma_transfer(C2H, pcie->bar1_base, &pcie->dma_transfer_done);
 
   dma_sync_single_for_cpu(&pcie->pdev->dev, pcie->dma_handle, count,
                           DMA_FROM_DEVICE);
 
   if (copy_to_user(buf, pcie->dma_buffer, count)) {
     dev_err(pcie->device, "Unable to copy buffer to userspace");
-    mutex_unlock(&dma_lock);
+    mutex_unlock(&pcie->dma_lock);
     dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
     return -EFAULT;
   }
 
   *ppos += count;
-  mutex_unlock(&dma_lock);
+  mutex_unlock(&pcie->dma_lock);
   dma_free_coherent(&pcie->pdev->dev, sizeof(*desc), desc, dma_desc_phys);
 
   return count;
