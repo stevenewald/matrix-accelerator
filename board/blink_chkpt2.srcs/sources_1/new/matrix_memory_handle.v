@@ -22,7 +22,7 @@
 
 
 module matrix_memory_handle #(
-    parameter DIM = 3,
+    parameter DIM = 3, // how large is each contiguous matrix
     parameter STATUS_ADDR = 32'h0
     ) (
     output reg axi_start,
