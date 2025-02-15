@@ -62,7 +62,7 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   mst_agent = new("master vip agent",dut.design_2_i.axi_vip_1.inst.IF);
   mst_agent.start_master(); 
   
-  for(int i = 0; i < 512; i++) begin
+  for(int i = 0; i < 72; i++) begin
       mtestWID = $urandom_range(0,(1<<(0)-1)); 
       mtestWADDR = 64'h4 + i*4;
       mtestWBurstLength = 0;

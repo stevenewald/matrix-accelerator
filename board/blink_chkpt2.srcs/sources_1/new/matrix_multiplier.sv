@@ -29,7 +29,7 @@ module matrix_multiplier    #(
     input wire aresetn,
     
     output reg [2:0] matrix_command,
-    output reg [SYS_DIM*SYS_DIM-1:0] matrix_num,
+    output reg [31:0] matrix_num,
     input wire [31:0] status_read_data,
     input wire [SYS_DIM*SYS_DIM-1:0][31:0] matrix_read_data,
     output reg [SYS_DIM*SYS_DIM-1:0][31:0] matrix_write_data,
@@ -139,7 +139,7 @@ always @(posedge aclk or negedge aresetn) begin
                     mat_b <= matrix_read_data;
                     current_state <= S_COMPUTE;
                 end else begin
-                    matrix_num <= TILE_SPAN*sub_tile_num + (output_tile_num % TILE_SPAN) + INPUT_DIM;
+                    matrix_num <= TILE_SPAN*sub_tile_num + (output_tile_num % TILE_SPAN) + TILE_SPAN*TILE_SPAN;
                     matrix_command <= MHS_READ_MATRIX_B;
                 end
             end
