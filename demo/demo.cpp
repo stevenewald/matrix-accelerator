@@ -124,8 +124,12 @@ bool verify_result(const large_matrix &a, const large_matrix &b,
 large_matrix transform_into_input(const large_matrix &input) {
   large_matrix res;
 
-  for (int i = 0; i < 81; ++i) {
-    res[i] = input[(i / 27) * 18 + (i / 9) * 3 + ((i % 9) / 3) * 9 + i % 3];
+  for (int i = 0; i < 9; ++i) {
+    for (int j = 0; j < 9; ++j) {
+      int tileIndex = (i / 3) * 3 + (j / 3);
+      int indexInTile = (i % 3) * 3 + (j % 3);
+      res[tileIndex * 9 + indexInTile] = input[i * 9 + j];
+    }
   }
 
   return res;
@@ -134,8 +138,12 @@ large_matrix transform_into_input(const large_matrix &input) {
 large_matrix transform_into_output(const large_matrix &input) {
   large_matrix res;
 
-  for (int i = 0; i < 81; ++i) {
-    res[(i / 27) * 18 + (i / 9) * 3 + ((i % 9) / 3) * 9 + i % 3] = input[i];
+  for (int i = 0; i < 9; ++i) {
+    for (int j = 0; j < 9; ++j) {
+      int tileIndex = (i / 3) * 3 + (j / 3);
+      int indexInTile = (i % 3) * 3 + (j % 3);
+      res[i * 9 + j] = input[tileIndex * 9 + indexInTile];
+    }
   }
 
   return res;
