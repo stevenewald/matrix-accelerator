@@ -9,4 +9,4 @@ tasks:
   test:
     aliases: [t]
     cmds:
-      - g++ demo.cpp -o demo && sudo ./demo; sudo dmesg | tail -n 5
+      - g++ demo.cpp -o demo && sudo ./demo #; sudo dmesg | tail -n 5
