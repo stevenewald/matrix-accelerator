@@ -21,7 +21,8 @@
 
 
 module matrix_master #(
-    parameter DIM = 3
+    parameter SYS_DIM = 4,
+    parameter INPUT_DIM = 16
     ) (
     input wire axi_clk,
     input wire axi_rst_n,
@@ -39,14 +40,14 @@ module matrix_master #(
     
     wire matrix_done;
     wire [2:0] matrix_command;
-    wire [DIM*DIM-1:0][31:0] matrix_write_data;
-    wire [DIM*DIM-1:0][31:0] matrix_read_data;
+    wire [SYS_DIM*SYS_DIM-1:0][31:0] matrix_write_data;
+    wire [SYS_DIM*SYS_DIM-1:0][31:0] matrix_read_data;
     wire [31:0] status_read_data;
     
-    wire [DIM*DIM-1:0] matrix_num;
+    wire [SYS_DIM*SYS_DIM-1:0] matrix_num;
     
     matrix_memory_handle #(
-    .DIM(DIM)) matrix_handle (
+    .DIM(SYS_DIM)) matrix_handle (
     .axi_start(axi_start),
     .axi_write(axi_write),
     .axi_addr(axi_addr),
@@ -65,7 +66,8 @@ module matrix_master #(
     .matrix_read_data(matrix_read_data));
     
     matrix_multiplier #(
-        .DIM(DIM)) multiplier (
+        .SYS_DIM(SYS_DIM),
+        .INPUT_DIM(INPUT_DIM)) multiplier (
         .aclk(axi_clk),
         .aresetn(axi_rst_n),
         .matrix_command(matrix_command),
