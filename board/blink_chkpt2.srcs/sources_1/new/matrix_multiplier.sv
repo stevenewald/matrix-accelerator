@@ -40,12 +40,14 @@ module matrix_multiplier    #(
     localparam S_IDLE      = 4'd0,
            S_CHECK_STATUS    = 4'd1,
            S_DECIDE        = 4'd2,
-           S_READ_A      = 4'd3,
-           S_READ_B     = 4'd8,
-           S_COMPUTE       = 4'd4,
-           S_WRITE_RESULTS = 4'd5,
-           S_WRITE_STATUS    = 4'd6,
-           S_INTERRUPT     = 4'd7;
+           S_START_TILE    = 4'd3,
+           S_READ_A      = 4'd4,
+           S_READ_B     = 4'd5,
+           S_COMPUTE       = 4'd6,
+           S_COMPLETE_TILE  = 4'd7,
+           S_WRITE_RESULTS = 4'd8,
+           S_WRITE_STATUS    = 4'd9,
+           S_INTERRUPT     = 4'd10;
     
 reg [3:0] current_state;
 
@@ -54,6 +56,9 @@ reg [8:0][31:0] mat_b;
 
 reg start_mul;
 wire mul_done;
+
+reg [3:0] output_tile_num;
+reg [1:0] sub_tile_num;
 
 reg accumulate;
 
@@ -79,6 +84,8 @@ always @(posedge aclk or negedge aresetn) begin
         accumulate <= 0;
         matrix_num <= 0;
         matrix_command <= MHS_IDLE;
+        output_tile_num <= 0;
+        sub_tile_num <= 0;
         
         for (int init = 0; init < 9; init = init + 1) begin
             mat_a[init] <= 32'h0;
@@ -103,7 +110,17 @@ always @(posedge aclk or negedge aresetn) begin
 
             // Evaluate data from 0x10
             S_DECIDE: begin
-                current_state <= (status_read_data == 32'd1) ? S_READ_A : S_CHECK_STATUS;
+                current_state <= (status_read_data == 32'd1) ? S_START_TILE : S_CHECK_STATUS;
+            end
+            
+            S_START_TILE: begin
+                if(output_tile_num==9) begin
+                    output_tile_num <= 0;
+                    current_state <= S_WRITE_STATUS;
+                end else begin
+                    accumulate <= 1;
+                    current_state <= S_READ_A;
+                end
             end
 
             // Read from 0x0 -> reg_A
@@ -112,7 +129,7 @@ always @(posedge aclk or negedge aresetn) begin
                     mat_a <= matrix_read_data;
                     current_state <= S_READ_B;
                 end else begin
-                    matrix_num <= 0;
+                    matrix_num <= 3*(output_tile_num/3)+sub_tile_num;
                     matrix_command <= MHS_READ_MATRIX_A;
                 end
             end
@@ -122,7 +139,7 @@ always @(posedge aclk or negedge aresetn) begin
                     mat_b <= matrix_read_data;
                     current_state <= S_COMPUTE;
                 end else begin
-                    matrix_num <= 1;
+                    matrix_num <= 3*sub_tile_num + (output_tile_num % 3) + 3*3;
                     matrix_command <= MHS_READ_MATRIX_B;
                 end
             end
@@ -130,19 +147,29 @@ always @(posedge aclk or negedge aresetn) begin
             S_COMPUTE: begin
                 if(mul_done) begin
                     start_mul <= 0;
-                    current_state <= S_WRITE_RESULTS;
+                    current_state <= S_COMPLETE_TILE;
                 end else begin
                     start_mul <= 1;
-                    accumulate <= 1;
+                end
+            end
+            
+            S_COMPLETE_TILE: begin
+                if(sub_tile_num==2) begin
+                    sub_tile_num <= 0;
+                    output_tile_num <= output_tile_num + 1;
+                    current_state <= S_WRITE_RESULTS;
+                end else begin
+                    sub_tile_num <= sub_tile_num + 1;
+                    current_state <= S_READ_A;
                 end
             end
 
             S_WRITE_RESULTS: begin
                 if(matrix_done) begin
-                    current_state <= S_WRITE_STATUS;
+                    current_state <= S_START_TILE;
                     accumulate <= 0; // we've written results, can reset now
                 end else begin
-                    matrix_num <= 2;
+                    matrix_num <= (output_tile_num-1) + (3*3*2); // offset with others
                     matrix_command <= MHS_WRITE_RESULT;
                 end
             end
