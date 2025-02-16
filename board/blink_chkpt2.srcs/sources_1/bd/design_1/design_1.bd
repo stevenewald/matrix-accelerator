@@ -465,7 +465,7 @@
         "inst_hier_path": "axi_bram_ctrl_0",
         "parameters": {
           "PROTOCOL": {
-            "value": "AXI4"
+            "value": "AXI4LITE"
           },
           "SINGLE_PORT_BRAM": {
             "value": "1"
@@ -594,8 +594,8 @@
       "proc_sys_reset_0_peripheral_aresetn": {
         "ports": [
           "proc_sys_reset_0/peripheral_aresetn",
-          "axi_bram_ctrl_0/s_axi_aresetn",
-          "aresetn"
+          "aresetn",
+          "axi_bram_ctrl_0/s_axi_aresetn"
         ]
       },
       "refclk_1": {
@@ -614,10 +614,10 @@
       "xdma_0_axi_aclk": {
         "ports": [
           "xdma_0/axi_aclk",
-          "axi_bram_ctrl_0/s_axi_aclk",
           "smartconnect_0/aclk",
           "proc_sys_reset_0/slowest_sync_clk",
-          "axi_clk"
+          "axi_clk",
+          "axi_bram_ctrl_0/s_axi_aclk"
         ]
       },
       "xdma_0_axi_aresetn": {
@@ -668,15 +668,6 @@
               "SEG_axi_bram_ctrl_0_Mem0": {
                 "address_block": "/axi_bram_ctrl_0/S_AXI/Mem0",
                 "offset": "0x0000000000000000",
-                "range": "8K"
-              }
-            }
-          },
-          "M_AXI_LITE": {
-            "segments": {
-              "SEG_axi_bram_ctrl_0_Mem0": {
-                "address_block": "/axi_bram_ctrl_0/S_AXI/Mem0",
-                "offset": "0x00000000",
                 "range": "8K"
               }
             }
