@@ -36,7 +36,7 @@ preplace netloc smartconnect_0_M00_AXI 1 2 1 N 350
 preplace netloc xdma_0_M_AXI 1 1 1 360 340n
 preplace netloc xdma_0_pcie_mgt 1 1 4 NJ 460 NJ 460 NJ 460 NJ
 levelinfo -pg 1 -10 180 520 810 1120 1320
-pagesize -pg 1 -db -bbox -sgen -190 -10 1520 740
+pagesize -pg 1 -db -bbox -sgen -190 -10 1530 740
 "
 }
 {
