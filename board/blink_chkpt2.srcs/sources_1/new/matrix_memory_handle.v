@@ -38,7 +38,7 @@ module matrix_memory_handle #(
     input wire clk,
     input wire rstn,
     
-    input wire [$clog2(3*(MAX_INPUT_SIZE*MAX_INPUT_SIZE)/(DIM*DIM)+1)-1:0] matrix_num,
+    input wire [MATRIX_NUM_NBITS-1:0] matrix_num,
     input wire [DIM*DIM-1:0][31:0] matrix_write_data,
     output reg [DIM*DIM-1:0][31:0] matrix_read_data,
     output reg [31:0] status_read_data,

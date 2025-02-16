@@ -496,7 +496,7 @@
             "value": "true"
           },
           "axilite_master_size": {
-            "value": "32"
+            "value": "64"
           },
           "axist_bypass_en": {
             "value": "false"
@@ -696,7 +696,7 @@
               "SEG_axi_bram_ctrl_0_Mem0": {
                 "address_block": "/axi_bram_ctrl_0/S_AXI/Mem0",
                 "offset": "0x00000000",
-                "range": "32K"
+                "range": "64K"
               }
             }
           }
@@ -709,7 +709,7 @@
               "SEG_axi_bram_ctrl_0_Mem0": {
                 "address_block": "/axi_bram_ctrl_0/S_AXI/Mem0",
                 "offset": "0x0000000000000000",
-                "range": "32K"
+                "range": "64K"
               }
             }
           },
@@ -718,7 +718,7 @@
               "SEG_axi_bram_ctrl_0_Mem0": {
                 "address_block": "/axi_bram_ctrl_0/S_AXI/Mem0",
                 "offset": "0x00000000",
-                "range": "32K"
+                "range": "64K"
               }
             }
           }

@@ -19,12 +19,12 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1,018.092591 us"></ZoomStartTime>
-      <ZoomEndTime time="1,058.613865 us"></ZoomEndTime>
-      <Cursor1Time time="1,048.781272 us"></Cursor1Time>
+      <ZoomStartTime time="0.000000 us"></ZoomStartTime>
+      <ZoomEndTime time="47.771316 us"></ZoomEndTime>
+      <Cursor1Time time="15.002562 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="284"></NameColumnWidth>
+      <NameColumnWidth column_width="280"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="7" />
@@ -91,8 +91,8 @@
          <obj_property name="ObjectShortName">matrix_command[2:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/multiplier/matrix_num" type="array">
-         <obj_property name="ElementShortName">matrix_num[31:0]</obj_property>
-         <obj_property name="ObjectShortName">matrix_num[31:0]</obj_property>
+         <obj_property name="ElementShortName">matrix_num[11:0]</obj_property>
+         <obj_property name="ObjectShortName">matrix_num[11:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/multiplier/status_read_data" type="array">
          <obj_property name="ElementShortName">status_read_data[31:0]</obj_property>
@@ -169,18 +169,18 @@
          <obj_property name="ObjectShortName">mul_done</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/multiplier/tile_span" type="array">
-         <obj_property name="ElementShortName">tile_span[3:0]</obj_property>
-         <obj_property name="ObjectShortName">tile_span[3:0]</obj_property>
+         <obj_property name="ElementShortName">tile_span[5:0]</obj_property>
+         <obj_property name="ObjectShortName">tile_span[5:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/multiplier/output_tile_num" type="array">
-         <obj_property name="ElementShortName">output_tile_num[6:0]</obj_property>
-         <obj_property name="ObjectShortName">output_tile_num[6:0]</obj_property>
+         <obj_property name="ElementShortName">output_tile_num[10:0]</obj_property>
+         <obj_property name="ObjectShortName">output_tile_num[10:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/multiplier/sub_tile_num" type="array">
-         <obj_property name="ElementShortName">sub_tile_num[3:0]</obj_property>
-         <obj_property name="ObjectShortName">sub_tile_num[3:0]</obj_property>
+         <obj_property name="ElementShortName">sub_tile_num[5:0]</obj_property>
+         <obj_property name="ObjectShortName">sub_tile_num[5:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/multiplier/accumulate" type="logic">
          <obj_property name="ElementShortName">accumulate</obj_property>
@@ -297,8 +297,8 @@
          <obj_property name="ObjectShortName">rstn</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/matrix_handle/matrix_num" type="array">
-         <obj_property name="ElementShortName">matrix_num[6:0]</obj_property>
-         <obj_property name="ObjectShortName">matrix_num[6:0]</obj_property>
+         <obj_property name="ElementShortName">matrix_num[11:0]</obj_property>
+         <obj_property name="ObjectShortName">matrix_num[11:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/matrix_handle/matrix_write_data" type="array">

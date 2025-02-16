@@ -191,7 +191,7 @@
             "V3": {
                 "VT": "AC",
                 "BA": "0x00000000",
-                "HA": "0x00007FFF",
+                "HA": "0x0000FFFF",
                 "BP": "C_S_AXI_BASEADDR",
                 "HP": "C_S_AXI_HIGHADDR",
                 "MA": "axi_in",
@@ -209,7 +209,7 @@
             "V4": {
                 "VT": "AC",
                 "BA": "0x0000000000000000",
-                "HA": "0x0000000000007FFF",
+                "HA": "0x000000000000FFFF",
                 "BP": "C_S_AXI_BASEADDR",
                 "HP": "C_S_AXI_HIGHADDR",
                 "MA": "M_AXI",
@@ -227,7 +227,7 @@
             "V5": {
                 "VT": "AC",
                 "BA": "0x00000000",
-                "HA": "0x00007FFF",
+                "HA": "0x0000FFFF",
                 "BP": "C_S_AXI_BASEADDR",
                 "HP": "C_S_AXI_HIGHADDR",
                 "MA": "M_AXI_LITE",

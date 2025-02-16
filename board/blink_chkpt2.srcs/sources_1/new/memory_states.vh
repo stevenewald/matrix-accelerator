@@ -1,7 +1,10 @@
 `ifndef STATE_DEFS_V
 `define STATE_DEFS_V
 
-parameter MAX_INPUT_SIZE = 20;
+parameter SYS_DIM        = 5;
+parameter MAX_INPUT_SIZE = 70;
+
+parameter MATRIX_NUM_NBITS = $clog2(3*(MAX_INPUT_SIZE*MAX_INPUT_SIZE)/(SYS_DIM*SYS_DIM)+1);
 
 // matrix handle state
 parameter MHS_IDLE          = 3'd0;
