@@ -1,4 +1,5 @@
 #include <array>
+#include <chrono>
 #include <cstdint>
 #include <cstring>
 #include <fcntl.h>
@@ -8,8 +9,10 @@
 #include <sys/poll.h>
 #include <unistd.h>
 
-#define TILE_DIM 2
-#define INPUT_DIM 20
+#define NUM_TRIALS 10
+
+#define TILE_DIM 5
+#define INPUT_DIM 70
 
 #define DEVICE_PATH "/dev/fpga"
 #define PCIE_SET_DMA (_IOW('k', 1, int))
@@ -64,15 +67,24 @@ large_matrix get_large_result(int fd) {
   return res;
 }
 
-bool verify_result(const large_matrix &a, const large_matrix &b,
-                   const large_matrix &res) {
+large_matrix generate_large_result(const large_matrix &a,
+                                   const large_matrix &b) {
+  large_matrix res{};
   for (int row = 0; row < INPUT_DIM; row++) {
     for (int col = 0; col < INPUT_DIM; col++) {
-      int expected = 0;
       for (int k = 0; k < INPUT_DIM; k++) {
-        expected += a[row * INPUT_DIM + k] * b[k * INPUT_DIM + col];
+        res[row * INPUT_DIM + col] +=
+            a[row * INPUT_DIM + k] * b[k * INPUT_DIM + col];
       }
-      if (res[row * INPUT_DIM + col] != expected) {
+    }
+  }
+  return res;
+}
+
+bool verify_result(const large_matrix &a, const large_matrix &b) {
+  for (int row = 0; row < INPUT_DIM; row++) {
+    for (int col = 0; col < INPUT_DIM; col++) {
+      if (a[row * INPUT_DIM + col] != b[row * INPUT_DIM + col]) {
         return false;
       }
     }
@@ -121,6 +133,7 @@ void wait_for_poll(int fd) {
 }
 
 void print_matrix(const large_matrix &matrix) {
+  return;
   for (int i = 0; i < matrix.size(); ++i) {
     if (i % INPUT_DIM == INPUT_DIM - 1)
       std::cout << matrix[i] << "\n";
@@ -137,6 +150,8 @@ int main() {
     return 1;
   }
 
+  std::cout << "Testing random " << INPUT_DIM << "x" << INPUT_DIM << " mul\n";
+
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<int> dist(0, 500);
@@ -144,36 +159,73 @@ int main() {
   large_matrix mat_a;
   large_matrix mat_b;
 
-  for (int i = 0; i < INPUT_DIM * INPUT_DIM; i++) {
-    mat_a[i] = dist(gen);
-    mat_b[i] = dist(gen);
-  }
+  std::chrono::duration<double, std::milli> fpga_dur_mem{};
+  std::chrono::duration<double, std::milli> fpga_dur_exec{};
+  std::chrono::duration<double, std::milli> cpu_dur{};
 
-  large_matrix mat_a_t = transform_into_input(mat_a);
-  large_matrix mat_b_t = transform_into_input(mat_b);
+  for (int j = 0; j < NUM_TRIALS; ++j) {
+    for (int i = 0; i < INPUT_DIM * INPUT_DIM; i++) {
+      mat_a[i] = dist(gen);
+      mat_b[i] = dist(gen);
+    }
 
-  print_matrix(mat_a_t);
-  print_matrix(mat_b_t);
+    large_matrix mat_a_t = transform_into_input(mat_a);
+    large_matrix mat_b_t = transform_into_input(mat_b);
 
-  if (!write_matrices(fd, mat_a_t, mat_b_t)) {
-    return 1;
-  }
+    print_matrix(mat_a_t);
+    print_matrix(mat_b_t);
 
-  if (!start_mul(fd)) {
-    return 1;
-  }
+    auto mem_start = std::chrono::high_resolution_clock::now();
 
-  wait_for_poll(fd);
+    if (!write_matrices(fd, mat_a_t, mat_b_t)) {
+      return 1;
+    }
 
-  auto res = get_large_result(fd);
+    if (!start_mul(fd)) {
+      return 1;
+    }
 
-  auto res_t = transform_into_output(res);
-  print_matrix(res);
+    auto mem_end = std::chrono::high_resolution_clock::now();
+    fpga_dur_mem += (mem_end - mem_start);
 
-  if (verify_result(mat_a, mat_b, res_t)) {
-    std::cout << "PASS\n";
-  } else {
-    std::cout << "FAIL\n";
+    wait_for_poll(fd);
+    auto exec_end = std::chrono::high_resolution_clock::now();
+    fpga_dur_exec += exec_end - mem_end;
+
+    auto res = get_large_result(fd);
+    mem_end = std::chrono::high_resolution_clock::now();
+
+    fpga_dur_mem += mem_end - exec_end;
+
+    auto res_t = transform_into_output(res);
+
+    print_matrix(res);
+
+    auto cpu_start = std::chrono::high_resolution_clock::now();
+    auto expected = generate_large_result(mat_a, mat_b);
+    auto cpu_end = std::chrono::high_resolution_clock::now();
+    cpu_dur += (cpu_end - cpu_start);
+
+    if (!verify_result(expected, res_t)) {
+      std::cout << "FAIL\n";
+      break;
+    }
+    if (j == NUM_TRIALS - 1) {
+      std::cout << "PASS.\n\n";
+      /*std::cout << "FPGA exec duration: " << fpga_dur_exec.count() /
+      NUM_TRIALS
+                << "ms\n";
+      std::cout << "FPGA DMA duration: " << fpga_dur_mem.count() / NUM_TRIALS
+                << "ms\n";*/
+      std::cout << "FPGA exec duration: "
+                << (fpga_dur_exec.count()) / NUM_TRIALS << "ms\n";
+      std::cout << "CPU exec duration: " << cpu_dur.count() / NUM_TRIALS
+                << "ms\n";
+
+      std::cout << "\n";
+      std::cout << "Speedup: " << cpu_dur.count() / (fpga_dur_exec).count()
+                << "\n";
+    }
   }
 
   close(fd);
