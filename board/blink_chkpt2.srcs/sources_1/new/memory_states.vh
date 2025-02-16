@@ -1,5 +1,8 @@
 `ifndef STATE_DEFS_V
 `define STATE_DEFS_V
+
+parameter MAX_INPUT_SIZE = 20;
+
 // matrix handle state
 parameter MHS_IDLE          = 3'd0;
 parameter MHS_READ_STATUS   = 3'd1;

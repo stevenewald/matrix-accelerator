@@ -38,7 +38,7 @@ module matrix_memory_handle #(
     input wire clk,
     input wire rstn,
     
-    input wire [DIM*DIM-1:0] matrix_num,
+    input wire [$clog2((MAX_INPUT_SIZE*MAX_INPUT_SIZE)/(DIM*DIM)+1)-1:0] matrix_num,
     input wire [DIM*DIM-1:0][31:0] matrix_write_data,
     output reg [DIM*DIM-1:0][31:0] matrix_read_data,
     output reg [31:0] status_read_data,
@@ -47,7 +47,7 @@ module matrix_memory_handle #(
     );
     
     reg [2:0] state;
-    reg [3:0] arg_num;
+    reg [$clog2(DIM*DIM+1)-1:0] arg_num;
     
     wire [31:0] matrix_offset = DIM*DIM*matrix_num + 1; //+1 for status_addr
     

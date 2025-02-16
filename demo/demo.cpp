@@ -8,8 +8,8 @@
 #include <sys/poll.h>
 #include <unistd.h>
 
-#define TILE_DIM 4
-#define INPUT_DIM 16
+#define TILE_DIM 5
+#define INPUT_DIM 15
 
 #define DEVICE_PATH "/dev/fpga"
 #define PCIE_SET_DMA (_IOW('k', 1, int))
@@ -22,7 +22,7 @@ void set_write_mode(int fd, int dma_on) {
 
 bool start_mul(int fd) {
   set_write_mode(fd, false);
-  int arg = 1;
+  int arg = INPUT_DIM;
   if (pwrite(fd, &arg, 1 * sizeof(int), 0) != 1 * sizeof(int)) {
     std::cerr << "matrix start mul failed" << std::endl;
     return false;
@@ -84,9 +84,9 @@ large_matrix transform_into_input(const large_matrix &input) {
 
   for (int i = 0; i < INPUT_DIM; ++i) {
     for (int j = 0; j < INPUT_DIM; ++j) {
-      int tileIndex = (i / TILE_DIM) * TILE_DIM + (j / TILE_DIM);
+      int tileIndex = (i / TILE_DIM) * (INPUT_DIM/TILE_DIM) + (j / TILE_DIM);
       int indexInTile = (i % TILE_DIM) * TILE_DIM + (j % TILE_DIM);
-      res[tileIndex * INPUT_DIM + indexInTile] = input[i * INPUT_DIM + j];
+      res[tileIndex * (TILE_DIM*TILE_DIM) + indexInTile] = input[i * INPUT_DIM + j];
     }
   }
 
@@ -98,9 +98,9 @@ large_matrix transform_into_output(const large_matrix &input) {
 
   for (int i = 0; i < INPUT_DIM; ++i) {
     for (int j = 0; j < INPUT_DIM; ++j) {
-      int tileIndex = (i / TILE_DIM) * TILE_DIM + (j / TILE_DIM);
+      int tileIndex = (i / TILE_DIM) * (INPUT_DIM/TILE_DIM) + (j / TILE_DIM);
       int indexInTile = (i % TILE_DIM) * TILE_DIM + (j % TILE_DIM);
-      res[i * INPUT_DIM + j] = input[tileIndex * INPUT_DIM + indexInTile];
+      res[i * INPUT_DIM + j] = input[tileIndex * (TILE_DIM*TILE_DIM) + indexInTile];
     }
   }
 
@@ -119,9 +119,10 @@ void wait_for_poll(int fd) {
 
 void print_matrix(const large_matrix &matrix) {
   for (int i = 0; i < matrix.size(); ++i) {
-    if (i % 9 == 0)
-      std::cout << "\n";
-    std::cout << matrix[i] << " ";
+    if (i % INPUT_DIM == INPUT_DIM - 1)
+      std::cout << matrix[i] << "\n";
+    else
+      std::cout << matrix[i] << " ";
   }
   std::cout << "\n\n";
 }
@@ -140,13 +141,16 @@ int main() {
   large_matrix mat_a;
   large_matrix mat_b;
 
-  for (int i = 0; i < INPUT_DIM*INPUT_DIM; i++) {
+  for (int i = 0; i < INPUT_DIM * INPUT_DIM; i++) {
     mat_a[i] = dist(gen);
     mat_b[i] = dist(gen);
   }
 
   large_matrix mat_a_t = transform_into_input(mat_a);
   large_matrix mat_b_t = transform_into_input(mat_b);
+
+  print_matrix(mat_a_t);
+  print_matrix(mat_b_t);
 
   if (!write_matrices(fd, mat_a_t, mat_b_t)) {
     return 1;
@@ -161,7 +165,6 @@ int main() {
   auto res = get_large_result(fd);
 
   auto res_t = transform_into_output(res);
-
   print_matrix(res_t);
 
   if (verify_result(mat_a, mat_b, res_t)) {
