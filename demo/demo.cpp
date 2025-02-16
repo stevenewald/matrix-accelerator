@@ -12,8 +12,16 @@
 #define INPUT_DIM 15
 
 #define DEVICE_PATH "/dev/fpga"
+#define PCIE_SET_DMA (_IOW('k', 1, int))
+
+void set_write_mode(int fd, int dma_on) {
+  if (ioctl(fd, PCIE_SET_DMA, &dma_on) < 0) {
+    perror("ioctl failed");
+  }
+}
 
 bool start_mul(int fd) {
+  set_write_mode(fd, false);
   int arg = INPUT_DIM;
   if (pwrite(fd, &arg, 1 * sizeof(int), 0) != 1 * sizeof(int)) {
     std::cerr << "matrix start mul failed" << std::endl;
@@ -25,6 +33,7 @@ bool start_mul(int fd) {
 using large_matrix = std::array<uint32_t, INPUT_DIM * INPUT_DIM>;
 
 bool write_matrices(int fd, const large_matrix &a, const large_matrix &b) {
+  set_write_mode(fd, true);
   std::array<uint32_t, INPUT_DIM * INPUT_DIM * 2> args;
   std::copy(a.begin(), a.end(), args.begin());
   std::copy(b.begin(), b.end(), args.begin() + INPUT_DIM * INPUT_DIM);
@@ -41,6 +50,7 @@ bool write_matrices(int fd, const large_matrix &a, const large_matrix &b) {
 }
 
 large_matrix get_large_result(int fd) {
+  set_write_mode(fd, true);
   std::array<uint32_t, INPUT_DIM * INPUT_DIM> res;
   off_t offset = 4 * (1 + INPUT_DIM * INPUT_DIM * 2);
   ssize_t bytes_read =
