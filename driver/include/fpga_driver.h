@@ -5,7 +5,7 @@
 #define DEVICE_NAME "fpga"
 #define VENDOR_ID 0x10ee
 #define DEVICE_ID 0x7021
-#define DMA_BUFFER_SIZE 8192
+#define DMA_BUFFER_SIZE 65536
 
 typedef void __iomem *mmio_base;
 
