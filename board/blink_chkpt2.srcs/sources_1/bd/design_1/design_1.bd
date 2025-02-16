@@ -381,7 +381,7 @@
             "value": "1"
           },
           "NUM_SI": {
-            "value": "3"
+            "value": "2"
           }
         },
         "interface_ports": {
@@ -411,22 +411,6 @@
               },
               "NUM_WRITE_OUTSTANDING": {
                 "value": "16"
-              }
-            },
-            "bridges": [
-              "M00_AXI"
-            ]
-          },
-          "S02_AXI": {
-            "mode": "Slave",
-            "vlnv_bus_definition": "xilinx.com:interface:aximm:1.0",
-            "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
-            "parameters": {
-              "NUM_READ_OUTSTANDING": {
-                "value": "1"
-              },
-              "NUM_WRITE_OUTSTANDING": {
-                "value": "1"
               }
             },
             "bridges": [
@@ -495,17 +479,8 @@
         "xci_path": "ip\\design_1_xdma_0_0\\design_1_xdma_0_0.xci",
         "inst_hier_path": "xdma_0",
         "parameters": {
-          "axil_master_64bit_en": {
-            "value": "false"
-          },
           "axilite_master_en": {
-            "value": "true"
-          },
-          "axilite_master_scale": {
-            "value": "Kilobytes"
-          },
-          "axilite_master_size": {
-            "value": "16"
+            "value": "false"
           },
           "axist_bypass_en": {
             "value": "false"
@@ -547,16 +522,6 @@
               "minimum": "0x00000000",
               "maximum": "0xFFFFFFFFFFFFFFFF",
               "width": "64"
-            }
-          },
-          "M_AXI_LITE": {
-            "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
-            "mode": "Master",
-            "address_space_ref": "M_AXI_LITE",
-            "base_address": {
-              "minimum": "0x00000000",
-              "maximum": "0xFFFFFFFF",
-              "width": "32"
             }
           }
         },
@@ -604,12 +569,6 @@
         "interface_ports": [
           "xdma_0/M_AXI",
           "smartconnect_0/S01_AXI"
-        ]
-      },
-      "xdma_0_M_AXI_LITE": {
-        "interface_ports": [
-          "xdma_0/M_AXI_LITE",
-          "smartconnect_0/S02_AXI"
         ]
       },
       "xdma_0_pcie_mgt": {
