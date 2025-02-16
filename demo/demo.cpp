@@ -8,8 +8,8 @@
 #include <sys/poll.h>
 #include <unistd.h>
 
-#define TILE_DIM 5
-#define INPUT_DIM 15
+#define TILE_DIM 2
+#define INPUT_DIM 20
 
 #define DEVICE_PATH "/dev/fpga"
 #define PCIE_SET_DMA (_IOW('k', 1, int))
@@ -54,9 +54,10 @@ large_matrix get_large_result(int fd) {
   std::array<uint32_t, INPUT_DIM * INPUT_DIM> res;
   off_t offset = 4 * (1 + INPUT_DIM * INPUT_DIM * 2);
   ssize_t bytes_read =
-      pread(fd, res.data(), res.size() * sizeof(uint32_t) - 1, offset);
-  if (bytes_read < 0) {
-    std::cerr << "pread failed" << std::endl;
+      pread(fd, res.data(), res.size() * sizeof(uint32_t), offset);
+  if (bytes_read != res.size() * sizeof(uint32_t)) {
+    std::cerr << "pread failed, read " << bytes_read << " bytes instead of "
+              << INPUT_DIM * INPUT_DIM * 4 - 1 << std::endl;
     close(fd);
     throw std::runtime_error("Failed to read result large_matrix");
   }
@@ -84,9 +85,10 @@ large_matrix transform_into_input(const large_matrix &input) {
 
   for (int i = 0; i < INPUT_DIM; ++i) {
     for (int j = 0; j < INPUT_DIM; ++j) {
-      int tileIndex = (i / TILE_DIM) * (INPUT_DIM/TILE_DIM) + (j / TILE_DIM);
+      int tileIndex = (i / TILE_DIM) * (INPUT_DIM / TILE_DIM) + (j / TILE_DIM);
       int indexInTile = (i % TILE_DIM) * TILE_DIM + (j % TILE_DIM);
-      res[tileIndex * (TILE_DIM*TILE_DIM) + indexInTile] = input[i * INPUT_DIM + j];
+      res[tileIndex * (TILE_DIM * TILE_DIM) + indexInTile] =
+          input[i * INPUT_DIM + j];
     }
   }
 
@@ -98,9 +100,10 @@ large_matrix transform_into_output(const large_matrix &input) {
 
   for (int i = 0; i < INPUT_DIM; ++i) {
     for (int j = 0; j < INPUT_DIM; ++j) {
-      int tileIndex = (i / TILE_DIM) * (INPUT_DIM/TILE_DIM) + (j / TILE_DIM);
+      int tileIndex = (i / TILE_DIM) * (INPUT_DIM / TILE_DIM) + (j / TILE_DIM);
       int indexInTile = (i % TILE_DIM) * TILE_DIM + (j % TILE_DIM);
-      res[i * INPUT_DIM + j] = input[tileIndex * (TILE_DIM*TILE_DIM) + indexInTile];
+      res[i * INPUT_DIM + j] =
+          input[tileIndex * (TILE_DIM * TILE_DIM) + indexInTile];
     }
   }
 
@@ -165,7 +168,7 @@ int main() {
   auto res = get_large_result(fd);
 
   auto res_t = transform_into_output(res);
-  print_matrix(res_t);
+  print_matrix(res);
 
   if (verify_result(mat_a, mat_b, res_t)) {
     std::cout << "PASS\n";

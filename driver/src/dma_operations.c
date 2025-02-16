@@ -1,4 +1,5 @@
 #include "dma_operations.h"
+#include "fpga_driver.h"
 #include <linux/delay.h>
 #include <linux/pci.h>
 
@@ -115,6 +116,8 @@ size_t dma_read(struct pcie_dev *pcie, char __user *buf, size_t count,
   *desc = create_descriptor(C2H, pcie->dma_handle, *ppos, count);
 
   mutex_lock(&pcie->dma_lock);
+
+  memset(pcie->dma_buffer, 0, DMA_BUFFER_SIZE);
 
   set_dma_descriptor_addr(C2H, pcie->bar1_base, dma_desc_phys);
 
