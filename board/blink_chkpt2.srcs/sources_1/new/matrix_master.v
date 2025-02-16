@@ -21,8 +21,7 @@
 
 
 module matrix_master #(
-    parameter SYS_DIM = 2,
-    parameter INPUT_DIM = 6
+    parameter SYS_DIM = 5
     ) (
     input wire axi_clk,
     input wire axi_rst_n,
@@ -66,8 +65,7 @@ module matrix_master #(
     .matrix_read_data(matrix_read_data));
     
     matrix_multiplier #(
-        .SYS_DIM(SYS_DIM),
-        .INPUT_DIM(INPUT_DIM)) multiplier (
+        .SYS_DIM(SYS_DIM)) multiplier (
         .aclk(axi_clk),
         .aresetn(axi_rst_n),
         .matrix_command(matrix_command),

@@ -22,8 +22,7 @@
 
 
 module matrix_multiplier    #(
-    parameter SYS_DIM,
-    parameter INPUT_DIM
+    parameter SYS_DIM
     ) (
     input wire aclk,
     input wire aresetn,
@@ -58,10 +57,15 @@ reg [SYS_DIM*SYS_DIM-1:0][31:0] mat_b;
 reg start_mul;
 wire mul_done;
 
-localparam int TILE_SPAN = INPUT_DIM/SYS_DIM;
+localparam MAX_TILE_SPAN = MAX_INPUT_SIZE/SYS_DIM;
+localparam BITS_PER_TILE_SPAN = $clog2(MAX_TILE_SPAN+1);
+reg [BITS_PER_TILE_SPAN-1:0] tile_span;
 
-reg [TILE_SPAN:0] output_tile_num;
-reg [TILE_SPAN-1:0] sub_tile_num;
+localparam BITS_PER_OUTPUT_TILE = $clog2(MAX_TILE_SPAN*MAX_TILE_SPAN+1);
+reg [BITS_PER_OUTPUT_TILE-1:0] output_tile_num;
+
+localparam BITS_PER_SUB_TILE = $clog2(MAX_TILE_SPAN);
+reg [BITS_PER_SUB_TILE-1:0] sub_tile_num;
 
 reg accumulate;
 
@@ -89,6 +93,7 @@ always @(posedge aclk or negedge aresetn) begin
         matrix_command <= MHS_IDLE;
         output_tile_num <= 0;
         sub_tile_num <= 0;
+        tile_span <= 0;
         
         for (int init = 0; init < SYS_DIM*SYS_DIM; init = init + 1) begin
             mat_a[init] <= 32'h0;
@@ -110,11 +115,16 @@ always @(posedge aclk or negedge aresetn) begin
             end
 
             S_DECIDE: begin
-                current_state <= (status_read_data == 32'd1) ? S_START_TILE : S_CHECK_STATUS;
+                if(status_read_data == 32'd0) begin
+                    current_state <= S_CHECK_STATUS;
+                end else begin
+                    tile_span <= status_read_data / SYS_DIM;
+                    current_state <= S_START_TILE;
+                end
             end
             
             S_START_TILE: begin
-                if(output_tile_num==TILE_SPAN*TILE_SPAN) begin
+                if(output_tile_num==tile_span*tile_span) begin
                     output_tile_num <= 0;
                     current_state <= S_WRITE_STATUS;
                 end else begin
@@ -129,7 +139,7 @@ always @(posedge aclk or negedge aresetn) begin
                     mat_a <= matrix_read_data;
                     current_state <= S_READ_B;
                 end else begin
-                    matrix_num <= TILE_SPAN*(output_tile_num/TILE_SPAN)+sub_tile_num;
+                    matrix_num <= tile_span*(output_tile_num/tile_span)+sub_tile_num;
                     matrix_command <= MHS_READ_MATRIX_A;
                 end
             end
@@ -139,7 +149,7 @@ always @(posedge aclk or negedge aresetn) begin
                     mat_b <= matrix_read_data;
                     current_state <= S_COMPUTE;
                 end else begin
-                    matrix_num <= TILE_SPAN*sub_tile_num + (output_tile_num % TILE_SPAN) + TILE_SPAN*TILE_SPAN;
+                    matrix_num <= tile_span*sub_tile_num + (output_tile_num % tile_span) + tile_span*tile_span;
                     matrix_command <= MHS_READ_MATRIX_B;
                 end
             end
@@ -154,7 +164,7 @@ always @(posedge aclk or negedge aresetn) begin
             end
             
             S_COMPLETE_TILE: begin
-                if(sub_tile_num==TILE_SPAN-1) begin
+                if(sub_tile_num==tile_span-1) begin
                     sub_tile_num <= 0;
                     output_tile_num <= output_tile_num + 1;
                     current_state <= S_WRITE_RESULTS;
@@ -169,7 +179,7 @@ always @(posedge aclk or negedge aresetn) begin
                     current_state <= S_START_TILE;
                     accumulate <= 0; // we've written results, can reset now
                 end else begin
-                    matrix_num <= (output_tile_num-1) + (INPUT_DIM*2); // offset with others
+                    matrix_num <= (output_tile_num-1) + (tile_span*tile_span*2); // offset with others
                     matrix_command <= MHS_WRITE_RESULT;
                 end
             end
