@@ -30,9 +30,7 @@ module top(
     output [0:0] pci_exp_txp,
     output [0:0] pci_exp_txn
     );
-    
-    localparam DIM = 3;
-      
+
     wire reset = 1;
     wire axi_clk;
     wire axi_rst_n;

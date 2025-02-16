@@ -21,7 +21,7 @@
 
 
 module matrix_master #(
-    parameter SYS_DIM = 5
+    parameter SYS_DIM = 2
     ) (
     input wire axi_clk,
     input wire axi_rst_n,

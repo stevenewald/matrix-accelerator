@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0xFE7F3C87745ABBCA",
+      "boundary_crc": "0xFE7F3C875718E8D3",
       "device": "xc7a35tfgg484-2",
       "gen_directory": "../../../../blink_chkpt2.gen/sources_1/bd/design_1",
       "name": "design_1",
@@ -74,7 +74,7 @@
             "value": "32"
           },
           "FREQ_HZ": {
-            "value": "125000000"
+            "value": "62500000"
           },
           "HAS_BRESP": {
             "value": "1"
@@ -311,7 +311,7 @@
             "value_src": "default_prop"
           },
           "FREQ_HZ": {
-            "value": "125000000"
+            "value": "62500000"
           },
           "FREQ_TOLERANCE_HZ": {
             "value": "0",
@@ -381,7 +381,7 @@
             "value": "1"
           },
           "NUM_SI": {
-            "value": "2"
+            "value": "3"
           }
         },
         "interface_ports": {
@@ -411,6 +411,22 @@
               },
               "NUM_WRITE_OUTSTANDING": {
                 "value": "16"
+              }
+            },
+            "bridges": [
+              "M00_AXI"
+            ]
+          },
+          "S02_AXI": {
+            "mode": "Slave",
+            "vlnv_bus_definition": "xilinx.com:interface:aximm:1.0",
+            "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
+            "parameters": {
+              "NUM_READ_OUTSTANDING": {
+                "value": "1"
+              },
+              "NUM_WRITE_OUTSTANDING": {
+                "value": "1"
               }
             },
             "bridges": [
@@ -473,14 +489,20 @@
         "xci_path": "ip\\design_1_xdma_0_0\\design_1_xdma_0_0.xci",
         "inst_hier_path": "xdma_0",
         "parameters": {
-          "axilite_master_en": {
+          "axil_master_64bit_en": {
             "value": "false"
+          },
+          "axilite_master_en": {
+            "value": "true"
+          },
+          "axilite_master_size": {
+            "value": "32"
           },
           "axist_bypass_en": {
             "value": "false"
           },
           "axisten_freq": {
-            "value": "125"
+            "value": "62.5"
           },
           "cfg_mgmt_if": {
             "value": "false"
@@ -489,7 +511,7 @@
             "value": "true"
           },
           "pf0_device_id": {
-            "value": "7013"
+            "value": "7021"
           },
           "pf0_interrupt_pin": {
             "value": "NONE"
@@ -501,6 +523,12 @@
             "value": "true"
           },
           "pf0_msix_enabled": {
+            "value": "false"
+          },
+          "pl_link_cap_max_link_speed": {
+            "value": "5.0_GT/s"
+          },
+          "xdma_axilite_slave": {
             "value": "false"
           },
           "xdma_rnum_chnl": {
@@ -520,6 +548,16 @@
               "maximum": "0xFFFFFFFFFFFFFFFF",
               "width": "64"
             }
+          },
+          "M_AXI_LITE": {
+            "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
+            "mode": "Master",
+            "address_space_ref": "M_AXI_LITE",
+            "base_address": {
+              "minimum": "0x00000000",
+              "maximum": "0xFFFFFFFF",
+              "width": "32"
+            }
           }
         },
         "addressing": {
@@ -527,6 +565,10 @@
             "M_AXI": {
               "range": "16E",
               "width": "64"
+            },
+            "M_AXI_LITE": {
+              "range": "4G",
+              "width": "32"
             }
           }
         }
@@ -562,6 +604,12 @@
         "interface_ports": [
           "xdma_0/M_AXI",
           "smartconnect_0/S01_AXI"
+        ]
+      },
+      "xdma_0_M_AXI_LITE": {
+        "interface_ports": [
+          "xdma_0/M_AXI_LITE",
+          "smartconnect_0/S02_AXI"
         ]
       },
       "xdma_0_pcie_mgt": {
@@ -661,6 +709,15 @@
               "SEG_axi_bram_ctrl_0_Mem0": {
                 "address_block": "/axi_bram_ctrl_0/S_AXI/Mem0",
                 "offset": "0x0000000000000000",
+                "range": "32K"
+              }
+            }
+          },
+          "M_AXI_LITE": {
+            "segments": {
+              "SEG_axi_bram_ctrl_0_Mem0": {
+                "address_block": "/axi_bram_ctrl_0/S_AXI/Mem0",
+                "offset": "0x00000000",
                 "range": "32K"
               }
             }
