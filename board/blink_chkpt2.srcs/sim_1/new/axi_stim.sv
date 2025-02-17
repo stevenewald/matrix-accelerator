@@ -62,7 +62,7 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   mst_agent = new("master vip agent",dut.design_2_i.axi_vip_1.inst.IF);
   mst_agent.start_master(); 
   
-  for(int i = 0; i < 32; i++) begin
+  for(int i = 0; i < 50; i++) begin
       mtestWID = $urandom_range(0,(1<<(0)-1)); 
       mtestWADDR = 64'h4 + i*4;
       mtestWBurstLength = 0;
@@ -82,7 +82,7 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   mtestWBurstLength = 0;
   mtestWDataSize = xil_axi_size_t'(xil_clog2((32)/8));
   mtestWBurstType = XIL_AXI_BURST_TYPE_INCR;
-  mtestWData = 32'd4;
+  mtestWData = 32'd5;
   
   wr_trans = mst_agent.wr_driver.create_transaction("write transaction");
   wr_trans.set_write_cmd(mtestWADDR,mtestWBurstType,mtestWID,
@@ -99,7 +99,7 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   mtestWBurstLength = 0;
   mtestWDataSize = xil_axi_size_t'(xil_clog2((32)/8));
   mtestWBurstType = XIL_AXI_BURST_TYPE_INCR;
-  mtestWData = 32'd4;
+  mtestWData = 32'd5;
   
   wr_trans = mst_agent.wr_driver.create_transaction("write transaction");
   wr_trans.set_write_cmd(mtestWADDR,mtestWBurstType,mtestWID,

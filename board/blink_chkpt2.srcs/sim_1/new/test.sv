@@ -51,7 +51,10 @@ module test();
         .axi_in_rdata(axi_rdata),
         .axi_in_rresp(axi_rresp),
         .axi_in_rvalid(axi_rvalid),
-        .axi_in_rready(axi_rready)
+        .axi_in_rready(axi_rready),
+        .axi_in_arlen(0),
+        .axi_in_awlen(0),
+        .axi_in_wlast(1)
     );
     
     wire msi_req;

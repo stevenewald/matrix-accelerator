@@ -79,6 +79,8 @@ module pcie_master(
     design_1_wrapper des(
     .aresetn(axi_rst_n),
     .axi_clk(axi_clk),
+    
+    // AXI4-Lite
     .axi_in_araddr(axi_araddr),
     .axi_in_arprot(axi_arprot),
     .axi_in_arready(axi_arready),
@@ -98,6 +100,24 @@ module pcie_master(
     .axi_in_wready(axi_wready),
     .axi_in_wstrb(axi_wstrb),
     .axi_in_wvalid(axi_wvalid),
+    
+    // AXI4-Full
+    // Unused
+    .axi_in_arburst(1),
+    .axi_in_awburst(1),
+    .axi_in_arcache(0),
+    .axi_in_awcache(0),
+    .axi_in_arlock(0),
+    .axi_in_awlock(0),
+    .axi_in_arlen(0),
+    .axi_in_awlen(0),
+    .axi_in_arsize(3'b10),
+    .axi_in_awsize(3'b10),
+    .axi_in_arqos(0),
+    .axi_in_awqos(0),
+    .axi_in_wlast(1),
+    
+    
     .refclk(sys_clk),
     .sys_reset(sys_rst_n),
     .pcie_7x_mgt_0_rxn(pci_exp_rxn),

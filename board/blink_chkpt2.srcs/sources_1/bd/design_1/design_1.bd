@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0xFE7F3C875718E8D3",
+      "boundary_crc": "0xF42A6E25D1165FAF",
       "device": "xc7a35tfgg484-2",
       "gen_directory": "../../../../blink_chkpt2.gen/sources_1/bd/design_1",
       "name": "design_1",
@@ -80,22 +80,22 @@
             "value": "1"
           },
           "HAS_BURST": {
-            "value": "1"
+            "value": "0"
           },
           "HAS_CACHE": {
-            "value": "1"
+            "value": "0"
           },
           "HAS_LOCK": {
-            "value": "1"
+            "value": "0"
           },
           "HAS_PROT": {
             "value": "1"
           },
           "HAS_QOS": {
-            "value": "1"
+            "value": "0"
           },
           "HAS_REGION": {
-            "value": "1"
+            "value": "0"
           },
           "HAS_RRESP": {
             "value": "1"
@@ -111,8 +111,7 @@
             "value_src": "default"
           },
           "MAX_BURST_LENGTH": {
-            "value": "1",
-            "value_src": "default"
+            "value": "1"
           },
           "NUM_READ_OUTSTANDING": {
             "value": "1"
@@ -131,7 +130,7 @@
             "value_src": "default"
           },
           "PROTOCOL": {
-            "value": "AXI4LITE"
+            "value": "AXI4"
           },
           "READ_WRITE_MODE": {
             "value": "READ_WRITE"
@@ -252,6 +251,86 @@
           },
           "RREADY": {
             "physical_name": "axi_in_rready",
+            "direction": "I"
+          },
+          "ARBURST": {
+            "physical_name": "axi_in_arburst",
+            "direction": "I",
+            "left": "1",
+            "right": "0"
+          },
+          "ARCACHE": {
+            "physical_name": "axi_in_arcache",
+            "direction": "I",
+            "left": "3",
+            "right": "0"
+          },
+          "ARLEN": {
+            "physical_name": "axi_in_arlen",
+            "direction": "I",
+            "left": "7",
+            "right": "0"
+          },
+          "ARLOCK": {
+            "physical_name": "axi_in_arlock",
+            "direction": "I",
+            "left": "0",
+            "right": "0"
+          },
+          "ARQOS": {
+            "physical_name": "axi_in_arqos",
+            "direction": "I",
+            "left": "3",
+            "right": "0"
+          },
+          "ARSIZE": {
+            "physical_name": "axi_in_arsize",
+            "direction": "I",
+            "left": "2",
+            "right": "0"
+          },
+          "AWBURST": {
+            "physical_name": "axi_in_awburst",
+            "direction": "I",
+            "left": "1",
+            "right": "0"
+          },
+          "AWCACHE": {
+            "physical_name": "axi_in_awcache",
+            "direction": "I",
+            "left": "3",
+            "right": "0"
+          },
+          "AWLEN": {
+            "physical_name": "axi_in_awlen",
+            "direction": "I",
+            "left": "7",
+            "right": "0"
+          },
+          "AWLOCK": {
+            "physical_name": "axi_in_awlock",
+            "direction": "I",
+            "left": "0",
+            "right": "0"
+          },
+          "AWQOS": {
+            "physical_name": "axi_in_awqos",
+            "direction": "I",
+            "left": "3",
+            "right": "0"
+          },
+          "AWSIZE": {
+            "physical_name": "axi_in_awsize",
+            "direction": "I",
+            "left": "2",
+            "right": "0"
+          },
+          "RLAST": {
+            "physical_name": "axi_in_rlast",
+            "direction": "O"
+          },
+          "WLAST": {
+            "physical_name": "axi_in_wlast",
             "direction": "I"
           }
         }
@@ -438,6 +517,9 @@
             "vlnv_bus_definition": "xilinx.com:interface:aximm:1.0",
             "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
             "parameters": {
+              "MAX_BURST_LENGTH": {
+                "value": "256"
+              },
               "NUM_READ_OUTSTANDING": {
                 "value": "32"
               },
@@ -451,6 +533,9 @@
                 "value": "1"
               },
               "RUSER_BITS_PER_BYTE": {
+                "value": "0"
+              },
+              "SUPPORTS_NARROW_BURST": {
                 "value": "0"
               },
               "WUSER_BITS_PER_BYTE": {
@@ -475,7 +560,7 @@
         "inst_hier_path": "axi_bram_ctrl_0",
         "parameters": {
           "PROTOCOL": {
-            "value": "AXI4LITE"
+            "value": "AXI4"
           },
           "SINGLE_PORT_BRAM": {
             "value": "1"
@@ -489,14 +574,17 @@
         "xci_path": "ip\\design_1_xdma_0_0\\design_1_xdma_0_0.xci",
         "inst_hier_path": "xdma_0",
         "parameters": {
-          "axil_master_64bit_en": {
-            "value": "false"
+          "PF0_DEVICE_ID_mqdma": {
+            "value": "9021"
+          },
+          "PF2_DEVICE_ID_mqdma": {
+            "value": "9221"
+          },
+          "PF3_DEVICE_ID_mqdma": {
+            "value": "9321"
           },
           "axilite_master_en": {
             "value": "true"
-          },
-          "axilite_master_size": {
-            "value": "64"
           },
           "axist_bypass_en": {
             "value": "false"
@@ -527,6 +615,9 @@
           },
           "pl_link_cap_max_link_speed": {
             "value": "5.0_GT/s"
+          },
+          "plltype": {
+            "value": "QPLL1"
           },
           "xdma_axilite_slave": {
             "value": "false"
@@ -648,8 +739,8 @@
       "sys_reset_1": {
         "ports": [
           "sys_reset",
-          "xdma_0/sys_rst_n",
-          "proc_sys_reset_0/ext_reset_in"
+          "proc_sys_reset_0/ext_reset_in",
+          "xdma_0/sys_rst_n"
         ]
       },
       "xdma_0_axi_aclk": {
@@ -657,8 +748,8 @@
           "xdma_0/axi_aclk",
           "proc_sys_reset_0/slowest_sync_clk",
           "axi_clk",
-          "axi_bram_ctrl_0/s_axi_aclk",
-          "smartconnect_0/aclk"
+          "smartconnect_0/aclk",
+          "axi_bram_ctrl_0/s_axi_aclk"
         ]
       },
       "xdma_0_axi_aresetn": {
