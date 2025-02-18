@@ -45,8 +45,7 @@ module pcie_master(
     input wire [31:0] addr,
     input wire [SYS_DIM_ELEMENTS-1:0][31:0] write_data,
     input wire [7:0] num_reads,
-    output wire [31:0] read_data,
-    output wire rdata_ready,
+    output wire [SYS_DIM_ELEMENTS-1:0][31:0] read_data,
     input wire [7:0] num_writes,
     output wire done 
     );
@@ -155,7 +154,6 @@ module pcie_master(
         .num_writes(num_writes),
         .read_data(read_data),
         .num_reads(num_reads),
-        .rdata_ready(rdata_ready),
         .done(done),
     
         // Write Address Channel

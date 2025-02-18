@@ -41,8 +41,7 @@ module top(
      wire axi_start;
      wire axi_write;
      wire [31:0] axi_addr;
-     wire [31:0] axi_read_data;
-     wire axi_rdata_ready;
+     wire [SYS_DIM_ELEMENTS-1:0][31:0] axi_read_data;
      wire [SYS_DIM_ELEMENTS-1:0][31:0] axi_write_data;
      wire axi_done;
      wire [7:0] num_reads;
@@ -72,7 +71,6 @@ module top(
         .write_data(axi_write_data),
         .read_data(axi_read_data),
         .num_reads(num_reads),
-        .rdata_ready(axi_rdata_ready),
         .num_writes(num_writes),
         .done(axi_done)
     );
@@ -89,7 +87,6 @@ module top(
         .axi_addr(axi_addr),
         .axi_read_data(axi_read_data),
         .axi_num_reads(num_reads),
-        .axi_rdata_ready(axi_rdata_ready),
         .axi_write_data(axi_write_data),
         .axi_num_writes(num_writes),
         .axi_done(axi_done)

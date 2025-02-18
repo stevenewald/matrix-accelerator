@@ -10,8 +10,7 @@ parameter SYS_DIM_ELEMENTS = SYS_DIM*SYS_DIM;
 // matrix handle state
 parameter MHS_IDLE          = 4'd0;
 parameter MHS_READ_STATUS   = 4'd1;
-parameter MHS_READ_MATRIX_A = 4'd2;
-parameter MHS_READ_MATRIX_B = 3'd3;
+parameter MHS_READ_MATRIX = 4'd2;
 parameter MHS_WRITE_RESULT  = 3'd4;
 parameter MHS_RESET_STATUS  = 3'd5;
 parameter MHS_INTERRUPT     = 3'd6;

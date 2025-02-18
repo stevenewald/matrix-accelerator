@@ -76,10 +76,9 @@ module test();
     wire write;
     wire [31:0] addr;
     wire [SYS_DIM_ELEMENTS-1:0][31:0] write_data;
-    wire [31:0] read_data;
+    wire [SYS_DIM_ELEMENTS-1:0][31:0] read_data;
     wire [7:0] num_reads;
     wire [7:0] num_writes;
-    wire rdata_ready;
     wire done;
     
     axi_master_fse master_2(
@@ -117,7 +116,6 @@ module test();
         .read_data(read_data),
         .num_reads(num_reads),
         .num_writes(num_writes),
-        .rdata_ready(rdata_ready),
         .done(done)
     );
     
@@ -134,7 +132,6 @@ module test();
         .axi_read_data(read_data),
         .axi_num_reads(num_reads),
         .axi_num_writes(num_writes),
-        .axi_rdata_ready(rdata_ready),
         .axi_write_data(write_data),
         .axi_done(done)
         );

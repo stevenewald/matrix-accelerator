@@ -140,7 +140,7 @@ always @(posedge aclk or negedge aresetn) begin
                     current_state <= S_READ_B;
                 end else begin
                     matrix_num <= tile_span*(output_tile_num/tile_span)+sub_tile_num;
-                    matrix_command <= MHS_READ_MATRIX_A;
+                    matrix_command <= MHS_READ_MATRIX;
                 end
             end
             
@@ -150,7 +150,7 @@ always @(posedge aclk or negedge aresetn) begin
                     current_state <= S_COMPUTE;
                 end else begin
                     matrix_num <= tile_span*sub_tile_num + (output_tile_num % tile_span) + tile_span*tile_span;
-                    matrix_command <= MHS_READ_MATRIX_B;
+                    matrix_command <= MHS_READ_MATRIX;
                 end
             end
             

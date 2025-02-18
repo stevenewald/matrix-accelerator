@@ -19,13 +19,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0.404643 us"></ZoomStartTime>
-      <ZoomEndTime time="25.119072 us"></ZoomEndTime>
-      <Cursor1Time time="16.362154 us"></Cursor1Time>
+      <ZoomStartTime time="8,046.850 ns"></ZoomStartTime>
+      <ZoomEndTime time="9,592.147 ns"></ZoomEndTime>
+      <Cursor1Time time="8,483.425 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="232"></NameColumnWidth>
-      <ValueColumnWidth column_width="77"></ValueColumnWidth>
+      <ValueColumnWidth column_width="61"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="9" />
    <wvobject fp_name="/test/dut/design_2_i/axi_vip_0/S_AXI" type="protoinst">
@@ -106,12 +106,8 @@
          <obj_property name="ObjectShortName">axi_addr[31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/axi_read_data" type="array">
-         <obj_property name="ElementShortName">axi_read_data[31:0]</obj_property>
-         <obj_property name="ObjectShortName">axi_read_data[31:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/matrix_mst/axi_rdata_ready" type="logic">
-         <obj_property name="ElementShortName">axi_rdata_ready</obj_property>
-         <obj_property name="ObjectShortName">axi_rdata_ready</obj_property>
+         <obj_property name="ElementShortName">axi_read_data[15:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">axi_read_data[15:0][31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/axi_write_data" type="array">
          <obj_property name="ElementShortName">axi_write_data[15:0][31:0]</obj_property>
@@ -167,16 +163,12 @@
          <obj_property name="ObjectShortName">axi_num_writes[7:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/matrix_handle/axi_read_data" type="array">
-         <obj_property name="ElementShortName">axi_read_data[31:0]</obj_property>
-         <obj_property name="ObjectShortName">axi_read_data[31:0]</obj_property>
+         <obj_property name="ElementShortName">axi_read_data[15:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">axi_read_data[15:0][31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/matrix_handle/axi_num_reads" type="array">
          <obj_property name="ElementShortName">axi_num_reads[7:0]</obj_property>
          <obj_property name="ObjectShortName">axi_num_reads[7:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/matrix_mst/matrix_handle/axi_rdata_ready" type="logic">
-         <obj_property name="ElementShortName">axi_rdata_ready</obj_property>
-         <obj_property name="ObjectShortName">axi_rdata_ready</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/matrix_handle/axi_done" type="logic">
          <obj_property name="ElementShortName">axi_done</obj_property>
@@ -225,11 +217,6 @@
       <wvobject fp_name="/test/matrix_mst/matrix_handle/state" type="array">
          <obj_property name="ElementShortName">state[2:0]</obj_property>
          <obj_property name="ObjectShortName">state[2:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/matrix_mst/matrix_handle/arg_num" type="array">
-         <obj_property name="ElementShortName">arg_num[4:0]</obj_property>
-         <obj_property name="ObjectShortName">arg_num[4:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/matrix_handle/matrix_offset" type="array">
          <obj_property name="ElementShortName">matrix_offset[31:0]</obj_property>
@@ -407,12 +394,8 @@
          <obj_property name="ObjectShortName">axi_num_writes[7:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/matrix_handle/axi_read_data" type="array">
-         <obj_property name="ElementShortName">axi_read_data[31:0]</obj_property>
-         <obj_property name="ObjectShortName">axi_read_data[31:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/matrix_mst/matrix_handle/axi_rdata_ready" type="logic">
-         <obj_property name="ElementShortName">axi_rdata_ready</obj_property>
-         <obj_property name="ObjectShortName">axi_rdata_ready</obj_property>
+         <obj_property name="ElementShortName">axi_read_data[15:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">axi_read_data[15:0][31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/matrix_handle/axi_done" type="logic">
          <obj_property name="ElementShortName">axi_done</obj_property>
@@ -466,10 +449,6 @@
          <obj_property name="ElementShortName">state[2:0]</obj_property>
          <obj_property name="ObjectShortName">state[2:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/matrix_mst/matrix_handle/arg_num" type="array">
-         <obj_property name="ElementShortName">arg_num[4:0]</obj_property>
-         <obj_property name="ObjectShortName">arg_num[4:0]</obj_property>
-      </wvobject>
       <wvobject fp_name="/test/matrix_mst/matrix_handle/matrix_offset" type="array">
          <obj_property name="ElementShortName">matrix_offset[31:0]</obj_property>
          <obj_property name="ObjectShortName">matrix_offset[31:0]</obj_property>
@@ -486,6 +465,7 @@
    <wvobject fp_name="group1143" type="group">
       <obj_property name="label">AXI_FST</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/test/master_2/clk" type="logic">
          <obj_property name="ElementShortName">clk</obj_property>
          <obj_property name="ObjectShortName">clk</obj_property>
@@ -513,19 +493,15 @@
       <wvobject fp_name="/test/master_2/num_writes" type="array">
          <obj_property name="ElementShortName">num_writes[7:0]</obj_property>
          <obj_property name="ObjectShortName">num_writes[7:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/read_data" type="array">
-         <obj_property name="ElementShortName">read_data[31:0]</obj_property>
-         <obj_property name="ObjectShortName">read_data[31:0]</obj_property>
+         <obj_property name="ElementShortName">read_data[15:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">read_data[15:0][31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/num_reads" type="array">
          <obj_property name="ElementShortName">num_reads[7:0]</obj_property>
          <obj_property name="ObjectShortName">num_reads[7:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/master_2/rdata_ready" type="logic">
-         <obj_property name="ElementShortName">rdata_ready</obj_property>
-         <obj_property name="ObjectShortName">rdata_ready</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/done" type="logic">
          <obj_property name="ElementShortName">done</obj_property>
@@ -546,7 +522,6 @@
       <wvobject fp_name="/test/master_2/m_axi_awlen" type="array">
          <obj_property name="ElementShortName">m_axi_awlen[7:0]</obj_property>
          <obj_property name="ObjectShortName">m_axi_awlen[7:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/m_axi_awsize" type="array">
          <obj_property name="ElementShortName">m_axi_awsize[2:0]</obj_property>
@@ -628,10 +603,14 @@
          <obj_property name="ElementShortName">state[3:0]</obj_property>
          <obj_property name="ObjectShortName">state[3:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/master_2/warg_num" type="array">
-         <obj_property name="ElementShortName">warg_num[7:0]</obj_property>
-         <obj_property name="ObjectShortName">warg_num[7:0]</obj_property>
+      <wvobject fp_name="/test/master_2/arg_num" type="array">
+         <obj_property name="ElementShortName">arg_num[7:0]</obj_property>
+         <obj_property name="ObjectShortName">arg_num[7:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/test/master_2/truncated_burst" type="logic">
+         <obj_property name="ElementShortName">truncated_burst</obj_property>
+         <obj_property name="ObjectShortName">truncated_burst</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/STATE_IDLE" type="array">
          <obj_property name="ElementShortName">STATE_IDLE[3:0]</obj_property>
@@ -868,16 +847,12 @@
          <obj_property name="ObjectShortName">write_data[15:0][31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/read_data" type="array">
-         <obj_property name="ElementShortName">read_data[31:0]</obj_property>
-         <obj_property name="ObjectShortName">read_data[31:0]</obj_property>
+         <obj_property name="ElementShortName">read_data[15:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">read_data[15:0][31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/num_reads" type="array">
          <obj_property name="ElementShortName">num_reads[7:0]</obj_property>
          <obj_property name="ObjectShortName">num_reads[7:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/rdata_ready" type="logic">
-         <obj_property name="ElementShortName">rdata_ready</obj_property>
-         <obj_property name="ObjectShortName">rdata_ready</obj_property>
       </wvobject>
       <wvobject fp_name="/test/done" type="logic">
          <obj_property name="ElementShortName">done</obj_property>
