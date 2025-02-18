@@ -140,7 +140,7 @@ always @(posedge aclk or negedge aresetn) begin
                     current_state <= S_READ_B;
                 end else begin
                     matrix_num <= tile_span*(output_tile_num/tile_span)+sub_tile_num;
-                    matrix_command <= MHS_READ_MATRIX_A;
+                    matrix_command <= MHS_READ_MATRIX;
                 end
             end
             
@@ -150,7 +150,7 @@ always @(posedge aclk or negedge aresetn) begin
                     current_state <= S_COMPUTE;
                 end else begin
                     matrix_num <= tile_span*sub_tile_num + (output_tile_num % tile_span) + tile_span*tile_span;
-                    matrix_command <= MHS_READ_MATRIX_B;
+                    matrix_command <= MHS_READ_MATRIX;
                 end
             end
             
@@ -170,7 +170,7 @@ always @(posedge aclk or negedge aresetn) begin
                     current_state <= S_WRITE_RESULTS;
                 end else begin
                     sub_tile_num <= sub_tile_num + 1;
-                    current_state <= S_READ_A;
+                    current_state <= S_START_TILE;
                 end
             end
 
@@ -179,7 +179,7 @@ always @(posedge aclk or negedge aresetn) begin
                     current_state <= S_START_TILE;
                     accumulate <= 0; // we've written results, can reset now
                 end else begin
-                    matrix_num <= (output_tile_num-1) + (tile_span*tile_span*2); // offset with others
+                    matrix_num <= (output_tile_num - 1) + (tile_span*tile_span*2);
                     matrix_command <= MHS_WRITE_RESULT;
                 end
             end

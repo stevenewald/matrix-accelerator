@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+`include "memory_states.vh"
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -40,9 +41,11 @@ module top(
      wire axi_start;
      wire axi_write;
      wire [31:0] axi_addr;
-     wire [31:0] axi_read_data;
-     wire [31:0] axi_write_data;
+     wire [SYS_DIM_ELEMENTS-1:0][31:0] axi_read_data;
+     wire [SYS_DIM_ELEMENTS-1:0][31:0] axi_write_data;
      wire axi_done;
+     wire [7:0] num_reads;
+     wire [7:0] num_writes;
     
     wire sys_clk;
     pcie_master pcie(
@@ -67,6 +70,8 @@ module top(
         .addr(axi_addr),
         .write_data(axi_write_data),
         .read_data(axi_read_data),
+        .num_reads(num_reads),
+        .num_writes(num_writes),
         .done(axi_done)
     );
     
@@ -81,7 +86,9 @@ module top(
         .axi_write(axi_write),
         .axi_addr(axi_addr),
         .axi_read_data(axi_read_data),
+        .axi_num_reads(num_reads),
         .axi_write_data(axi_write_data),
+        .axi_num_writes(num_writes),
         .axi_done(axi_done)
         );
     

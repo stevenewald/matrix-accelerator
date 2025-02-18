@@ -28,8 +28,10 @@ module matrix_memory_handle #(
     output reg axi_start,
     output reg axi_write,
     output reg [31:0] axi_addr,
-    output reg [31:0] axi_write_data,
-    input wire [31:0] axi_read_data,
+    output reg [SYS_DIM_ELEMENTS-1:0][31:0] axi_write_data,
+    output reg [7:0] axi_num_writes,
+    input wire [SYS_DIM_ELEMENTS-1:0][31:0] axi_read_data,
+    output reg [7:0] axi_num_reads,
     input wire axi_done,
     
     output reg msi_interrupt_req,
@@ -47,25 +49,31 @@ module matrix_memory_handle #(
     );
     
     reg [2:0] state;
-    reg [$clog2(DIM*DIM+1)-1:0] arg_num;
+    
+    reg is_setup;
     
     wire [31:0] matrix_offset = DIM*DIM*matrix_num + 1; //+1 for status_addr
-    
+   
     always @(posedge clk or negedge rstn) begin
         if(!rstn) begin
             msi_interrupt_req <= 0;
             axi_start <= 0;
             axi_write <= 0;
             axi_addr <= 0;
-            axi_write_data <= 0;
+            for(int i = 0; i < SYS_DIM_ELEMENTS; ++i) begin
+                axi_write_data[i] <= 0;
+            end
+            axi_num_reads <= 0;
             matrix_read_data <= 0;
             matrix_done <= 0;
             state <= MHS_IDLE;
-            arg_num <= 0;
             status_read_data <= 0;
+            axi_num_writes <= 0;
+            is_setup <= 0;
         end else begin
             case (state)
                 MHS_IDLE: begin
+                    is_setup <= 0;
                     if(matrix_done) begin
                         // Give time for higher level module to process done signal
                         matrix_done <= 0;
@@ -75,67 +83,46 @@ module matrix_memory_handle #(
                 end
                 MHS_READ_STATUS: begin
                     if(axi_done) begin
-                        status_read_data <= axi_read_data;
+                        status_read_data <= axi_read_data[0];
                         matrix_done <= 1;
                         axi_start <= 0;
                         state <= MHS_IDLE;
                     end else begin
                         axi_addr <= STATUS_ADDR;
+                        axi_num_reads <= 1;
                         axi_write <= 0;
                         axi_start <= 1;
                     end
                 end
-                MHS_READ_MATRIX_A: begin
-                    if(axi_done) begin
+                MHS_READ_MATRIX: begin
+                    if(!is_setup) begin
+                        axi_num_reads <= DIM*DIM;
+                        is_setup <= 1;
+                    end if(axi_done) begin
+                        matrix_read_data <= axi_read_data;
+                        state <= MHS_IDLE;
+                        matrix_done <= 1;
                         axi_start <= 0;
-                        matrix_read_data[arg_num] <= axi_read_data;
-                        if(arg_num==(DIM*DIM-1)) begin
-                            state <= MHS_IDLE;
-                            arg_num <= 0;
-                            matrix_done <= 1;
-                        end else begin
-                            arg_num <= arg_num + 1;
-                        end
                     end else begin
                         axi_start <= 1;
-                        axi_addr <= 4*(matrix_offset + arg_num);
+                        axi_addr <= 4*(matrix_offset);
                         axi_write <= 0;
-                    end                            
-                end
-                MHS_READ_MATRIX_B: begin
-                    if(axi_done) begin
-                        axi_start <= 0;
-                        matrix_read_data[arg_num] <= axi_read_data;
-                        if(arg_num==(DIM*DIM-1)) begin
-                            state <= MHS_IDLE;
-                            arg_num <= 0;
-                            matrix_done <= 1;
-                        end else begin
-                            arg_num <= arg_num + 1;
-                        end
-                    end else begin
-                        axi_start <= 1;
-                        axi_addr <= 4*(matrix_offset+arg_num);
-                        axi_write <= 0;
-                    end                            
+                    end
                 end
                 MHS_WRITE_RESULT: begin
-                    if(axi_done) begin
+                    if(!is_setup) begin
+                        axi_num_writes <= DIM*DIM;
+                        is_setup <= 1;
+                    end else if(axi_done) begin
+                        state <= MHS_IDLE;
+                        matrix_done <= 1;
+                        axi_write <= 0;
                         axi_start <= 0;
-
-                        if(arg_num==(DIM*DIM-1)) begin
-                            state <= MHS_IDLE;
-                            arg_num <= 0;
-                            matrix_done <= 1;
-                            axi_write <= 0;
-                        end else begin
-                            arg_num <= arg_num+1;
-                        end
                     end else begin
                         axi_start <= 1;
                         axi_write <= 1;
-                        axi_write_data <= matrix_write_data[arg_num];
-                        axi_addr <= 4*(matrix_offset + arg_num);
+                        axi_write_data <= matrix_write_data;
+                        axi_addr <= 4*(matrix_offset);
                     end
                 end
                 MHS_INTERRUPT: begin
@@ -155,7 +142,8 @@ module matrix_memory_handle #(
                         axi_write <= 0;
                     end else begin
                         axi_addr <= STATUS_ADDR;
-                        axi_write_data <= 0;
+                        axi_num_writes <= 1;
+                        axi_write_data[0] <= 0;
                         axi_write <= 1;
                         axi_start <= 1;
                     end

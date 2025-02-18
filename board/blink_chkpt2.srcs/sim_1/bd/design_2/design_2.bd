@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0xF1196091F6B82A98",
+      "boundary_crc": "0x8FA710943A63F63C",
       "device": "xc7a35tfgg484-2",
       "gen_directory": "../../../../blink_chkpt2.gen/sim_1/bd/design_2",
       "name": "design_2",
@@ -53,19 +53,19 @@
             "value": "1"
           },
           "HAS_CACHE": {
-            "value": "1"
+            "value": "0"
           },
           "HAS_LOCK": {
-            "value": "1"
+            "value": "0"
           },
           "HAS_PROT": {
             "value": "1"
           },
           "HAS_QOS": {
-            "value": "1"
+            "value": "0"
           },
           "HAS_REGION": {
-            "value": "1"
+            "value": "0"
           },
           "HAS_RRESP": {
             "value": "1"
@@ -101,7 +101,7 @@
             "value_src": "default"
           },
           "PROTOCOL": {
-            "value": "AXI4LITE"
+            "value": "AXI4"
           },
           "READ_WRITE_MODE": {
             "value": "READ_WRITE"
@@ -134,12 +134,6 @@
             "physical_name": "axi_in_awaddr",
             "direction": "I",
             "left": "31",
-            "right": "0"
-          },
-          "AWPROT": {
-            "physical_name": "axi_in_awprot",
-            "direction": "I",
-            "left": "2",
             "right": "0"
           },
           "AWVALID": {
@@ -190,12 +184,6 @@
             "left": "31",
             "right": "0"
           },
-          "ARPROT": {
-            "physical_name": "axi_in_arprot",
-            "direction": "I",
-            "left": "2",
-            "right": "0"
-          },
           "ARVALID": {
             "physical_name": "axi_in_arvalid",
             "direction": "I"
@@ -223,6 +211,62 @@
           "RREADY": {
             "physical_name": "axi_in_rready",
             "direction": "I"
+          },
+          "ARLEN": {
+            "physical_name": "axi_in_arlen",
+            "direction": "I",
+            "left": "7",
+            "right": "0"
+          },
+          "AWLEN": {
+            "physical_name": "axi_in_awlen",
+            "direction": "I",
+            "left": "7",
+            "right": "0"
+          },
+          "RLAST": {
+            "physical_name": "axi_in_rlast",
+            "direction": "O"
+          },
+          "WLAST": {
+            "physical_name": "axi_in_wlast",
+            "direction": "I"
+          },
+          "ARBURST": {
+            "physical_name": "axi_in_arburst",
+            "direction": "I",
+            "left": "1",
+            "right": "0"
+          },
+          "ARPROT": {
+            "physical_name": "axi_in_arprot",
+            "direction": "I",
+            "left": "2",
+            "right": "0"
+          },
+          "AWBURST": {
+            "physical_name": "axi_in_awburst",
+            "direction": "I",
+            "left": "1",
+            "right": "0"
+          },
+          "AWPROT": {
+            "physical_name": "axi_in_awprot",
+            "direction": "I",
+            "left": "2",
+            "right": "0"
+          },
+          "ARSIZE": {
+            "physical_name": "axi_in_arsize",
+            "direction": "I",
+            "left": "2",
+            "right": "0"
+          },
+          "AWSIZE": {
+            "physical_name": "axi_in_awsize",
+            "direction": "I",
+            "left": "2",
+            "right": "0"
           }
         }
       }
@@ -316,6 +360,9 @@
         "xci_path": "ip\\design_2_axi_vip_0_0\\design_2_axi_vip_0_0.xci",
         "inst_hier_path": "axi_vip_0",
         "parameters": {
+          "HAS_SIZE": {
+            "value": "1"
+          },
           "INTERFACE_MODE": {
             "value": "PASS_THROUGH"
           }
