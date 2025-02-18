@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+`include "memory_states.vh"
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -42,7 +43,7 @@ module pcie_master(
     input wire start,
     input wire write,
     input wire [31:0] addr,
-    input wire [31:0] write_data,
+    input wire [SYS_DIM_ELEMENTS-1:0][31:0] write_data,
     input wire [7:0] num_reads,
     output wire [31:0] read_data,
     output wire rdata_ready,

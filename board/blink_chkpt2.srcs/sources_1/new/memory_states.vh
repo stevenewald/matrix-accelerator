@@ -5,6 +5,7 @@ parameter SYS_DIM        = 4;
 parameter MAX_INPUT_SIZE = 70;
 
 parameter MATRIX_NUM_NBITS = $clog2(3*(MAX_INPUT_SIZE*MAX_INPUT_SIZE)/(SYS_DIM*SYS_DIM)+1);
+parameter SYS_DIM_ELEMENTS = SYS_DIM*SYS_DIM;
 
 // matrix handle state
 parameter MHS_IDLE          = 4'd0;

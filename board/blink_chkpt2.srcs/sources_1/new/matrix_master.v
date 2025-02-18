@@ -34,7 +34,7 @@ module matrix_master(
     input wire [31:0] axi_read_data,
     output wire [7:0] axi_num_reads,
     input wire axi_rdata_ready,
-    output wire [31:0] axi_write_data,
+    output wire [SYS_DIM_ELEMENTS-1:0][31:0] axi_write_data,
     output wire [7:0] axi_num_writes,
     input wire axi_done
     );

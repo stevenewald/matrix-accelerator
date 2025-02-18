@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+`include "memory_states.vh"
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -42,7 +43,7 @@ module top(
      wire [31:0] axi_addr;
      wire [31:0] axi_read_data;
      wire axi_rdata_ready;
-     wire [31:0] axi_write_data;
+     wire [SYS_DIM_ELEMENTS-1:0][31:0] axi_write_data;
      wire axi_done;
      wire [7:0] num_reads;
      wire [7:0] num_writes;

@@ -1,3 +1,4 @@
+`include "memory_states.vh"
 module axi_master_fse
 (
     input                         clk,
@@ -5,9 +6,9 @@ module axi_master_fse
     input                         start,       // Transaction start trigger
     input                         write_en,    // 1: write, 0: read
     input      [31:0]   addr,        // Transaction address
-    input      [31:0]   write_data,  // Data for write transaction
+    input      [SYS_DIM_ELEMENTS-1:0][31:0]   write_data,  // NOTE: we need a write_data full buffer as an input because syncing data_write_ready would take an extra cycle
     input wire [7:0]    num_writes,
-    output reg [31:0]   read_data,   // Data received from read transaction
+    output reg [31:0]   read_data,   // whereas here we know the receiver should always be ready
     input wire [7:0]     num_reads,
     output reg          rdata_ready,
     output reg                  done,         // Transaction completion flag
@@ -23,8 +24,8 @@ module axi_master_fse
     output reg [31:0]   m_axi_wdata,
     output reg [4:0] m_axi_wstrb,
     output reg                  m_axi_wvalid,
-    input                       m_axi_wready,
-    output reg                      m_axi_wlast,
+    input                   m_axi_wready,
+    output reg                  m_axi_wlast,
 
     // AXI-Lite Write Response Channel
     input       [1:0]           m_axi_bresp,
@@ -56,6 +57,7 @@ localparam STATE_READ_DATA  = 4'd5;
 localparam STATE_DONE       = 4'd6;
 
 reg [3:0] state;
+reg [7:0] warg_num;
 
 
 
@@ -82,6 +84,7 @@ always @(posedge clk or negedge resetn) begin
         rdata_ready   <= 0;
         done          <= 1'b0;
         state         <= STATE_IDLE;
+        warg_num <= 0;
     end else begin
         case (state)
             STATE_IDLE: begin
@@ -102,23 +105,30 @@ always @(posedge clk or negedge resetn) begin
                 if(m_axi_awvalid && m_axi_awready) begin
                     m_axi_awvalid <= 0;
                     state <= STATE_WRITE_DATA;
+                    warg_num <= 0;
                 end else begin
                     m_axi_awaddr  <= addr;
                     m_axi_awvalid <= 1'b1;
                     m_axi_awsize <= 2;
-                    m_axi_awlen <= 0;
+                    m_axi_awlen <= num_writes-1;
                 end
             end
             
             STATE_WRITE_DATA: begin
-                if(m_axi_wvalid && m_axi_wready) begin
-                    m_axi_wvalid <= 0;
-                    state <= STATE_WRITE_RESP;
+                if(m_axi_wvalid && m_axi_wready) begin // write complete
+                    if(warg_num == num_writes-1) begin
+                        m_axi_wvalid <= 0;
+                        state <= STATE_WRITE_RESP;
+                    end else begin
+                        m_axi_wdata <= write_data[warg_num+1];
+                        warg_num <= warg_num + 1;
+                        m_axi_wlast <= warg_num==num_writes-2;
+                    end
                 end else begin
-                    m_axi_wdata  <= write_data;
+                    m_axi_wlast <= num_writes==1;
+                    m_axi_wdata  <= write_data[warg_num];
                     m_axi_wstrb  <= {4'hF};  // Full word write
                     m_axi_wvalid <= 1'b1;
-                    m_axi_wlast <= 1; 
                 end
             end
             

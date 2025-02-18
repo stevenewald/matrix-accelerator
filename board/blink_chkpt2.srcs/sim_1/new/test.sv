@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+`include "memory_states.vh"
 module test();
     wire refclk;
     wire refrst;
@@ -29,7 +30,10 @@ module test();
     
     wire [7:0] axi_arlen;
     wire [2:0] axi_arsize;
+    wire [7:0] axi_awlen;
+    wire [2:0] axi_awsize;
     wire axi_rlast;
+    wire axi_wlast;
     
     assign axi_arprot = 3'b0;
     assign axi_awprot = 3'b0;
@@ -55,12 +59,12 @@ module test();
         .axi_in_rdata(axi_rdata),
         .axi_in_rresp(axi_rresp),
         .axi_in_arsize(axi_arsize),
-        .axi_in_awsize(3'b10),
+        .axi_in_awsize(axi_awsize),
         .axi_in_rvalid(axi_rvalid),
         .axi_in_rready(axi_rready),
         .axi_in_arlen(axi_arlen),
-        .axi_in_awlen(0),
-        .axi_in_wlast(1),
+        .axi_in_awlen(axi_awlen),
+        .axi_in_wlast(axi_wlast),
         .axi_in_rlast(axi_rlast),
         .axi_in_arburst(1),
         .axi_in_awburst(1)
@@ -71,9 +75,10 @@ module test();
     wire start;
     wire write;
     wire [31:0] addr;
-    wire [31:0] write_data;
+    wire [SYS_DIM_ELEMENTS-1:0][31:0] write_data;
     wire [31:0] read_data;
     wire [7:0] num_reads;
+    wire [7:0] num_writes;
     wire rdata_ready;
     wire done;
     
@@ -100,7 +105,10 @@ module test();
         
         .m_axi_arsize(axi_arsize),
         .m_axi_arlen(axi_arlen),
+        .m_axi_awsize(axi_awsize),
+        .m_axi_awlen(axi_awlen),
         .m_axi_rlast(axi_rlast),
+        .m_axi_wlast(axi_wlast),
         
         .start(start),
         .write_en(write),
@@ -108,6 +116,7 @@ module test();
         .write_data(write_data),
         .read_data(read_data),
         .num_reads(num_reads),
+        .num_writes(num_writes),
         .rdata_ready(rdata_ready),
         .done(done)
     );
@@ -124,6 +133,7 @@ module test();
         .axi_addr(addr),
         .axi_read_data(read_data),
         .axi_num_reads(num_reads),
+        .axi_num_writes(num_writes),
         .axi_rdata_ready(rdata_ready),
         .axi_write_data(write_data),
         .axi_done(done)
