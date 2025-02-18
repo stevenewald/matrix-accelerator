@@ -41,10 +41,13 @@ module matrix_multiplier    #(
            S_CHECK_STATUS    = 4'd1,
            S_DECIDE        = 4'd2,
            S_START_TILE    = 4'd3,
+           S_CMA        = 4'd11,
            S_READ_A      = 4'd4,
+           S_CMB        = 4'd12,
            S_READ_B     = 4'd5,
            S_COMPUTE       = 4'd6,
            S_COMPLETE_TILE  = 4'd7,
+           S_CMR            = 4'd13, // ADD NEW STAGES
            S_WRITE_RESULTS = 4'd8,
            S_WRITE_STATUS    = 4'd9,
            S_INTERRUPT     = 4'd10;
@@ -170,7 +173,7 @@ always @(posedge aclk or negedge aresetn) begin
                     current_state <= S_WRITE_RESULTS;
                 end else begin
                     sub_tile_num <= sub_tile_num + 1;
-                    current_state <= S_READ_A;
+                    current_state <= S_START_TILE;
                 end
             end
 
@@ -179,7 +182,7 @@ always @(posedge aclk or negedge aresetn) begin
                     current_state <= S_START_TILE;
                     accumulate <= 0; // we've written results, can reset now
                 end else begin
-                    matrix_num <= (output_tile_num-1) + (tile_span*tile_span*2); // offset with others
+                    matrix_num <= (output_tile_num - 1) + (tile_span*tile_span*2);
                     matrix_command <= MHS_WRITE_RESULT;
                 end
             end

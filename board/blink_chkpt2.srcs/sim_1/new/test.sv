@@ -27,6 +27,10 @@ module test();
     
     wire [1:0] group_led;
     
+    wire [7:0] axi_arlen;
+    wire [2:0] axi_arsize;
+    wire axi_rlast;
+    
     assign axi_arprot = 3'b0;
     assign axi_awprot = 3'b0;
 
@@ -50,11 +54,16 @@ module test();
         .axi_in_arready(axi_arready),
         .axi_in_rdata(axi_rdata),
         .axi_in_rresp(axi_rresp),
+        .axi_in_arsize(axi_arsize),
+        .axi_in_awsize(3'b10),
         .axi_in_rvalid(axi_rvalid),
         .axi_in_rready(axi_rready),
-        .axi_in_arlen(0),
+        .axi_in_arlen(axi_arlen),
         .axi_in_awlen(0),
-        .axi_in_wlast(1)
+        .axi_in_wlast(1),
+        .axi_in_rlast(axi_rlast),
+        .axi_in_arburst(1),
+        .axi_in_awburst(1)
     );
     
     wire msi_req;
@@ -64,6 +73,8 @@ module test();
     wire [31:0] addr;
     wire [31:0] write_data;
     wire [31:0] read_data;
+    wire [7:0] num_reads;
+    wire rdata_ready;
     wire done;
     
     axi_master_fse master_2(
@@ -87,11 +98,17 @@ module test();
         .m_axi_rvalid(axi_rvalid),
         .m_axi_rready(axi_rready),
         
+        .m_axi_arsize(axi_arsize),
+        .m_axi_arlen(axi_arlen),
+        .m_axi_rlast(axi_rlast),
+        
         .start(start),
         .write_en(write),
         .addr(addr),
         .write_data(write_data),
         .read_data(read_data),
+        .num_reads(num_reads),
+        .rdata_ready(rdata_ready),
         .done(done)
     );
     
@@ -106,6 +123,8 @@ module test();
         .axi_write(write),
         .axi_addr(addr),
         .axi_read_data(read_data),
+        .axi_num_reads(num_reads),
+        .axi_rdata_ready(rdata_ready),
         .axi_write_data(write_data),
         .axi_done(done)
         );

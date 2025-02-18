@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x4293A09D085CDA84",
+      "boundary_crc": "0x8FA710943A63F63C",
       "device": "xc7a35tfgg484-2",
       "gen_directory": "../../../../blink_chkpt2.gen/sim_1/bd/design_2",
       "name": "design_2",
@@ -50,7 +50,7 @@
             "value": "1"
           },
           "HAS_BURST": {
-            "value": "0"
+            "value": "1"
           },
           "HAS_CACHE": {
             "value": "0"
@@ -232,14 +232,38 @@
             "physical_name": "axi_in_wlast",
             "direction": "I"
           },
+          "ARBURST": {
+            "physical_name": "axi_in_arburst",
+            "direction": "I",
+            "left": "1",
+            "right": "0"
+          },
           "ARPROT": {
             "physical_name": "axi_in_arprot",
             "direction": "I",
             "left": "2",
             "right": "0"
           },
+          "AWBURST": {
+            "physical_name": "axi_in_awburst",
+            "direction": "I",
+            "left": "1",
+            "right": "0"
+          },
           "AWPROT": {
             "physical_name": "axi_in_awprot",
+            "direction": "I",
+            "left": "2",
+            "right": "0"
+          },
+          "ARSIZE": {
+            "physical_name": "axi_in_arsize",
+            "direction": "I",
+            "left": "2",
+            "right": "0"
+          },
+          "AWSIZE": {
+            "physical_name": "axi_in_awsize",
             "direction": "I",
             "left": "2",
             "right": "0"
@@ -336,6 +360,9 @@
         "xci_path": "ip\\design_2_axi_vip_0_0\\design_2_axi_vip_0_0.xci",
         "inst_hier_path": "axi_vip_0",
         "parameters": {
+          "HAS_SIZE": {
+            "value": "1"
+          },
           "INTERFACE_MODE": {
             "value": "PASS_THROUGH"
           }

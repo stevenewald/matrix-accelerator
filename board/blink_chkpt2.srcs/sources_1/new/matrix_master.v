@@ -32,6 +32,8 @@ module matrix_master(
     output wire axi_write,
     output wire [31:0] axi_addr,
     input wire [31:0] axi_read_data,
+    output wire [7:0] axi_num_reads,
+    input wire axi_rdata_ready,
     output wire [31:0] axi_write_data,
     input wire axi_done
     );
@@ -51,6 +53,8 @@ module matrix_master(
     .axi_addr(axi_addr),
     .axi_write_data(axi_write_data),
     .axi_read_data(axi_read_data),
+    .axi_num_reads(axi_num_reads),
+    .axi_rdata_ready(axi_rdata_ready),
     .axi_done(axi_done),
     .msi_interrupt_req(msi_interrupt_req),
     .msi_interrupt_ack(msi_interrupt_ack),

@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0xF42A6E25D1165FAF",
+      "boundary_crc": "0xF42A6E253306D34B",
       "device": "xc7a35tfgg484-2",
       "gen_directory": "../../../../blink_chkpt2.gen/sources_1/bd/design_1",
       "name": "design_1",
@@ -80,7 +80,7 @@
             "value": "1"
           },
           "HAS_BURST": {
-            "value": "0"
+            "value": "1"
           },
           "HAS_CACHE": {
             "value": "0"

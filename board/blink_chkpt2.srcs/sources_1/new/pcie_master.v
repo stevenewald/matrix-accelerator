@@ -43,7 +43,9 @@ module pcie_master(
     input wire write,
     input wire [31:0] addr,
     input wire [31:0] write_data,
+    input wire [7:0] num_reads,
     output wire [31:0] read_data,
+    output wire rdata_ready,
     output wire done 
     );
     
@@ -75,6 +77,11 @@ module pcie_master(
     
     assign axi_arprot = 3'b0;
     assign axi_awprot = 3'b0;
+    
+    // AXI4-Full
+    wire [7:0] axi_arlen;
+    wire [2:0] axi_arsize;
+    wire axi_rlast;
     
     design_1_wrapper des(
     .aresetn(axi_rst_n),
@@ -109,12 +116,13 @@ module pcie_master(
     .axi_in_awcache(0),
     .axi_in_arlock(0),
     .axi_in_awlock(0),
-    .axi_in_arlen(0),
+    .axi_in_arlen(axi_arlen),
     .axi_in_awlen(0),
-    .axi_in_arsize(3'b10),
+    .axi_in_arsize(axi_arsize),
     .axi_in_awsize(3'b10),
     .axi_in_arqos(0),
     .axi_in_awqos(0),
+    .axi_in_rlast(axi_rlast),
     .axi_in_wlast(1),
     
     
@@ -139,6 +147,8 @@ module pcie_master(
         .addr(addr),
         .write_data(write_data),
         .read_data(read_data),
+        .num_reads(num_reads),
+        .rdata_ready(rdata_ready),
         .done(done),
     
         // Write Address Channel
@@ -161,11 +171,15 @@ module pcie_master(
         .m_axi_araddr(axi_araddr),
         .m_axi_arvalid(axi_arvalid),
         .m_axi_arready(axi_arready),
+        .m_axi_arlen(axi_arlen),
+        .m_axi_arsize(axi_arsize),
     
         // Read Data Channel
         .m_axi_rdata(axi_rdata),
         .m_axi_rresp(axi_rresp),
         .m_axi_rvalid(axi_rvalid),
-        .m_axi_rready(axi_rready)
+        .m_axi_rready(axi_rready),
+        .m_axi_rlast(axi_rlast)
+        
     );
 endmodule

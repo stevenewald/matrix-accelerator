@@ -7,6 +7,8 @@ module axi_master_fse
     input      [31:0]   addr,        // Transaction address
     input      [31:0]   write_data,  // Data for write transaction
     output reg [31:0]   read_data,   // Data received from read transaction
+    input wire [7:0]     num_reads,
+    output reg          rdata_ready,
     output reg                  done,         // Transaction completion flag
 
     // AXI-Lite Write Address Channel
@@ -29,12 +31,15 @@ module axi_master_fse
     output reg [31:0]   m_axi_araddr,
     output reg                  m_axi_arvalid,
     input                       m_axi_arready,
+    output reg [7:0]            m_axi_arlen,
+    output reg [2:0]            m_axi_arsize,
 
     // AXI-Lite Read Data Channel
     input      [31:0]   m_axi_rdata,
     input       [1:0]           m_axi_rresp,
     input                       m_axi_rvalid,
-    output reg                  m_axi_rready
+    output reg                  m_axi_rready,
+    input wire                  m_axi_rlast
 );
 
 // State encoding
@@ -64,12 +69,13 @@ always @(posedge clk or negedge resetn) begin
         m_axi_araddr  <= {32{1'b0}};
         m_axi_arvalid <= 1'b0;
         m_axi_rready  <= 1'b0;
+        m_axi_arlen <= 8'b0;
+        m_axi_arsize <= 3'b0;
         read_data     <= {32{1'b0}};
+        rdata_ready   <= 0;
         done          <= 1'b0;
         state         <= STATE_IDLE;
     end else begin
-
-
         case (state)
             STATE_IDLE: begin
                 // !done to ensure buffer
@@ -79,6 +85,7 @@ always @(posedge clk or negedge resetn) begin
                     else
                         state <= STATE_READ_ADDR;
                 end else begin
+                    rdata_ready <= 0;
                     done <= 0;
                 end
             end
@@ -122,15 +129,22 @@ always @(posedge clk or negedge resetn) begin
                 end else begin
                     m_axi_araddr  <= addr;
                     m_axi_arvalid <= 1'b1;
+                    m_axi_arlen <= num_reads-1;
+                    m_axi_arsize <= 2;
                 end
             end
             
             STATE_READ_DATA: begin
                 if(m_axi_rvalid && m_axi_rready) begin
-                    read_data <= m_axi_rdata;
                     m_axi_rready <= 0;
-                    state <= STATE_DONE;
+                    read_data <= m_axi_rdata;
+                    rdata_ready <= 1;
+                    if(m_axi_rlast) begin
+                        done <= 1'b1;
+                        state <= STATE_IDLE;
+                    end
                 end else begin
+                    rdata_ready <= 0;
                     m_axi_rready <= 1'b1;
                 end
             end
