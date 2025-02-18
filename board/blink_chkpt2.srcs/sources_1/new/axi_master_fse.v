@@ -6,6 +6,7 @@ module axi_master_fse
     input                         write_en,    // 1: write, 0: read
     input      [31:0]   addr,        // Transaction address
     input      [31:0]   write_data,  // Data for write transaction
+    input wire [7:0]    num_writes,
     output reg [31:0]   read_data,   // Data received from read transaction
     input wire [7:0]     num_reads,
     output reg          rdata_ready,

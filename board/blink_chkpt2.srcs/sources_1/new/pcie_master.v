@@ -151,6 +151,7 @@ module pcie_master(
         .write_en(write),
         .addr(addr),
         .write_data(write_data),
+        .num_writes(num_writes),
         .read_data(read_data),
         .num_reads(num_reads),
         .rdata_ready(rdata_ready),

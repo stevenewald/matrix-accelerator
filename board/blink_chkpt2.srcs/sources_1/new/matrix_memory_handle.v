@@ -52,8 +52,10 @@ module matrix_memory_handle #(
     reg [2:0] state;
     reg [$clog2(DIM*DIM+1)-1:0] arg_num;
     
-    wire [31:0] matrix_offset = DIM*DIM*matrix_num + 1; //+1 for status_addr
+    reg is_setup;
     
+    wire [31:0] matrix_offset = DIM*DIM*matrix_num + 1; //+1 for status_addr
+   
     always @(posedge clk or negedge rstn) begin
         if(!rstn) begin
             msi_interrupt_req <= 0;
@@ -68,9 +70,11 @@ module matrix_memory_handle #(
             arg_num <= 0;
             status_read_data <= 0;
             axi_num_writes <= 0;
+            is_setup <= 0;
         end else begin
             case (state)
                 MHS_IDLE: begin
+                    is_setup <= 0;
                     if(matrix_done) begin
                         // Give time for higher level module to process done signal
                         matrix_done <= 0;
@@ -92,7 +96,10 @@ module matrix_memory_handle #(
                     end
                 end
                 MHS_READ_MATRIX_A: begin
-                    if(axi_rdata_ready) begin
+                    if(!is_setup) begin
+                        axi_num_reads <= (((4*matrix_offset)&32'h1000) == ((4*(matrix_offset+DIM*DIM))&32'h1000)) ? DIM*DIM : 1;
+                        is_setup <= 1;
+                    end if(axi_rdata_ready) begin
                         axi_start <= 0;
                         matrix_read_data[arg_num] <= axi_read_data;
                         if(arg_num==DIM*DIM-1) begin
@@ -103,14 +110,16 @@ module matrix_memory_handle #(
                             arg_num <= arg_num + 1;
                         end
                     end else begin
-                        axi_num_reads <= (((4*matrix_offset)&~32'hFFF) == (4*matrix_offset+arg_num)&~32'hFFF) ? DIM*DIM : 1;
                         axi_start <= 1;
                         axi_addr <= 4*(matrix_offset + arg_num);
                         axi_write <= 0;
-                    end                            
+                    end
                 end
                 MHS_READ_MATRIX_B: begin
-                    if(axi_rdata_ready) begin
+                    if(!is_setup) begin
+                        axi_num_reads <= (((4*matrix_offset)&32'h1000) == ((4*(matrix_offset+DIM*DIM))&32'h1000)) ? DIM*DIM : 1;
+                        is_setup <= 1;
+                    end if(axi_rdata_ready) begin
                         axi_start <= 0;
                         matrix_read_data[arg_num] <= axi_read_data;
                         if(arg_num==DIM*DIM-1) begin
@@ -121,7 +130,6 @@ module matrix_memory_handle #(
                             arg_num <= arg_num + 1;
                         end
                     end else begin
-                        axi_num_reads <= (((4*matrix_offset)&~32'hFFF) == (4*matrix_offset+arg_num)&~32'hFFF) ? DIM*DIM : 1;
                         axi_start <= 1;
                         axi_addr <= 4*(matrix_offset+arg_num);
                         axi_write <= 0;
