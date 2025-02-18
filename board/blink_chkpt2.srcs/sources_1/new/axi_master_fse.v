@@ -59,8 +59,6 @@ localparam STATE_DONE       = 4'd6;
 reg [3:0] state;
 reg [7:0] warg_num;
 
-
-
 //---------------------------------------------------------------------
 // Output Logic
 //---------------------------------------------------------------------
@@ -104,8 +102,8 @@ always @(posedge clk or negedge resetn) begin
             STATE_WRITE_ADDR: begin
                 if(m_axi_awvalid && m_axi_awready) begin
                     m_axi_awvalid <= 0;
-                    state <= STATE_WRITE_DATA;
                     warg_num <= 0;
+                    state <= STATE_WRITE_DATA;
                 end else begin
                     m_axi_awaddr  <= addr;
                     m_axi_awvalid <= 1'b1;
@@ -120,8 +118,8 @@ always @(posedge clk or negedge resetn) begin
                         m_axi_wvalid <= 0;
                         state <= STATE_WRITE_RESP;
                     end else begin
-                        m_axi_wdata <= write_data[warg_num+1];
                         warg_num <= warg_num + 1;
+                        m_axi_wdata <= write_data[warg_num+1];
                         m_axi_wlast <= warg_num==num_writes-2;
                     end
                 end else begin
