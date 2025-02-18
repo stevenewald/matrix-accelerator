@@ -101,7 +101,7 @@ module matrix_memory_handle #(
                             arg_num <= arg_num + 1;
                         end
                     end else begin
-                        axi_num_reads <= 1;
+                        axi_num_reads <= (((4*matrix_offset)&~32'hFFF) == (4*matrix_offset+arg_num)&~32'hFFF) ? DIM*DIM : 1;
                         axi_start <= 1;
                         axi_addr <= 4*(matrix_offset + arg_num);
                         axi_write <= 0;
@@ -119,7 +119,7 @@ module matrix_memory_handle #(
                             arg_num <= arg_num + 1;
                         end
                     end else begin
-                        axi_num_reads <= 1;
+                        axi_num_reads <= (((4*matrix_offset)&~32'hFFF) == (4*matrix_offset+arg_num)&~32'hFFF) ? DIM*DIM : 1;
                         axi_start <= 1;
                         axi_addr <= 4*(matrix_offset+arg_num);
                         axi_write <= 0;
@@ -128,7 +128,6 @@ module matrix_memory_handle #(
                 MHS_WRITE_RESULT: begin
                     if(axi_done) begin
                         axi_start <= 0;
-
                         if(arg_num==(DIM*DIM-1)) begin
                             state <= MHS_IDLE;
                             arg_num <= 0;
