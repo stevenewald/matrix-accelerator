@@ -15,12 +15,15 @@ module axi_master_fse
     output reg [31:0]   m_axi_awaddr,
     output reg                  m_axi_awvalid,
     input                       m_axi_awready,
+    output reg [7:0]            m_axi_awlen,
+    output reg [2:0]            m_axi_awsize,
 
     // AXI-Lite Write Data Channel
     output reg [31:0]   m_axi_wdata,
     output reg [4:0] m_axi_wstrb,
     output reg                  m_axi_wvalid,
     input                       m_axi_wready,
+    output reg                      m_axi_wlast,
 
     // AXI-Lite Write Response Channel
     input       [1:0]           m_axi_bresp,
@@ -71,6 +74,9 @@ always @(posedge clk or negedge resetn) begin
         m_axi_rready  <= 1'b0;
         m_axi_arlen <= 8'b0;
         m_axi_arsize <= 3'b0;
+        m_axi_awlen <= 8'b0;
+        m_axi_awsize <= 3'b0;
+        m_axi_wlast <= 0;
         read_data     <= {32{1'b0}};
         rdata_ready   <= 0;
         done          <= 1'b0;
@@ -98,6 +104,8 @@ always @(posedge clk or negedge resetn) begin
                 end else begin
                     m_axi_awaddr  <= addr;
                     m_axi_awvalid <= 1'b1;
+                    m_axi_awsize <= 2;
+                    m_axi_awlen <= 0;
                 end
             end
             
@@ -108,7 +116,8 @@ always @(posedge clk or negedge resetn) begin
                 end else begin
                     m_axi_wdata  <= write_data;
                     m_axi_wstrb  <= {4'hF};  // Full word write
-                    m_axi_wvalid <= 1'b1; 
+                    m_axi_wvalid <= 1'b1;
+                    m_axi_wlast <= 1; 
                 end
             end
             

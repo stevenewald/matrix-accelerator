@@ -29,6 +29,7 @@ module matrix_memory_handle #(
     output reg axi_write,
     output reg [31:0] axi_addr,
     output reg [31:0] axi_write_data,
+    output reg [7:0] axi_num_writes,
     input wire [31:0] axi_read_data,
     output reg [7:0] axi_num_reads,
     input wire axi_rdata_ready,
@@ -66,6 +67,7 @@ module matrix_memory_handle #(
             state <= MHS_IDLE;
             arg_num <= 0;
             status_read_data <= 0;
+            axi_num_writes <= 0;
         end else begin
             case (state)
                 MHS_IDLE: begin

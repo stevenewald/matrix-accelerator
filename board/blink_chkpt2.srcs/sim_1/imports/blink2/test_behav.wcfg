@@ -19,13 +19,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="98.788676 us"></ZoomStartTime>
-      <ZoomEndTime time="1,340.648665 us"></ZoomEndTime>
-      <Cursor1Time time="1,133.672000 us"></Cursor1Time>
+      <ZoomStartTime time="3.782314 us"></ZoomStartTime>
+      <ZoomEndTime time="46.648547 us"></ZoomEndTime>
+      <Cursor1Time time="27.693820 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="196"></NameColumnWidth>
-      <ValueColumnWidth column_width="68"></ValueColumnWidth>
+      <ValueColumnWidth column_width="64"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="9" />
    <wvobject fp_name="/test/dut/design_2_i/axi_vip_0/S_AXI" type="protoinst">
