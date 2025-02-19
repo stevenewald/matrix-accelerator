@@ -31,17 +31,22 @@ module systolic_PE(
     output reg [31:0] result
     );
     
+    reg [31:0] inter;
+    
     always @(posedge clk or negedge rst) begin
         if (!rst) begin
             a_out <= 32'b0;
             b_out <= 32'b0;
             result <= 32'b0;
+            inter <= 32'b0;
         end else if(!valid) begin
             a_out <= 32'b0;
             b_out <= 32'b0;
             result <= 32'b0;
+            inter <= 32'b0;
         end else begin
-            result <= result + (a_in * b_in);
+            inter <= (a_in*b_in);
+            result <= result + inter;
             a_out <= a_in;
             b_out <= b_in; 
         end
