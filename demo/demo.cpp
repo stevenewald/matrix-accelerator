@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cstdint>
@@ -9,10 +10,13 @@
 #include <sys/poll.h>
 #include <unistd.h>
 
-#define NUM_TRIALS 10
+#define NUM_TRIALS 20
 
-#define TILE_DIM 5
-#define INPUT_DIM 70
+#define TILE_DIM 4
+
+#define INPUT_DIM_M 60
+#define INPUT_DIM_K 16
+#define INPUT_DIM_N 60
 
 #define DEVICE_PATH "/dev/fpga"
 #define PCIE_SET_DMA (_IOW('k', 1, int))
@@ -25,7 +29,7 @@ void set_write_mode(int fd, int dma_on) {
 
 bool start_mul(int fd) {
   set_write_mode(fd, false);
-  int arg = INPUT_DIM;
+  int arg = (INPUT_DIM_N << 20) | (INPUT_DIM_K << 10) | (INPUT_DIM_M);
   if (pwrite(fd, &arg, 1 * sizeof(int), 0) != 1 * sizeof(int)) {
     std::cerr << "matrix start mul failed" << std::endl;
     return false;
@@ -33,13 +37,16 @@ bool start_mul(int fd) {
   return true;
 }
 
-using large_matrix = std::array<uint32_t, INPUT_DIM * INPUT_DIM>;
+using large_matrix_a = std::array<uint32_t, INPUT_DIM_M * INPUT_DIM_K>;
+using large_matrix_b = std::array<uint32_t, INPUT_DIM_K * INPUT_DIM_N>;
+using large_matrix_res = std::array<uint32_t, INPUT_DIM_M * INPUT_DIM_N>;
 
-bool write_matrices(int fd, const large_matrix &a, const large_matrix &b) {
+bool write_matrices(int fd, const large_matrix_a &a, const large_matrix_b &b) {
   set_write_mode(fd, true);
-  std::array<uint32_t, INPUT_DIM * INPUT_DIM * 2> args;
+  std::array<uint32_t, INPUT_DIM_M * INPUT_DIM_K + INPUT_DIM_K * INPUT_DIM_N>
+      args;
   std::copy(a.begin(), a.end(), args.begin());
-  std::copy(b.begin(), b.end(), args.begin() + INPUT_DIM * INPUT_DIM);
+  std::copy(b.begin(), b.end(), args.begin() + INPUT_DIM_M * INPUT_DIM_K);
 
   off_t offset = 4;
   ssize_t bytes_written =
@@ -52,69 +59,88 @@ bool write_matrices(int fd, const large_matrix &a, const large_matrix &b) {
   return true;
 }
 
-large_matrix get_large_result(int fd) {
+large_matrix_res get_large_result(int fd) {
   set_write_mode(fd, true);
-  std::array<uint32_t, INPUT_DIM * INPUT_DIM> res;
-  off_t offset = 4 * (1 + INPUT_DIM * INPUT_DIM * 2);
+  large_matrix_res res;
+  off_t offset =
+      4 * (1 + INPUT_DIM_M * INPUT_DIM_K + INPUT_DIM_K * INPUT_DIM_N);
   ssize_t bytes_read =
       pread(fd, res.data(), res.size() * sizeof(uint32_t), offset);
   if (bytes_read != res.size() * sizeof(uint32_t)) {
     std::cerr << "pread failed, read " << bytes_read << " bytes instead of "
-              << INPUT_DIM * INPUT_DIM * 4 - 1 << std::endl;
+              << INPUT_DIM_M * INPUT_DIM_N * 4 - 1 << std::endl;
     close(fd);
     throw std::runtime_error("Failed to read result large_matrix");
   }
   return res;
 }
 
-large_matrix generate_large_result(const large_matrix &a,
-                                   const large_matrix &b) {
-  large_matrix res{};
-  for (int row = 0; row < INPUT_DIM; row++) {
-    for (int col = 0; col < INPUT_DIM; col++) {
-      for (int k = 0; k < INPUT_DIM; k++) {
-        res[row * INPUT_DIM + col] +=
-            a[row * INPUT_DIM + k] * b[k * INPUT_DIM + col];
+large_matrix_res generate_large_result(const large_matrix_a &a,
+                                       const large_matrix_b &b) {
+  large_matrix_res res{};
+  for (int row = 0; row < INPUT_DIM_M; row++) {
+    for (int col = 0; col < INPUT_DIM_N; col++) {
+      for (int k = 0; k < INPUT_DIM_K; k++) {
+        res[row * INPUT_DIM_N + col] +=
+            a[row * INPUT_DIM_K + k] * b[k * INPUT_DIM_N + col];
       }
     }
   }
   return res;
 }
 
-bool verify_result(const large_matrix &a, const large_matrix &b) {
-  for (int row = 0; row < INPUT_DIM; row++) {
-    for (int col = 0; col < INPUT_DIM; col++) {
-      if (a[row * INPUT_DIM + col] != b[row * INPUT_DIM + col]) {
-        return false;
+int verify_result(const large_matrix_res &a, const large_matrix_res &b) {
+  int failed = 0;
+  for (int row = 0; row < INPUT_DIM_M; row++) {
+    for (int col = 0; col < INPUT_DIM_N; col++) {
+      if (a[row * INPUT_DIM_N + col] != b[row * INPUT_DIM_N + col]) {
+        ++failed;
       }
     }
   }
-  return true;
+  return failed;
 }
 
-large_matrix transform_into_input(const large_matrix &input) {
-  large_matrix res;
+large_matrix_a transform_into_input_a(const large_matrix_a &input) {
+  large_matrix_a res;
 
-  for (int i = 0; i < INPUT_DIM; ++i) {
-    for (int j = 0; j < INPUT_DIM; ++j) {
-      int tileIndex = (i / TILE_DIM) * (INPUT_DIM / TILE_DIM) + (j / TILE_DIM);
+  for (int i = 0; i < INPUT_DIM_M; ++i) {
+    for (int j = 0; j < INPUT_DIM_K; ++j) {
+      int tileIndex =
+          (i / TILE_DIM) * (INPUT_DIM_K / TILE_DIM) + (j / TILE_DIM);
       int indexInTile = (i % TILE_DIM) * TILE_DIM + (j % TILE_DIM);
       res[tileIndex * (TILE_DIM * TILE_DIM) + indexInTile] =
-          input[i * INPUT_DIM + j];
+          input[i * INPUT_DIM_K + j];
     }
   }
 
   return res;
 }
 
-large_matrix transform_into_output(const large_matrix &input) {
-  large_matrix res;
+large_matrix_b transform_into_input_b(const large_matrix_b &input) {
+  large_matrix_b res;
 
-  for (int i = 0; i < INPUT_DIM; ++i) {
-    for (int j = 0; j < INPUT_DIM; ++j) {
-      int tileIndex = (i / TILE_DIM) * (INPUT_DIM / TILE_DIM) + (j / TILE_DIM);
+  for (int i = 0; i < INPUT_DIM_K; ++i) {
+    for (int j = 0; j < INPUT_DIM_N; ++j) {
+      int tileIndex =
+          (i / TILE_DIM) * (INPUT_DIM_N / TILE_DIM) + (j / TILE_DIM);
       int indexInTile = (i % TILE_DIM) * TILE_DIM + (j % TILE_DIM);
-      res[i * INPUT_DIM + j] =
+      res[tileIndex * (TILE_DIM * TILE_DIM) + indexInTile] =
+          input[i * INPUT_DIM_N + j];
+    }
+  }
+  return res;
+}
+
+large_matrix_res transform_into_output(const large_matrix_res &input) {
+  large_matrix_res res;
+
+  for (int i = 0; i < INPUT_DIM_M; ++i) {
+    for (int j = 0; j < INPUT_DIM_N; ++j) {
+      int tileIndex =
+          (i / TILE_DIM) * (INPUT_DIM_N / TILE_DIM) + (j / TILE_DIM);
+      int indexInTile = (i % TILE_DIM) * TILE_DIM + (j % TILE_DIM);
+      res[i * INPUT_DIM_N + j] =
           input[tileIndex * (TILE_DIM * TILE_DIM) + indexInTile];
     }
   }
@@ -132,10 +158,9 @@ void wait_for_poll(int fd) {
   }
 }
 
-void print_matrix(const large_matrix &matrix) {
-  return;
+void print_matrix(const large_matrix_a &matrix) {
   for (int i = 0; i < matrix.size(); ++i) {
-    if (i % INPUT_DIM == INPUT_DIM - 1)
+    if (i % INPUT_DIM_M == INPUT_DIM_M - 1)
       std::cout << matrix[i] << "\n";
     else
       std::cout << matrix[i] << " ";
@@ -150,30 +175,32 @@ int main() {
     return 1;
   }
 
-  std::cout << "Testing random " << INPUT_DIM << "x" << INPUT_DIM << " mul\n";
+  std::cout << "Testing random " << INPUT_DIM_M << "x" << INPUT_DIM_K << " * "
+            << INPUT_DIM_K << "x" << INPUT_DIM_N << " mul\n";
 
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<int> dist(0, 500);
 
-  large_matrix mat_a;
-  large_matrix mat_b;
+  large_matrix_a mat_a;
+  large_matrix_b mat_b;
 
   std::chrono::duration<double, std::milli> fpga_dur_mem{};
   std::chrono::duration<double, std::milli> fpga_dur_exec{};
   std::chrono::duration<double, std::milli> cpu_dur{};
 
   for (int j = 0; j < NUM_TRIALS; ++j) {
-    for (int i = 0; i < INPUT_DIM * INPUT_DIM; i++) {
+    for (int i = 0; i < INPUT_DIM_M * INPUT_DIM_K + INPUT_DIM_K + INPUT_DIM_N;
+         i++) {
       mat_a[i] = dist(gen);
       mat_b[i] = dist(gen);
     }
 
-    large_matrix mat_a_t = transform_into_input(mat_a);
-    large_matrix mat_b_t = transform_into_input(mat_b);
+    large_matrix_a mat_a_t = transform_into_input_a(mat_a);
+    large_matrix_b mat_b_t = transform_into_input_b(mat_b);
 
-    print_matrix(mat_a_t);
-    print_matrix(mat_b_t);
+    // print_matrix(mat_a_t);
+    // print_matrix(mat_b_t);
 
     auto mem_start = std::chrono::high_resolution_clock::now();
 
@@ -184,7 +211,6 @@ int main() {
     if (!start_mul(fd)) {
       return 1;
     }
-
     auto mem_end = std::chrono::high_resolution_clock::now();
     fpga_dur_mem += (mem_end - mem_start);
 
@@ -199,16 +225,20 @@ int main() {
 
     auto res_t = transform_into_output(res);
 
-    print_matrix(res);
-
     auto cpu_start = std::chrono::high_resolution_clock::now();
     auto expected = generate_large_result(mat_a, mat_b);
     auto cpu_end = std::chrono::high_resolution_clock::now();
     cpu_dur += (cpu_end - cpu_start);
 
-    if (!verify_result(expected, res_t)) {
-      std::cout << "FAIL\n";
+    int failed = verify_result(expected, res_t);
+
+    if (failed != 0) {
+      // print_matrix(res);
+      std::cout << "FAILED " << failed << " VALUES\n";
       break;
+    }
+    if (j % std::max(int(.05f * NUM_TRIALS), 1) == 0) {
+      std::cout << float(j) / NUM_TRIALS << "\n";
     }
     if (j == NUM_TRIALS - 1) {
       std::cout << "PASS.\n\n";
