@@ -61,13 +61,18 @@ localparam MAX_TILE_SPAN = MAX_INPUT_SIZE/SYS_DIM;
 localparam BITS_PER_TILE_SPAN = $clog2(MAX_TILE_SPAN+1);
 reg [BITS_PER_TILE_SPAN-1:0] tile_span;
 
-localparam BITS_PER_OUTPUT_TILE = $clog2(MAX_TILE_SPAN*MAX_TILE_SPAN+1);
+localparam MAX_TILE_NUM = MAX_TILE_SPAN*MAX_TILE_SPAN;
+localparam BITS_PER_OUTPUT_TILE = $clog2(MAX_TILE_NUM+1);
 reg [BITS_PER_OUTPUT_TILE-1:0] output_tile_num;
 
 localparam BITS_PER_SUB_TILE = $clog2(MAX_TILE_SPAN);
 reg [BITS_PER_SUB_TILE-1:0] sub_tile_num;
 
 reg accumulate;
+
+localparam BITS_PER_TMP1 = $clog2(MAX_TILE_NUM/SYS_DIM+1);
+reg [BITS_PER_TILE_SPAN-1:0] output_tile_num_mod_tile_span;
+reg [BITS_PER_TMP1-1:0] output_tile_num_div_tile_span;
 
 systolic_array #(
     .DIM(SYS_DIM)) multiplier (
@@ -94,6 +99,8 @@ always @(posedge aclk or negedge aresetn) begin
         output_tile_num <= 0;
         sub_tile_num <= 0;
         tile_span <= 0;
+        output_tile_num_mod_tile_span <= 0;
+        output_tile_num_div_tile_span <= 0;
         
         for (int init = 0; init < SYS_DIM*SYS_DIM; init = init + 1) begin
             mat_a[init] <= 32'h0;
@@ -126,6 +133,8 @@ always @(posedge aclk or negedge aresetn) begin
             S_START_TILE: begin
                 if(output_tile_num==tile_span*tile_span) begin
                     output_tile_num <= 0;
+                    output_tile_num_mod_tile_span <= 0;
+                    output_tile_num_div_tile_span <= 0;
                     current_state <= S_WRITE_STATUS;
                 end else begin
                     accumulate <= 1;
@@ -139,7 +148,7 @@ always @(posedge aclk or negedge aresetn) begin
                     mat_a <= matrix_read_data;
                     current_state <= S_READ_B;
                 end else begin
-                    matrix_num <= tile_span*(output_tile_num/tile_span)+sub_tile_num;
+                    matrix_num <= tile_span*output_tile_num_div_tile_span+sub_tile_num;
                     matrix_command <= MHS_READ_MATRIX;
                 end
             end
@@ -149,7 +158,7 @@ always @(posedge aclk or negedge aresetn) begin
                     mat_b <= matrix_read_data;
                     current_state <= S_COMPUTE;
                 end else begin
-                    matrix_num <= tile_span*sub_tile_num + (output_tile_num % tile_span) + tile_span*tile_span;
+                    matrix_num <= tile_span*sub_tile_num + output_tile_num_mod_tile_span + tile_span*tile_span;
                     matrix_command <= MHS_READ_MATRIX;
                 end
             end
@@ -164,9 +173,14 @@ always @(posedge aclk or negedge aresetn) begin
             end
             
             S_COMPLETE_TILE: begin
-                if(sub_tile_num==tile_span-1) begin
+                if(sub_tile_num==tile_span-1) begin // all sub tiles complete
                     sub_tile_num <= 0;
-                    output_tile_num <= output_tile_num + 1;
+                    if(output_tile_num_mod_tile_span+1==tile_span) begin
+                        output_tile_num_div_tile_span <= output_tile_num_div_tile_span + 1;
+                        output_tile_num_mod_tile_span <= 0;
+                    end else begin
+                        output_tile_num_mod_tile_span <= output_tile_num_mod_tile_span + 1;
+                    end
                     current_state <= S_WRITE_RESULTS;
                 end else begin
                     sub_tile_num <= sub_tile_num + 1;
@@ -177,9 +191,10 @@ always @(posedge aclk or negedge aresetn) begin
             S_WRITE_RESULTS: begin
                 if(matrix_done) begin
                     current_state <= S_START_TILE;
-                    accumulate <= 0; // we've written results, can reset now
+                    output_tile_num <= output_tile_num + 1;
+                    accumulate <= 0;
                 end else begin
-                    matrix_num <= (output_tile_num - 1) + (tile_span*tile_span*2);
+                    matrix_num <= output_tile_num + (tile_span*tile_span*2);
                     matrix_command <= MHS_WRITE_RESULT;
                 end
             end
