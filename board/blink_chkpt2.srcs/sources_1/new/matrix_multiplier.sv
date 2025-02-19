@@ -58,8 +58,10 @@ reg start_mul;
 wire mul_done;
 
 localparam MAX_TILE_SPAN = MAX_INPUT_SIZE/SYS_DIM;
-localparam BITS_PER_TILE_SPAN = $clog2(MAX_TILE_SPAN+1);
-reg [BITS_PER_TILE_SPAN-1:0] tile_span;
+localparam BITS_PER_TILE_CNT = $clog2(MAX_TILE_SPAN+1);
+reg [BITS_PER_TILE_CNT-1:0] m_tiles;
+reg [BITS_PER_TILE_CNT-1:0] k_tiles;
+reg [BITS_PER_TILE_CNT-1:0] n_tiles;
 
 localparam MAX_TILE_NUM = MAX_TILE_SPAN*MAX_TILE_SPAN;
 localparam BITS_PER_OUTPUT_TILE = $clog2(MAX_TILE_NUM+1);
@@ -71,7 +73,7 @@ reg [BITS_PER_SUB_TILE-1:0] sub_tile_num;
 reg accumulate;
 
 localparam BITS_PER_TMP1 = $clog2(MAX_TILE_NUM/SYS_DIM+1);
-reg [BITS_PER_TILE_SPAN-1:0] output_tile_num_mod_tile_span;
+reg [BITS_PER_TILE_CNT-1:0] output_tile_num_mod_tile_span;
 reg [BITS_PER_TMP1-1:0] output_tile_num_div_tile_span;
 
 systolic_array #(
@@ -98,7 +100,9 @@ always @(posedge aclk or negedge aresetn) begin
         matrix_command <= MHS_IDLE;
         output_tile_num <= 0;
         sub_tile_num <= 0;
-        tile_span <= 0;
+        m_tiles <= 0;
+        k_tiles <= 0;
+        n_tiles <= 0;
         output_tile_num_mod_tile_span <= 0;
         output_tile_num_div_tile_span <= 0;
         
@@ -125,13 +129,15 @@ always @(posedge aclk or negedge aresetn) begin
                 if(status_read_data == 32'd0) begin
                     current_state <= S_CHECK_STATUS;
                 end else begin
-                    tile_span <= status_read_data / SYS_DIM;
+                    m_tiles <= status_read_data[9:0] / SYS_DIM;
+                    k_tiles <= status_read_data[19:10] / SYS_DIM;
+                    n_tiles <= status_read_data[29:20] / SYS_DIM;
                     current_state <= S_START_TILE;
                 end
             end
             
             S_START_TILE: begin
-                if(output_tile_num==tile_span*tile_span) begin
+                if(output_tile_num==m_tiles*n_tiles) begin
                     output_tile_num <= 0;
                     output_tile_num_mod_tile_span <= 0;
                     output_tile_num_div_tile_span <= 0;
@@ -148,7 +154,7 @@ always @(posedge aclk or negedge aresetn) begin
                     mat_a <= matrix_read_data;
                     current_state <= S_READ_B;
                 end else begin
-                    matrix_num <= tile_span*output_tile_num_div_tile_span+sub_tile_num;
+                    matrix_num <= k_tiles*output_tile_num_div_tile_span+sub_tile_num;
                     matrix_command <= MHS_READ_MATRIX;
                 end
             end
@@ -158,7 +164,7 @@ always @(posedge aclk or negedge aresetn) begin
                     mat_b <= matrix_read_data;
                     current_state <= S_COMPUTE;
                 end else begin
-                    matrix_num <= tile_span*sub_tile_num + output_tile_num_mod_tile_span + tile_span*tile_span;
+                    matrix_num <= n_tiles*sub_tile_num + output_tile_num_mod_tile_span + m_tiles*k_tiles;
                     matrix_command <= MHS_READ_MATRIX;
                 end
             end
@@ -173,9 +179,9 @@ always @(posedge aclk or negedge aresetn) begin
             end
             
             S_COMPLETE_TILE: begin
-                if(sub_tile_num==tile_span-1) begin // all sub tiles complete
+                if(sub_tile_num==k_tiles-1) begin // all sub tiles complete
                     sub_tile_num <= 0;
-                    if(output_tile_num_mod_tile_span+1==tile_span) begin
+                    if(output_tile_num_mod_tile_span+1==n_tiles) begin
                         output_tile_num_div_tile_span <= output_tile_num_div_tile_span + 1;
                         output_tile_num_mod_tile_span <= 0;
                     end else begin
@@ -194,7 +200,7 @@ always @(posedge aclk or negedge aresetn) begin
                     output_tile_num <= output_tile_num + 1;
                     accumulate <= 0;
                 end else begin
-                    matrix_num <= output_tile_num + (tile_span*tile_span*2);
+                    matrix_num <= output_tile_num + (m_tiles*k_tiles+k_tiles*n_tiles);
                     matrix_command <= MHS_WRITE_RESULT;
                 end
             end

@@ -3,8 +3,8 @@ version: '3'
 tasks:
   build:
     aliases: [b]
-    cmds:
-      - g++ demo.cpp -o demo
+    cmds: 
+      - g++ demo.cpp -o demo #-O3
 
   test:
     aliases: [t]
