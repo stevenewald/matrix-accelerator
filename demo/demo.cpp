@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <chrono>
 #include <cstdint>
 #include <cstring>
@@ -10,13 +11,17 @@
 #include <sys/poll.h>
 #include <unistd.h>
 
-#define NUM_TRIALS 20
+#define NUM_TRIALS 1
 
-#define TILE_DIM 4
+#define TILE_DIM 6
 
-#define INPUT_DIM_M 60
-#define INPUT_DIM_K 16
-#define INPUT_DIM_N 60
+// Unsigned
+#define MIN_INPUT_VALUE 0
+#define MAX_INPUT_VALUE std::pow(2, 19)
+
+#define INPUT_DIM_M 66
+#define INPUT_DIM_K 66
+#define INPUT_DIM_N 66
 
 #define DEVICE_PATH "/dev/fpga"
 #define PCIE_SET_DMA (_IOW('k', 1, int))
@@ -43,8 +48,8 @@ using large_matrix_res = std::array<uint32_t, INPUT_DIM_M * INPUT_DIM_N>;
 
 bool write_matrices(int fd, const large_matrix_a &a, const large_matrix_b &b) {
   set_write_mode(fd, true);
-  std::array<uint32_t, INPUT_DIM_M * INPUT_DIM_K + INPUT_DIM_K * INPUT_DIM_N>
-      args;
+  std::vector<uint32_t> args(INPUT_DIM_M * INPUT_DIM_K +
+                             INPUT_DIM_K * INPUT_DIM_N);
   std::copy(a.begin(), a.end(), args.begin());
   std::copy(b.begin(), b.end(), args.begin() + INPUT_DIM_M * INPUT_DIM_K);
 
@@ -94,6 +99,12 @@ int verify_result(const large_matrix_res &a, const large_matrix_res &b) {
   for (int row = 0; row < INPUT_DIM_M; row++) {
     for (int col = 0; col < INPUT_DIM_N; col++) {
       if (a[row * INPUT_DIM_N + col] != b[row * INPUT_DIM_N + col]) {
+        std::cout << (row * INPUT_DIM_N + col) << ", "
+                  << 4 * (1 + INPUT_DIM_M * INPUT_DIM_K + row * INPUT_DIM_N +
+                          col)
+                  << ", " << std::log(a[row * INPUT_DIM_N + col]) / std::log(2)
+                  << "~=" << std::log(b[row * INPUT_DIM_N + col]) / std::log(2)
+                  << "\n";
         ++failed;
       }
     }
@@ -180,7 +191,7 @@ int main() {
 
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::uniform_int_distribution<int> dist(0, 500);
+  std::uniform_int_distribution<int> dist(MIN_INPUT_VALUE, MAX_INPUT_VALUE);
 
   large_matrix_a mat_a;
   large_matrix_b mat_b;
@@ -190,9 +201,10 @@ int main() {
   std::chrono::duration<double, std::milli> cpu_dur{};
 
   for (int j = 0; j < NUM_TRIALS; ++j) {
-    for (int i = 0; i < INPUT_DIM_M * INPUT_DIM_K + INPUT_DIM_K + INPUT_DIM_N;
-         i++) {
+    for (int i = 0; i < INPUT_DIM_M * INPUT_DIM_K; i++) {
       mat_a[i] = dist(gen);
+    }
+    for (int i = 0; i < INPUT_DIM_K * INPUT_DIM_N; i++) {
       mat_b[i] = dist(gen);
     }
 
