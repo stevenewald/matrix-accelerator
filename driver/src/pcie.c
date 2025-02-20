@@ -13,6 +13,8 @@
 #include <linux/slab.h>
 #include <linux/string.h>
 
+#define MMIO_ENABLED_ON_DRIVER 0
+
 // todo: move this to driver
 #define PCIE_IOC_MAGIC 'k'
 #define PCIE_SET_DMA _IOW(PCIE_IOC_MAGIC, 1, int)
@@ -61,7 +63,7 @@ static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
                               size_t count, loff_t *ppos) {
   struct pcie_dev *pcie = filp->private_data;
   pcie->matrix_done = false;
-  if (pcie->use_dma) {
+  if (pcie->use_dma || !MMIO_ENABLED_ON_DRIVER) {
     printk("Writing with DMA");
     return dma_write(pcie, buf, count, ppos);
   } else {
@@ -73,7 +75,7 @@ static ssize_t pcie_dma_write(struct file *filp, const char __user *buf,
 static ssize_t pcie_dma_read(struct file *file, char __user *buf, size_t count,
                              loff_t *ppos) {
   struct pcie_dev *pcie = file->private_data;
-  if (pcie->use_dma) {
+  if (pcie->use_dma || !MMIO_ENABLED_ON_DRIVER) {
     printk("Reading with DMA");
     return dma_read(pcie, buf, count, ppos);
   } else {
@@ -144,17 +146,23 @@ static int pcie_enable_and_request_regions(struct pci_dev *pdev,
   if (ret)
     return ret;
 
-  ret = pci_request_region(pdev, 0, "MMIO Interface");
-  if (ret) {
-    pci_disable_device(pdev);
-    return ret;
+  if (MMIO_ENABLED_ON_DRIVER) {
+    ret = pci_request_region(pdev, 0, "MMIO Interface");
+    if (ret) {
+      pci_disable_device(pdev);
+      return ret;
+    }
+    dev->mmio_bar_requested = true;
   }
-  dev->mmio_bar_requested = true;
 
-  ret = pci_request_region(pdev, 1, "DMA Interface");
+  int dma_bar = MMIO_ENABLED_ON_DRIVER ? 1 : 0;
+
+  ret = pci_request_region(pdev, dma_bar, "DMA Interface");
   if (ret) {
-    pci_release_region(pdev, 0);
-    dev->mmio_bar_requested = false;
+    if (MMIO_ENABLED_ON_DRIVER) {
+      pci_release_region(pdev, 0);
+      dev->mmio_bar_requested = false;
+    }
     pci_disable_device(pdev);
     return ret;
   }
@@ -166,15 +174,19 @@ static int pcie_enable_and_request_regions(struct pci_dev *pdev,
 
 /* Helper: Map BAR0 and BAR1 */
 static int pcie_map_bars(struct pci_dev *pdev, struct pcie_dev *dev) {
-  dev->mmio_bar_len = pci_resource_len(pdev, 0);
-  dev_info(&pdev->dev, "Detected BAR0 with size %pa\n", &dev->mmio_bar_len);
-  dev->mmio_bar_base = pci_iomap(pdev, 0, dev->mmio_bar_len);
-  if (!dev->mmio_bar_base)
-    return -ENOMEM;
+  if (MMIO_ENABLED_ON_DRIVER) {
+    dev->mmio_bar_len = pci_resource_len(pdev, 0);
+    dev_info(&pdev->dev, "Detected BAR0 with size %pa\n", &dev->mmio_bar_len);
+    dev->mmio_bar_base = pci_iomap(pdev, 0, dev->mmio_bar_len);
+    if (!dev->mmio_bar_base)
+      return -ENOMEM;
+  }
 
-  dev->dma_bar_len = pci_resource_len(pdev, 1);
+  int dma_bar = MMIO_ENABLED_ON_DRIVER ? 1 : 0;
+
+  dev->dma_bar_len = pci_resource_len(pdev, dma_bar);
   dev_info(&pdev->dev, "Detected BAR1 with size %pa\n", &dev->dma_bar_len);
-  dev->dma_bar_base = pci_iomap(pdev, 1, dev->dma_bar_len);
+  dev->dma_bar_base = pci_iomap(pdev, dma_bar, dev->dma_bar_len);
   if (!dev->dma_bar_base) {
     pci_iounmap(pdev, dev->mmio_bar_base);
     dev->mmio_bar_base = NULL;
@@ -300,7 +312,7 @@ static void pcie_cleanup(struct pci_dev *pdev) {
     pci_iounmap(pdev, dev->mmio_bar_base);
 
   if (dev->dma_bar_requested)
-    pci_release_region(pdev, 1);
+    pci_release_region(pdev, MMIO_ENABLED_ON_DRIVER ? 1 : 0);
   if (dev->mmio_bar_requested)
     pci_release_region(pdev, 0);
 
