@@ -7,10 +7,10 @@ size_t mmio_read(struct pcie_dev *pcie, char __user *buf, size_t count,
   char kbuf[256];
   size_t read_size = min(count, sizeof(kbuf));
 
-  if (!pcie || !pcie->bar0_base || !buf || !ppos)
+  if (!pcie || !pcie->mmio_bar_base || !buf || !ppos)
     return -EINVAL;
 
-  mmio_base = pcie->bar0_base + *ppos;
+  mmio_base = pcie->mmio_bar_base + *ppos;
 
   memcpy_fromio(kbuf, mmio_base, read_size);
 
@@ -26,12 +26,12 @@ size_t mmio_write(struct pcie_dev *pcie, const char __user *buf, size_t count,
   size_t written = 0;
   size_t offset = *ppos;
 
-  if (!pcie || !pcie->bar0_base || !buf || offset >= pcie->bar0_len) {
+  if (!pcie || !pcie->mmio_bar_base || !buf || offset >= pcie->mmio_bar_len) {
     return -EINVAL;
   }
 
-  if (offset + count > pcie->bar0_len) {
-    count = pcie->bar0_len - offset;
+  if (offset + count > pcie->mmio_bar_len) {
+    count = pcie->mmio_bar_len - offset;
   }
 
   while (written < count) {
@@ -41,7 +41,7 @@ size_t mmio_write(struct pcie_dev *pcie, const char __user *buf, size_t count,
     if (remaining >= 4) {
       if (copy_from_user(&val, buf + written, 4))
         return -EFAULT;
-      writel(val, pcie->bar0_base + offset + written);
+      writel(val, pcie->mmio_bar_base + offset + written);
       written += 4;
     } else {
       u8 temp[4] = {0};
@@ -49,7 +49,7 @@ size_t mmio_write(struct pcie_dev *pcie, const char __user *buf, size_t count,
         return -EFAULT;
 
       val = *(u32 *)temp;
-      writel(val, pcie->bar0_base + offset + written);
+      writel(val, pcie->mmio_bar_base + offset + written);
       written += remaining;
     }
   }
