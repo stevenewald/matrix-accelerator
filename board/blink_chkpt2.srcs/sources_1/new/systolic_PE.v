@@ -23,19 +23,19 @@
 module systolic_PE(
     input clk,
     input rst,
-    input [19:0] a_in,
-    input [19:0] b_in,
+    input [17:0] a_in,
+    input [17:0] b_in,
     input valid,
-    output reg [19:0] a_out,
-    output reg [19:0] b_out,
+    output reg [17:0] a_out,
+    output reg [17:0] b_out,
     output wire [31:0] result
     );
     
     reg [31:0] inter;
     
     xbip_multadd_0 U0 (
-    .A        (a_in[19:0]),
-    .B        (b_in[19:0]),
+    .A        (a_in),
+    .B        (b_in),
     .C        (inter),
     .SUBTRACT (0),
     .P        (result)
