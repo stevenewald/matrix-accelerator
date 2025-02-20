@@ -56,7 +56,7 @@ localparam STATE_READ_DATA  = 4'd5;
 localparam STATE_DONE       = 4'd6;
 
 reg [3:0] state;
-reg [7:0] arg_num; // can shorten
+reg [$clog2(SYS_DIM_ELEMENTS+1)-1:0] arg_num;
 reg truncated_burst;
 
 //---------------------------------------------------------------------
@@ -124,7 +124,7 @@ always @(posedge clk or negedge resetn) begin
                         m_axi_wdata <= write_data[arg_num+1];
                         m_axi_wlast <= arg_num==num_writes-2;
                     end
-                end else begin
+                end else if (!m_axi_wvalid) begin
                     m_axi_wlast <= truncated_burst || num_writes==1;
                     m_axi_wdata  <= write_data[arg_num];
                     m_axi_wstrb  <= {4'hF};  // Full word write
@@ -165,7 +165,7 @@ always @(posedge clk or negedge resetn) begin
                         m_axi_rready <= 0;
                         state <= STATE_READ_ADDR;
                     end
-                end else begin
+                end else if(!m_axi_rready) begin
                     m_axi_rready <= 1'b1;
                 end
             end

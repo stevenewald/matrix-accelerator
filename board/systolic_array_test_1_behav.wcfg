@@ -11,159 +11,147 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="310.150 ns"></ZoomStartTime>
-      <ZoomEndTime time="459.971 ns"></ZoomEndTime>
-      <Cursor1Time time="435.000 ns"></Cursor1Time>
+      <ZoomStartTime time="20.791 ns"></ZoomStartTime>
+      <ZoomEndTime time="109.842 ns"></ZoomEndTime>
+      <Cursor1Time time="95.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="357"></NameColumnWidth>
-      <ValueColumnWidth column_width="58"></ValueColumnWidth>
+      <NameColumnWidth column_width="434"></NameColumnWidth>
+      <ValueColumnWidth column_width="72"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="1" />
-   <wvobject fp_name="group1660" type="group">
-      <obj_property name="label">large_mul</obj_property>
+   <WVObjectSize size="2" />
+   <wvobject fp_name="group1524" type="group">
+      <obj_property name="label">small_mul</obj_property>
       <obj_property name="DisplayName">label</obj_property>
       <obj_property name="isExpanded"></obj_property>
-      <wvobject fp_name="group108" type="group">
-         <obj_property name="label">small_arr</obj_property>
-         <obj_property name="DisplayName">label</obj_property>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/clk" type="logic">
-            <obj_property name="ElementShortName">clk</obj_property>
-            <obj_property name="ObjectShortName">clk</obj_property>
-         </wvobject>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/rst" type="logic">
-            <obj_property name="ElementShortName">rst</obj_property>
-            <obj_property name="ObjectShortName">rst</obj_property>
-         </wvobject>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/mat_a" type="array">
-            <obj_property name="ElementShortName">mat_a[3:0][31:0]</obj_property>
-            <obj_property name="ObjectShortName">mat_a[3:0][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/mat_b" type="array">
-            <obj_property name="ElementShortName">mat_b[3:0][31:0]</obj_property>
-            <obj_property name="ObjectShortName">mat_b[3:0][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/out" type="array">
-            <obj_property name="ElementShortName">out[3:0][31:0]</obj_property>
-            <obj_property name="ObjectShortName">out[3:0][31:0]</obj_property>
-            <obj_property name="isExpanded"></obj_property>
-         </wvobject>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/accumulate" type="logic">
-            <obj_property name="ElementShortName">accumulate</obj_property>
-            <obj_property name="ObjectShortName">accumulate</obj_property>
-         </wvobject>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/start" type="logic">
-            <obj_property name="ElementShortName">start</obj_property>
-            <obj_property name="ObjectShortName">start</obj_property>
-         </wvobject>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/done" type="logic">
-            <obj_property name="ElementShortName">done</obj_property>
-            <obj_property name="ObjectShortName">done</obj_property>
-         </wvobject>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/cycle_count" type="array">
-            <obj_property name="ElementShortName">cycle_count[3:0]</obj_property>
-            <obj_property name="ObjectShortName">cycle_count[3:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/a_in" type="array">
-            <obj_property name="ElementShortName">a_in[1:0][31:0]</obj_property>
-            <obj_property name="ObjectShortName">a_in[1:0][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/b_in" type="array">
-            <obj_property name="ElementShortName">b_in[1:0][31:0]</obj_property>
-            <obj_property name="ObjectShortName">b_in[1:0][31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/state" type="array">
-            <obj_property name="ElementShortName">state[2:0]</obj_property>
-            <obj_property name="ObjectShortName">state[2:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/running" type="logic">
-            <obj_property name="ElementShortName">running</obj_property>
-            <obj_property name="ObjectShortName">running</obj_property>
-         </wvobject>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/DIM" type="array">
-            <obj_property name="ElementShortName">DIM[31:0]</obj_property>
-            <obj_property name="ObjectShortName">DIM[31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/S_IDLE" type="array">
-            <obj_property name="ElementShortName">S_IDLE[2:0]</obj_property>
-            <obj_property name="ObjectShortName">S_IDLE[2:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/S_RUNNING" type="array">
-            <obj_property name="ElementShortName">S_RUNNING[2:0]</obj_property>
-            <obj_property name="ObjectShortName">S_RUNNING[2:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/systolic_array_test_1/small_arr/S_COMPLETE" type="array">
-            <obj_property name="ElementShortName">S_COMPLETE[2:0]</obj_property>
-            <obj_property name="ObjectShortName">S_COMPLETE[2:0]</obj_property>
-         </wvobject>
-      </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/clk" type="logic">
+      <wvobject fp_name="/systolic_array_test_1/small_arr/clk" type="logic">
          <obj_property name="ElementShortName">clk</obj_property>
          <obj_property name="ObjectShortName">clk</obj_property>
       </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/rst" type="logic">
+      <wvobject fp_name="/systolic_array_test_1/small_arr/rst" type="logic">
          <obj_property name="ElementShortName">rst</obj_property>
          <obj_property name="ObjectShortName">rst</obj_property>
       </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/mat_a" type="array">
-         <obj_property name="ElementShortName">mat_a[24:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">mat_a[24:0][31:0]</obj_property>
+      <wvobject fp_name="/systolic_array_test_1/small_arr/mat_a" type="array">
+         <obj_property name="ElementShortName">mat_a[3:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">mat_a[3:0][31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/mat_b" type="array">
-         <obj_property name="ElementShortName">mat_b[24:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">mat_b[24:0][31:0]</obj_property>
+      <wvobject fp_name="/systolic_array_test_1/small_arr/mat_b" type="array">
+         <obj_property name="ElementShortName">mat_b[3:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">mat_b[3:0][31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/out" type="array">
-         <obj_property name="ElementShortName">out[24:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">out[24:0][31:0]</obj_property>
+      <wvobject fp_name="/systolic_array_test_1/small_arr/out" type="array">
+         <obj_property name="ElementShortName">out[3:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">out[3:0][31:0]</obj_property>
+         <wvobject fp_name="/systolic_array_test_1/small_arr/out[3]" type="array">
+            <obj_property name="ElementShortName">[3][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[3][31:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/systolic_array_test_1/small_arr/out[2]" type="array">
+            <obj_property name="ElementShortName">[2][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[2][31:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/systolic_array_test_1/small_arr/out[1]" type="array">
+            <obj_property name="ElementShortName">[1][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[1][31:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/systolic_array_test_1/small_arr/out[0]" type="array">
+            <obj_property name="ElementShortName">[0][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[0][31:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
       </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/accumulate" type="logic">
+      <wvobject fp_name="/systolic_array_test_1/small_arr/accumulate" type="logic">
          <obj_property name="ElementShortName">accumulate</obj_property>
          <obj_property name="ObjectShortName">accumulate</obj_property>
       </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/start" type="logic">
+      <wvobject fp_name="/systolic_array_test_1/small_arr/start" type="logic">
          <obj_property name="ElementShortName">start</obj_property>
          <obj_property name="ObjectShortName">start</obj_property>
       </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/done" type="logic">
+      <wvobject fp_name="/systolic_array_test_1/small_arr/done" type="logic">
          <obj_property name="ElementShortName">done</obj_property>
          <obj_property name="ObjectShortName">done</obj_property>
       </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/cycle_count" type="array">
-         <obj_property name="ElementShortName">cycle_count[4:0]</obj_property>
-         <obj_property name="ObjectShortName">cycle_count[4:0]</obj_property>
+      <wvobject fp_name="/systolic_array_test_1/small_arr/cycle_count" type="array">
+         <obj_property name="ElementShortName">cycle_count[3:0]</obj_property>
+         <obj_property name="ObjectShortName">cycle_count[3:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/a_in" type="array">
-         <obj_property name="ElementShortName">a_in[4:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">a_in[4:0][31:0]</obj_property>
+      <wvobject fp_name="/systolic_array_test_1/small_arr/a_in" type="array">
+         <obj_property name="ElementShortName">a_in[1:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">a_in[1:0][31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/b_in" type="array">
-         <obj_property name="ElementShortName">b_in[4:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">b_in[4:0][31:0]</obj_property>
+      <wvobject fp_name="/systolic_array_test_1/small_arr/b_in" type="array">
+         <obj_property name="ElementShortName">b_in[1:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">b_in[1:0][31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/state" type="array">
+      <wvobject fp_name="/systolic_array_test_1/small_arr/state" type="array">
          <obj_property name="ElementShortName">state[2:0]</obj_property>
          <obj_property name="ObjectShortName">state[2:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/running" type="logic">
+      <wvobject fp_name="/systolic_array_test_1/small_arr/running" type="logic">
          <obj_property name="ElementShortName">running</obj_property>
          <obj_property name="ObjectShortName">running</obj_property>
       </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/DIM" type="array">
+      <wvobject fp_name="/systolic_array_test_1/small_arr/DIM" type="array">
          <obj_property name="ElementShortName">DIM[31:0]</obj_property>
          <obj_property name="ObjectShortName">DIM[31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/S_IDLE" type="array">
+      <wvobject fp_name="/systolic_array_test_1/small_arr/S_IDLE" type="array">
          <obj_property name="ElementShortName">S_IDLE[2:0]</obj_property>
          <obj_property name="ObjectShortName">S_IDLE[2:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/S_RUNNING" type="array">
+      <wvobject fp_name="/systolic_array_test_1/small_arr/S_RUNNING" type="array">
          <obj_property name="ElementShortName">S_RUNNING[2:0]</obj_property>
          <obj_property name="ObjectShortName">S_RUNNING[2:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/systolic_array_test_1/large_arr/S_COMPLETE" type="array">
+      <wvobject fp_name="/systolic_array_test_1/small_arr/S_COMPLETE" type="array">
          <obj_property name="ElementShortName">S_COMPLETE[2:0]</obj_property>
          <obj_property name="ObjectShortName">S_COMPLETE[2:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group1497" type="group">
+      <obj_property name="label">PE1</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/systolic_array_test_1/small_arr/pe_grid/\gen1[0].gen2[0].genblk1.sys_pe /clk" type="logic">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
+      </wvobject>
+      <wvobject fp_name="/systolic_array_test_1/small_arr/pe_grid/\gen1[0].gen2[0].genblk1.sys_pe /rst" type="logic">
+         <obj_property name="ElementShortName">rst</obj_property>
+         <obj_property name="ObjectShortName">rst</obj_property>
+      </wvobject>
+      <wvobject fp_name="/systolic_array_test_1/small_arr/pe_grid/\gen1[0].gen2[0].genblk1.sys_pe /a_in" type="array">
+         <obj_property name="ElementShortName">a_in[31:0]</obj_property>
+         <obj_property name="ObjectShortName">a_in[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/systolic_array_test_1/small_arr/pe_grid/\gen1[0].gen2[0].genblk1.sys_pe /b_in" type="array">
+         <obj_property name="ElementShortName">b_in[31:0]</obj_property>
+         <obj_property name="ObjectShortName">b_in[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/systolic_array_test_1/small_arr/pe_grid/\gen1[0].gen2[0].genblk1.sys_pe /valid" type="logic">
+         <obj_property name="ElementShortName">valid</obj_property>
+         <obj_property name="ObjectShortName">valid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/systolic_array_test_1/small_arr/pe_grid/\gen1[0].gen2[0].genblk1.sys_pe /a_out" type="array">
+         <obj_property name="ElementShortName">a_out[31:0]</obj_property>
+         <obj_property name="ObjectShortName">a_out[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/systolic_array_test_1/small_arr/pe_grid/\gen1[0].gen2[0].genblk1.sys_pe /b_out" type="array">
+         <obj_property name="ElementShortName">b_out[31:0]</obj_property>
+         <obj_property name="ObjectShortName">b_out[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/systolic_array_test_1/small_arr/pe_grid/\gen1[0].gen2[0].genblk1.sys_pe /result" type="array">
+         <obj_property name="ElementShortName">result[31:0]</obj_property>
+         <obj_property name="ObjectShortName">result[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/systolic_array_test_1/small_arr/pe_grid/\gen1[0].gen2[0].genblk1.sys_pe /inter" type="array">
+         <obj_property name="ElementShortName">inter[31:0]</obj_property>
+         <obj_property name="ObjectShortName">inter[31:0]</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>
