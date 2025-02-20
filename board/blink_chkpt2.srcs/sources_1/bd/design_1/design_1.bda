@@ -223,24 +223,6 @@
                 "SV": "xilinx.com:ip:axi_bram_ctrl:4.1",
                 "TM": "both",
                 "TU": "memory"
-            },
-            "V5": {
-                "VT": "AC",
-                "BA": "0x00000000",
-                "HA": "0x0000FFFF",
-                "BP": "C_S_AXI_BASEADDR",
-                "HP": "C_S_AXI_HIGHADDR",
-                "MA": "M_AXI_LITE",
-                "MX": "/xdma_0",
-                "MI": "M_AXI_LITE",
-                "MS": "SEG_axi_bram_ctrl_0_Mem0",
-                "MV": "xilinx.com:ip:xdma:4.1",
-                "SX": "/axi_bram_ctrl_0",
-                "SI": "S_AXI",
-                "SS": "Mem0",
-                "SV": "xilinx.com:ip:axi_bram_ctrl:4.1",
-                "TM": "both",
-                "TU": "memory"
             }
         },
         "edges": [
@@ -259,11 +241,6 @@
             },
             {
                 "src": "V4",
-                "trg": "V2",
-                "EH": "2"
-            },
-            {
-                "src": "V5",
                 "trg": "V2",
                 "EH": "2"
             }

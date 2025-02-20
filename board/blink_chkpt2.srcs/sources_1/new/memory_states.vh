@@ -1,7 +1,7 @@
 `ifndef STATE_DEFS_V
 `define STATE_DEFS_V
 
-parameter SYS_DIM        = 4;
+parameter SYS_DIM        = 7;
 parameter MAX_INPUT_SIZE = 70;
 
 parameter MATRIX_NUM_NBITS = $clog2(3*(MAX_INPUT_SIZE*MAX_INPUT_SIZE)/(SYS_DIM*SYS_DIM)+1);

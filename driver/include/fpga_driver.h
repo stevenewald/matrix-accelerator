@@ -10,8 +10,8 @@
 typedef void __iomem *mmio_base;
 
 struct pcie_dev {
-  mmio_base bar0_base, bar1_base;
-  unsigned long bar0_len, bar1_len;
+  mmio_base mmio_bar_base, dma_bar_base;
+  unsigned long mmio_bar_len, dma_bar_len;
   struct pci_dev *pdev;
   struct cdev cdev;
   dev_t devt;
@@ -25,7 +25,7 @@ struct pcie_dev {
   bool matrix_done;
   int dma_irq;
   int usr_irq;
-  bool bar0_requested;
-  bool bar1_requested;
+  bool mmio_bar_requested;
+  bool dma_bar_requested;
   bool use_dma;
 };

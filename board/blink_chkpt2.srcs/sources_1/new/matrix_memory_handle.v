@@ -50,8 +50,6 @@ module matrix_memory_handle #(
     
     reg [2:0] state;
     
-    reg is_setup;
-    
     wire [31:0] matrix_offset = DIM*DIM*matrix_num + 1; //+1 for status_addr
    
     always @(posedge clk or negedge rstn) begin
@@ -69,11 +67,9 @@ module matrix_memory_handle #(
             state <= MHS_IDLE;
             status_read_data <= 0;
             axi_num_writes <= 0;
-            is_setup <= 0;
         end else begin
             case (state)
                 MHS_IDLE: begin
-                    is_setup <= 0;
                     if(matrix_done) begin
                         // Give time for higher level module to process done signal
                         matrix_done <= 0;
@@ -95,30 +91,26 @@ module matrix_memory_handle #(
                     end
                 end
                 MHS_READ_MATRIX: begin
-                    if(!is_setup) begin
-                        axi_num_reads <= DIM*DIM;
-                        is_setup <= 1;
-                    end if(axi_done) begin
+                    if(axi_done) begin
                         matrix_read_data <= axi_read_data;
                         state <= MHS_IDLE;
                         matrix_done <= 1;
                         axi_start <= 0;
                     end else begin
+                        axi_num_reads <= DIM*DIM;
                         axi_start <= 1;
                         axi_addr <= 4*(matrix_offset);
                         axi_write <= 0;
                     end
                 end
                 MHS_WRITE_RESULT: begin
-                    if(!is_setup) begin
-                        axi_num_writes <= DIM*DIM;
-                        is_setup <= 1;
-                    end else if(axi_done) begin
+                    if(axi_done) begin
                         state <= MHS_IDLE;
                         matrix_done <= 1;
                         axi_write <= 0;
                         axi_start <= 0;
                     end else begin
+                        axi_num_writes <= DIM*DIM;
                         axi_start <= 1;
                         axi_write <= 1;
                         axi_write_data <= matrix_write_data;

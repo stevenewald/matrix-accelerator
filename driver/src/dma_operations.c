@@ -88,9 +88,9 @@ size_t dma_write(struct pcie_dev *pcie, const char __user *buf, size_t count,
   dma_sync_single_for_device(&pcie->pdev->dev, pcie->dma_handle, count,
                              DMA_TO_DEVICE);
 
-  set_dma_descriptor_addr(H2C, pcie->bar1_base, dma_desc_phys);
+  set_dma_descriptor_addr(H2C, pcie->dma_bar_base, dma_desc_phys);
 
-  execute_dma_transfer(H2C, pcie->bar1_base, &pcie->dma_transfer_done);
+  execute_dma_transfer(H2C, pcie->dma_bar_base, &pcie->dma_transfer_done);
 
   *ppos += count;
   mutex_unlock(&pcie->dma_lock);
@@ -119,9 +119,9 @@ size_t dma_read(struct pcie_dev *pcie, char __user *buf, size_t count,
 
   memset(pcie->dma_buffer, 0, DMA_BUFFER_SIZE);
 
-  set_dma_descriptor_addr(C2H, pcie->bar1_base, dma_desc_phys);
+  set_dma_descriptor_addr(C2H, pcie->dma_bar_base, dma_desc_phys);
 
-  execute_dma_transfer(C2H, pcie->bar1_base, &pcie->dma_transfer_done);
+  execute_dma_transfer(C2H, pcie->dma_bar_base, &pcie->dma_transfer_done);
 
   dma_sync_single_for_cpu(&pcie->pdev->dev, pcie->dma_handle, count,
                           DMA_FROM_DEVICE);

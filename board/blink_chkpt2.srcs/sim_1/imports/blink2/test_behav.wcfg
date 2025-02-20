@@ -20,12 +20,12 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0.000000 us"></ZoomStartTime>
-      <ZoomEndTime time="54.135158 us"></ZoomEndTime>
-      <Cursor1Time time="12.308944 us"></Cursor1Time>
+      <ZoomEndTime time="77.870968 us"></ZoomEndTime>
+      <Cursor1Time time="16.723676 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="261"></NameColumnWidth>
-      <ValueColumnWidth column_width="109"></ValueColumnWidth>
+      <ValueColumnWidth column_width="97"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="9" />
    <wvobject fp_name="/test/dut/design_2_i/axi_vip_0/S_AXI" type="protoinst">
@@ -251,6 +251,7 @@
       <wvobject fp_name="/test/matrix_mst/multiplier/matrix_num" type="array">
          <obj_property name="ElementShortName">matrix_num[11:0]</obj_property>
          <obj_property name="ObjectShortName">matrix_num[11:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/multiplier/status_read_data" type="array">
          <obj_property name="ElementShortName">status_read_data[31:0]</obj_property>
@@ -344,6 +345,7 @@
       <wvobject fp_name="/test/matrix_mst/multiplier/sub_tile_num" type="array">
          <obj_property name="ElementShortName">sub_tile_num[5:0]</obj_property>
          <obj_property name="ObjectShortName">sub_tile_num[5:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/multiplier/accumulate" type="logic">
          <obj_property name="ElementShortName">accumulate</obj_property>
@@ -664,8 +666,8 @@
          <obj_property name="ObjectShortName">state[3:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/arg_num" type="array">
-         <obj_property name="ElementShortName">arg_num[7:0]</obj_property>
-         <obj_property name="ObjectShortName">arg_num[7:0]</obj_property>
+         <obj_property name="ElementShortName">arg_num[2:0]</obj_property>
+         <obj_property name="ObjectShortName">arg_num[2:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/test/master_2/truncated_burst" type="logic">
@@ -741,13 +743,13 @@
          <obj_property name="ObjectShortName">cycle_count[3:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/multiplier/multiplier/a_in" type="array">
-         <obj_property name="ElementShortName">a_in[1:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">a_in[1:0][31:0]</obj_property>
+         <obj_property name="ElementShortName">a_in[1:0][19:0]</obj_property>
+         <obj_property name="ObjectShortName">a_in[1:0][19:0]</obj_property>
          <obj_property name="isExpanded"></obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/multiplier/multiplier/b_in" type="array">
-         <obj_property name="ElementShortName">b_in[1:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">b_in[1:0][31:0]</obj_property>
+         <obj_property name="ElementShortName">b_in[1:0][19:0]</obj_property>
+         <obj_property name="ObjectShortName">b_in[1:0][19:0]</obj_property>
          <obj_property name="isExpanded"></obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/multiplier/multiplier/state" type="array">
