@@ -13,15 +13,15 @@
 
 #define NUM_TRIALS 300
 
-#define TILE_DIM 7
+#define TILE_DIM 8
 
 // Unsigned
 #define MIN_INPUT_VALUE 0
-#define MAX_INPUT_VALUE std::pow(2, 16)-1
+#define MAX_INPUT_VALUE std::pow(2, 5)
 
-#define INPUT_DIM_M 70
-#define INPUT_DIM_K 70
-#define INPUT_DIM_N 70
+#define INPUT_DIM_M 104
+#define INPUT_DIM_K 104
+#define INPUT_DIM_N 104
 
 #define DEVICE_PATH "/dev/fpga"
 #define PCIE_SET_DMA (_IOW('k', 1, int))
@@ -42,21 +42,21 @@ bool start_mul(int fd) {
   return true;
 }
 
-using large_matrix_a = std::array<int32_t, INPUT_DIM_M * INPUT_DIM_K>;
-using large_matrix_b = std::array<int32_t, INPUT_DIM_K * INPUT_DIM_N>;
-using large_matrix_res = std::array<int32_t, INPUT_DIM_M * INPUT_DIM_N>;
+using large_matrix_a = std::array<int16_t, INPUT_DIM_M * INPUT_DIM_K>;
+using large_matrix_b = std::array<int16_t, INPUT_DIM_K * INPUT_DIM_N>;
+using large_matrix_res = std::array<int16_t, INPUT_DIM_M * INPUT_DIM_N>;
 
 bool write_matrices(int fd, const large_matrix_a &a, const large_matrix_b &b) {
   set_write_mode(fd, true);
-  std::vector<int32_t> args(INPUT_DIM_M * INPUT_DIM_K +
+  std::vector<int16_t> args(INPUT_DIM_M * INPUT_DIM_K +
                             INPUT_DIM_K * INPUT_DIM_N);
   std::copy(a.begin(), a.end(), args.begin());
   std::copy(b.begin(), b.end(), args.begin() + INPUT_DIM_M * INPUT_DIM_K);
 
   off_t offset = 4;
   ssize_t bytes_written =
-      pwrite(fd, args.data(), args.size() * sizeof(int32_t), offset);
-  if (bytes_written != args.size() * sizeof(int32_t)) {
+      pwrite(fd, args.data(), args.size() * sizeof(int16_t), offset);
+  if (bytes_written != args.size() * sizeof(int16_t)) {
     std::cerr << "large_matrix pwrite failed" << std::endl;
     close(fd);
     return false;
@@ -68,10 +68,10 @@ large_matrix_res get_large_result(int fd) {
   set_write_mode(fd, true);
   large_matrix_res res;
   off_t offset =
-      4 * (1 + INPUT_DIM_M * INPUT_DIM_K + INPUT_DIM_K * INPUT_DIM_N);
+      4 + 2*(INPUT_DIM_M * INPUT_DIM_K + INPUT_DIM_K * INPUT_DIM_N);
   ssize_t bytes_read =
-      pread(fd, res.data(), res.size() * sizeof(int32_t), offset);
-  if (bytes_read != res.size() * sizeof(int32_t)) {
+      pread(fd, res.data(), res.size() * sizeof(int16_t), offset);
+  if (bytes_read != res.size() * sizeof(int16_t)) {
     std::cerr << "pread failed, read " << bytes_read << " bytes instead of "
               << INPUT_DIM_M * INPUT_DIM_N * 4 - 1 << std::endl;
     close(fd);
@@ -102,9 +102,8 @@ int verify_result(const large_matrix_res &a, const large_matrix_res &b) {
         std::cout << (row * INPUT_DIM_N + col) << ", "
                   << 4 * (1 + INPUT_DIM_M * INPUT_DIM_K + row * INPUT_DIM_N +
                           col)
-                  << ", " << std::log(a[row * INPUT_DIM_N + col]) / std::log(2)
-                  << "~=" << std::log(b[row * INPUT_DIM_N + col]) / std::log(2)
-                  << "\n";
+                  << ", " << (a[row * INPUT_DIM_N + col])
+                  << "~=" << (b[row * INPUT_DIM_N + col]) << "\n";
         ++failed;
       }
     }
@@ -191,7 +190,7 @@ int main() {
 
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::uniform_int_distribution<int32_t> dist(MIN_INPUT_VALUE, MAX_INPUT_VALUE);
+  std::uniform_int_distribution<int16_t> dist(MIN_INPUT_VALUE, MAX_INPUT_VALUE);
 
   large_matrix_a mat_a;
   large_matrix_b mat_b;
@@ -207,7 +206,6 @@ int main() {
     for (int i = 0; i < INPUT_DIM_K * INPUT_DIM_N; i++) {
       mat_b[i] = dist(gen);
     }
-
     large_matrix_a mat_a_t = transform_into_input_a(mat_a);
     large_matrix_b mat_b_t = transform_into_input_b(mat_b);
 
