@@ -50,7 +50,7 @@ module matrix_memory_handle #(
     
     reg [2:0] state;
     
-    wire [31:0] matrix_offset = DIM*DIM*matrix_num + 1; //+1 for status_addr
+    wire [31:0] matrix_offset = 4*(DIM*DIM*matrix_num + 1); //+1 for status_addr
    
     always @(posedge clk or negedge rstn) begin
         if(!rstn) begin
@@ -72,6 +72,7 @@ module matrix_memory_handle #(
                 MHS_IDLE: begin
                     if(matrix_done) begin
                         // Give time for higher level module to process done signal
+                        // Can maybe remove?
                         matrix_done <= 0;
                     end else begin
                         state <= command;
@@ -99,7 +100,7 @@ module matrix_memory_handle #(
                     end else begin
                         axi_num_reads <= DIM*DIM;
                         axi_start <= 1;
-                        axi_addr <= 4*(matrix_offset);
+                        axi_addr <= matrix_offset;
                         axi_write <= 0;
                     end
                 end
@@ -114,7 +115,7 @@ module matrix_memory_handle #(
                         axi_start <= 1;
                         axi_write <= 1;
                         axi_write_data <= matrix_write_data;
-                        axi_addr <= 4*(matrix_offset);
+                        axi_addr <= matrix_offset;
                     end
                 end
                 MHS_INTERRUPT: begin

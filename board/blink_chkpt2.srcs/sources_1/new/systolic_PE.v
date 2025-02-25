@@ -23,11 +23,11 @@
 module systolic_PE(
     input clk,
     input rst,
-    input [17:0] a_in,
-    input [17:0] b_in,
+    input [15:0] a_in,
+    input [15:0] b_in,
     input valid,
-    output reg [17:0] a_out,
-    output reg [17:0] b_out,
+    output reg [15:0] a_out,
+    output reg [15:0] b_out,
     output wire [31:0] result
     );
     
