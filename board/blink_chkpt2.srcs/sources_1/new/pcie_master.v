@@ -43,9 +43,9 @@ module pcie_master(
     input wire start,
     input wire write,
     input wire [31:0] addr,
-    input wire [SYS_DIM_ELEMENTS-1:0][31:0] write_data,
+    input wire [AXI_MAX_BURST_LEN-1:0][31:0] write_data,
     input wire [7:0] num_reads,
-    output wire [SYS_DIM_ELEMENTS-1:0][31:0] read_data,
+    output wire [AXI_MAX_BURST_LEN-1:0][31:0] read_data,
     input wire [7:0] num_writes,
     output wire done 
     );

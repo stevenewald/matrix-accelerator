@@ -22,15 +22,14 @@
 
 
 module matrix_memory_handle #(
-    parameter DIM = 3, // how large is each contiguous matrix
     parameter STATUS_ADDR = 32'h0
     ) (
     output reg axi_start,
     output reg axi_write,
     output reg [31:0] axi_addr,
-    output reg [SYS_DIM_ELEMENTS-1:0][31:0] axi_write_data,
+    output reg [AXI_MAX_BURST_LEN-1:0][31:0] axi_write_data,
     output reg [7:0] axi_num_writes,
-    input wire [SYS_DIM_ELEMENTS-1:0][31:0] axi_read_data,
+    input wire [AXI_MAX_BURST_LEN-1:0][31:0] axi_read_data,
     output reg [7:0] axi_num_reads,
     input wire axi_done,
     
@@ -41,8 +40,8 @@ module matrix_memory_handle #(
     input wire rstn,
     
     input wire [MATRIX_NUM_NBITS-1:0] matrix_num,
-    input wire [DIM*DIM-1:0][31:0] matrix_write_data,
-    output reg [DIM*DIM-1:0][31:0] matrix_read_data,
+    input wire [TILE_NUM_ELEMENTS-1:0][31:0] matrix_write_data,
+    output reg [TILE_NUM_ELEMENTS-1:0][31:0] matrix_read_data,
     output reg [31:0] status_read_data,
     input wire [2:0] command,
     output reg matrix_done
@@ -50,7 +49,7 @@ module matrix_memory_handle #(
     
     reg [2:0] state;
     
-    wire [31:0] matrix_offset = 4*(DIM*DIM*matrix_num + 1); //+1 for status_addr
+    wire [31:0] matrix_offset = 4*(TILE_NUM_ELEMENTS*matrix_num + 1); //+1 for status_addr
    
     always @(posedge clk or negedge rstn) begin
         if(!rstn) begin
@@ -58,7 +57,7 @@ module matrix_memory_handle #(
             axi_start <= 0;
             axi_write <= 0;
             axi_addr <= 0;
-            for(int i = 0; i < SYS_DIM_ELEMENTS; ++i) begin
+            for(int i = 0; i < AXI_MAX_BURST_LEN; ++i) begin
                 axi_write_data[i] <= 0;
             end
             axi_num_reads <= 0;
@@ -98,7 +97,7 @@ module matrix_memory_handle #(
                         matrix_done <= 1;
                         axi_start <= 0;
                     end else begin
-                        axi_num_reads <= DIM*DIM;
+                        axi_num_reads <= TILE_NUM_ELEMENTS;
                         axi_start <= 1;
                         axi_addr <= matrix_offset;
                         axi_write <= 0;
@@ -111,7 +110,7 @@ module matrix_memory_handle #(
                         axi_write <= 0;
                         axi_start <= 0;
                     end else begin
-                        axi_num_writes <= DIM*DIM;
+                        axi_num_writes <= TILE_NUM_ELEMENTS;
                         axi_start <= 1;
                         axi_write <= 1;
                         axi_write_data <= matrix_write_data;

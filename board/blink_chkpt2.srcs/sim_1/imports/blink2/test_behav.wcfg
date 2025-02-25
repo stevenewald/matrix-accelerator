@@ -20,12 +20,12 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0.000000 us"></ZoomStartTime>
-      <ZoomEndTime time="77.870968 us"></ZoomEndTime>
-      <Cursor1Time time="16.723676 us"></Cursor1Time>
+      <ZoomEndTime time="81.288569 us"></ZoomEndTime>
+      <Cursor1Time time="9.372192 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="261"></NameColumnWidth>
-      <ValueColumnWidth column_width="97"></ValueColumnWidth>
+      <ValueColumnWidth column_width="93"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="9" />
    <wvobject fp_name="/test/dut/design_2_i/axi_vip_0/S_AXI" type="protoinst">
@@ -222,10 +222,6 @@
          <obj_property name="ElementShortName">matrix_offset[31:0]</obj_property>
          <obj_property name="ObjectShortName">matrix_offset[31:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject fp_name="/test/matrix_mst/matrix_handle/DIM" type="array">
-         <obj_property name="ElementShortName">DIM[31:0]</obj_property>
-         <obj_property name="ObjectShortName">DIM[31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/matrix_handle/STATUS_ADDR" type="array">
          <obj_property name="ElementShortName">STATUS_ADDR[31:0]</obj_property>
@@ -516,10 +512,6 @@
          <obj_property name="ElementShortName">matrix_offset[31:0]</obj_property>
          <obj_property name="ObjectShortName">matrix_offset[31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/test/matrix_mst/matrix_handle/DIM" type="array">
-         <obj_property name="ElementShortName">DIM[31:0]</obj_property>
-         <obj_property name="ObjectShortName">DIM[31:0]</obj_property>
-      </wvobject>
       <wvobject fp_name="/test/matrix_mst/matrix_handle/STATUS_ADDR" type="array">
          <obj_property name="ElementShortName">STATUS_ADDR[31:0]</obj_property>
          <obj_property name="ObjectShortName">STATUS_ADDR[31:0]</obj_property>
@@ -743,13 +735,13 @@
          <obj_property name="ObjectShortName">cycle_count[3:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/multiplier/multiplier/a_in" type="array">
-         <obj_property name="ElementShortName">a_in[1:0][19:0]</obj_property>
-         <obj_property name="ObjectShortName">a_in[1:0][19:0]</obj_property>
+         <obj_property name="ElementShortName">a_in[1:0][15:0]</obj_property>
+         <obj_property name="ObjectShortName">a_in[1:0][15:0]</obj_property>
          <obj_property name="isExpanded"></obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/multiplier/multiplier/b_in" type="array">
-         <obj_property name="ElementShortName">b_in[1:0][19:0]</obj_property>
-         <obj_property name="ObjectShortName">b_in[1:0][19:0]</obj_property>
+         <obj_property name="ElementShortName">b_in[1:0][15:0]</obj_property>
+         <obj_property name="ObjectShortName">b_in[1:0][15:0]</obj_property>
          <obj_property name="isExpanded"></obj_property>
       </wvobject>
       <wvobject fp_name="/test/matrix_mst/multiplier/multiplier/state" type="array">
