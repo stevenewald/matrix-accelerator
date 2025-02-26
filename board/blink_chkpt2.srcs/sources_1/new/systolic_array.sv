@@ -25,8 +25,8 @@ module systolic_array #(
     ) (
     input wire clk,
     input wire rst,
-    input wire [(DIM*DIM)-1:0][31:0] mat_a,
-    input wire [(DIM*DIM)-1:0][31:0] mat_b,
+    input wire [(DIM*DIM)-1:0][15:0] mat_a,
+    input wire [(DIM*DIM)-1:0][15:0] mat_b,
     output wire [(DIM*DIM)-1:0][31:0] out,
     input wire accumulate,
     input wire start,
@@ -34,8 +34,8 @@ module systolic_array #(
     );
     
     reg [$clog2(DIM*2+1):0] cycle_count;
-    reg [17:0] a_in [DIM-1:0];
-    reg [17:0] b_in [DIM-1:0];
+    reg [15:0] a_in [DIM-1:0];
+    reg [15:0] b_in [DIM-1:0];
     
     // Number of bits needed to represent DIM*2
     reg [2:0] state;
@@ -54,8 +54,8 @@ module systolic_array #(
                 a_in[i] <= 0;
                 b_in[i] <= 0;
             end else if(running && i <= cycle_count && cycle_count <= DIM+i-1) begin
-                a_in[i] <= mat_a[i*DIM+(cycle_count-i)][17:0];
-                b_in[i] <= mat_b[i+(cycle_count-i)*DIM][17:0];
+                a_in[i] <= mat_a[i*DIM+(cycle_count-i)];
+                b_in[i] <= mat_b[i+(cycle_count-i)*DIM];
             end else begin
                 a_in[i] <= 0;
                 b_in[i] <= 0;

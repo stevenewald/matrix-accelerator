@@ -53,6 +53,9 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   xil_axi_data_beat                                        Wdatabeat[];       // Write data beats
   bit [31:0] read_data;
   
+  int m = 8;
+  int k = 8;
+  int n = 8;
   
   initial begin
   
@@ -62,13 +65,13 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   mst_agent = new("master vip agent",dut.design_2_i.axi_vip_1.inst.IF);
   mst_agent.start_master(); 
   
-  for(int i = 0; i < 4*6+6*4; i++) begin
+  for(int i = 0; i < (m*k + k*n)/2; i++) begin
       mtestWID = $urandom_range(0,(1<<(0)-1)); 
       mtestWADDR = 64'h4 + i*4;
       mtestWBurstLength = 0;
       mtestWDataSize = xil_axi_size_t'(xil_clog2((32)/8));
       mtestWBurstType = XIL_AXI_BURST_TYPE_INCR;
-      mtestWData = 32'd1 * (i+1);
+      mtestWData = ((32'd1 * (2*i+2)) << 16) | (32'd1 * (2*i+1));
       
       wr_trans = mst_agent.wr_driver.create_transaction("write transaction");
       wr_trans.set_write_cmd(mtestWADDR,mtestWBurstType,mtestWID,
@@ -82,7 +85,7 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   mtestWBurstLength = 0;
   mtestWDataSize = xil_axi_size_t'(xil_clog2((32)/8));
   mtestWBurstType = XIL_AXI_BURST_TYPE_INCR;
-  mtestWData = (32'd4 << 20) | (32'd6 << 10) | (32'd2 << 0);
+  mtestWData = (n << 20) | (k << 10) | (m << 0);
   
   wr_trans = mst_agent.wr_driver.create_transaction("write transaction");
   wr_trans.set_write_cmd(mtestWADDR,mtestWBurstType,mtestWID,
@@ -92,28 +95,10 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
 
   mst_agent.wait_drivers_idle(); 
   
-  #20000
-  /*$display("STARTING AGAIN");
-  mtestWID = $urandom_range(0,(1<<(0)-1)); 
-  mtestWADDR = 64'h0;
-  mtestWBurstLength = 0;
-  mtestWDataSize = xil_axi_size_t'(xil_clog2((32)/8));
-  mtestWBurstType = XIL_AXI_BURST_TYPE_INCR;
-  mtestWData = 32'd4;
-  
-  wr_trans = mst_agent.wr_driver.create_transaction("write transaction");
-  wr_trans.set_write_cmd(mtestWADDR,mtestWBurstType,mtestWID,
-                               mtestWBurstLength,mtestWDataSize);
-  wr_trans.set_data_block(mtestWData);
-  mst_agent.wr_driver.send(wr_trans);
-
-  mst_agent.wait_drivers_idle(); */
-  
-  #1000000
-  /*
-  $display ("Sending read");
-    mtestRID = $urandom_range(0,(1<<(0)-1)); 
-    mtestRADDR = 64'hc;
+  // wait for completion
+  while (1) begin
+     mtestRID = $urandom_range(0,(1<<(0)-1)); 
+    mtestRADDR = 0;
     mtestRBurstLength = 0;
     mtestRDataSize = xil_axi_size_t'(xil_clog2((32)/8));
     mtestRBurstType = XIL_AXI_BURST_TYPE_INCR;
@@ -125,13 +110,15 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
     mst_agent.rd_driver.send(rd_trans);
     mst_agent.rd_driver.wait_rsp(rd_trans);
     Rdatablock = rd_trans.get_data_block();
-    assert(Rdatablock[31:0]==32'h1c4) else $fatal("Unexpected mutliplication result");
-    
-    $display("Product: %x\n", Rdatablock[31:0]);
-    
-    $display ("Sending read");
+    if(Rdatablock==32'b0) break;
+    #100;
+  end
+  
+  
+  $display ("Mul complete, reading data");
+  for(int i = 0; i < (m*n)/2; i++) begin
     mtestRID = $urandom_range(0,(1<<(0)-1)); 
-    mtestRADDR = 64'h10;
+    mtestRADDR = 4+2*m*k+2*k*n+4*i;
     mtestRBurstLength = 0;
     mtestRDataSize = xil_axi_size_t'(xil_clog2((32)/8));
     mtestRBurstType = XIL_AXI_BURST_TYPE_INCR;
@@ -143,9 +130,9 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
     mst_agent.rd_driver.send(rd_trans);
     mst_agent.rd_driver.wait_rsp(rd_trans);
     Rdatablock = rd_trans.get_data_block();
-    assert(Rdatablock[31:0]==32'h0) else $fatal("Status register not reset");
+    $display("%d %d\n", Rdatablock[15:0], Rdatablock[31:16]);
+ end
     
-*/
 
   $display("TEST DONE : Test Completed Successfully");
   $finish;

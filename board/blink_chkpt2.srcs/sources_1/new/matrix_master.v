@@ -31,23 +31,22 @@ module matrix_master(
     output wire axi_start,
     output wire axi_write,
     output wire [31:0] axi_addr,
-    input wire [SYS_DIM_ELEMENTS-1:0][31:0] axi_read_data,
+    input wire [AXI_MAX_BURST_LEN-1:0][31:0] axi_read_data,
     output wire [7:0] axi_num_reads,
-    output wire [SYS_DIM_ELEMENTS-1:0][31:0] axi_write_data,
+    output wire [AXI_MAX_BURST_LEN-1:0][31:0] axi_write_data,
     output wire [7:0] axi_num_writes,
     input wire axi_done
     );
     
     wire matrix_done;
     wire [2:0] matrix_command;
-    wire [SYS_DIM_ELEMENTS-1:0][31:0] matrix_write_data;
-    wire [SYS_DIM_ELEMENTS-1:0][31:0] matrix_read_data;
+    wire [TILE_NUM_ELEMENTS-1:0][31:0] matrix_write_data;
+    wire [TILE_NUM_ELEMENTS-1:0][15:0] matrix_read_data;
     wire [31:0] status_read_data;
     
     wire [MATRIX_NUM_NBITS-1:0] matrix_num;
     
-    matrix_memory_handle #(
-    .DIM(SYS_DIM)) matrix_handle (
+    matrix_memory_handle matrix_handle (
     .axi_start(axi_start),
     .axi_write(axi_write),
     .axi_addr(axi_addr),

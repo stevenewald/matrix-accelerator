@@ -6,9 +6,9 @@ module axi_master_fse
     input                         start,       // Transaction start trigger
     input                         write_en,    // 1: write, 0: read
     input      [31:0]   addr,        // Transaction address
-    input      [SYS_DIM_ELEMENTS-1:0][31:0]   write_data,  // NOTE: we need a write_data full buffer as an input because syncing data_write_ready would take an extra cycle
+    input      [AXI_MAX_BURST_LEN-1:0][31:0]   write_data,  
     input wire [7:0]    num_writes,
-    output reg [SYS_DIM_ELEMENTS-1:0][31:0]   read_data,   // whereas here we know the receiver should always be ready
+    output reg [AXI_MAX_BURST_LEN-1:0][31:0]   read_data, 
     input wire [7:0]     num_reads,
     output reg                  done,         // Transaction completion flag
 
@@ -56,7 +56,7 @@ localparam STATE_READ_DATA  = 4'd5;
 localparam STATE_DONE       = 4'd6;
 
 reg [3:0] state;
-reg [$clog2(SYS_DIM_ELEMENTS+1)-1:0] arg_num;
+reg [$clog2(AXI_MAX_BURST_LEN+1)-1:0] arg_num;
 reg truncated_burst;
 
 //---------------------------------------------------------------------
@@ -78,7 +78,7 @@ always @(posedge clk or negedge resetn) begin
         m_axi_awlen <= 8'b0;
         m_axi_awsize <= 3'b0;
         m_axi_wlast <= 0;
-        for(int i = 0; i < SYS_DIM_ELEMENTS; ++i) begin
+        for(int i = 0; i < AXI_MAX_BURST_LEN; ++i) begin
             read_data[i] = 0;
         end
         done          <= 1'b0;
