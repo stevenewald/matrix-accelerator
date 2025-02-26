@@ -30,7 +30,7 @@ module matrix_multiplier    #(
     output reg [2:0] matrix_command,
     output reg [$clog2(3*(MAX_INPUT_SIZE*MAX_INPUT_SIZE)/(SYS_DIM*SYS_DIM)+1)-1:0] matrix_num,
     input wire [31:0] status_read_data,
-    input wire [SYS_DIM*SYS_DIM-1:0][31:0] matrix_read_data,
+    input wire [SYS_DIM*SYS_DIM-1:0][15:0] matrix_read_data,
     output reg [SYS_DIM*SYS_DIM-1:0][31:0] matrix_write_data,
     input wire matrix_done
     );
@@ -51,8 +51,8 @@ module matrix_multiplier    #(
     
 reg [3:0] current_state;
 
-reg [SYS_DIM*SYS_DIM-1:0][31:0] mat_a;
-reg [SYS_DIM*SYS_DIM-1:0][31:0] mat_b;
+reg [SYS_DIM*SYS_DIM-1:0][15:0] mat_a;
+reg [SYS_DIM*SYS_DIM-1:0][15:0] mat_b;
 
 reg start_mul;
 wire mul_done;
