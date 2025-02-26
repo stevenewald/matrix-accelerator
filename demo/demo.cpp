@@ -15,8 +15,8 @@
 
 #define TILE_DIM 8
 
-// Unsigned
-#define MIN_INPUT_VALUE 0
+// Signed
+#define MIN_INPUT_VALUE -std::pow(2, 14)
 #define MAX_INPUT_VALUE std::pow(2, 14)
 
 #define INPUT_DIM_M 72
