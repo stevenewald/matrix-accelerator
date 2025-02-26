@@ -14,6 +14,13 @@ parameter AXI_MAX_BURST_LEN = TILE_NUM_ELEMENTS/2;
 
 parameter INPUT_NUM_BITS = 16;
 
+parameter MAX_TILE_SPAN = MAX_INPUT_SIZE/SYS_DIM;
+parameter MAX_TILE_NUM = MAX_TILE_SPAN*MAX_TILE_SPAN;
+parameter BITS_PER_OUTPUT_TILE_NUM = $clog2(MAX_TILE_NUM+1);
+parameter BITS_PER_TILE_CNT = $clog2(MAX_TILE_SPAN+1);
+
+parameter BITS_PER_MATRIX_NUM = $clog2(3*(MAX_INPUT_SIZE*MAX_INPUT_SIZE)/(SYS_DIM*SYS_DIM)+1);
+
 // matrix handle state
 parameter MHS_IDLE          = 4'd0;
 parameter MHS_READ_STATUS   = 4'd1;

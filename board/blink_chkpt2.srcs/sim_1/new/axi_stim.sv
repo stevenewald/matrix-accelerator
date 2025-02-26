@@ -53,9 +53,9 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   xil_axi_data_beat                                        Wdatabeat[];       // Write data beats
   bit [31:0] read_data;
   
-  int m = 8;
-  int k = 8;
-  int n = 8;
+  int m = 4;
+  int k = 4;
+  int n = 4;
   
   initial begin
   
@@ -132,6 +132,23 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
     Rdatablock = rd_trans.get_data_block();
     $display("%d %d\n", Rdatablock[15:0], Rdatablock[31:16]);
  end
+ 
+ $display ("Sending start again");
+ 
+ mtestWID = $urandom_range(0,(1<<(0)-1)); 
+  mtestWADDR = 64'h0;
+  mtestWBurstLength = 0;
+  mtestWDataSize = xil_axi_size_t'(xil_clog2((32)/8));
+  mtestWBurstType = XIL_AXI_BURST_TYPE_INCR;
+  mtestWData = (n << 20) | (k << 10) | (m << 0);
+  
+  wr_trans = mst_agent.wr_driver.create_transaction("write transaction");
+  wr_trans.set_write_cmd(mtestWADDR,mtestWBurstType,mtestWID,
+                               mtestWBurstLength,mtestWDataSize);
+  wr_trans.set_data_block(mtestWData);
+  mst_agent.wr_driver.send(wr_trans);
+
+  mst_agent.wait_drivers_idle(); 
     
 
   $display("TEST DONE : Test Completed Successfully");
