@@ -68,12 +68,26 @@ large_matrix_res get_large_result(int fd) {
   set_write_mode(fd, true);
   large_matrix_res res;
   off_t offset =
-      32 + 2*(INPUT_DIM_M * INPUT_DIM_K + INPUT_DIM_K * INPUT_DIM_N);
+      32 + 2 * (INPUT_DIM_M * INPUT_DIM_K + INPUT_DIM_K * INPUT_DIM_N);
   ssize_t bytes_read =
       pread(fd, res.data(), res.size() * sizeof(int32_t), offset);
   if (bytes_read != res.size() * sizeof(int32_t)) {
     std::cerr << "pread failed, read " << bytes_read << " bytes instead of "
               << INPUT_DIM_M * INPUT_DIM_N * 4 << std::endl;
+    close(fd);
+    throw std::runtime_error("Failed to read result large_matrix");
+  }
+  return res;
+}
+
+int get_cycles_elapsed(int fd) {
+  set_write_mode(fd, true);
+  int32_t res;
+  off_t offset = 4;
+  ssize_t bytes_read = pread(fd, &res, sizeof(int32_t), offset);
+  if (bytes_read != sizeof(int32_t)) {
+    std::cerr << "pread failed, read " << bytes_read << " bytes instead of "
+              << sizeof(int32_t) << "bytes\n";
     close(fd);
     throw std::runtime_error("Failed to read result large_matrix");
   }
@@ -86,8 +100,8 @@ large_matrix_res generate_large_result(const large_matrix_a &a,
   for (int row = 0; row < INPUT_DIM_M; row++) {
     for (int col = 0; col < INPUT_DIM_N; col++) {
       for (int k = 0; k < INPUT_DIM_K; k++) {
-        res[row * INPUT_DIM_N + col] +=
-            int32_t(a[row * INPUT_DIM_K + k]) * int32_t(b[k * INPUT_DIM_N + col]);
+        res[row * INPUT_DIM_N + col] += int32_t(a[row * INPUT_DIM_K + k]) *
+                                        int32_t(b[k * INPUT_DIM_N + col]);
       }
     }
   }
@@ -196,7 +210,7 @@ int main() {
   large_matrix_b mat_b;
 
   std::chrono::duration<double, std::milli> fpga_dur_mem{};
-  std::chrono::duration<double, std::milli> fpga_dur_exec{};
+  uint64_t fpga_dur_exec_cycles{};
   std::chrono::duration<double, std::milli> cpu_dur{};
 
   for (int j = 0; j < NUM_TRIALS; ++j) {
@@ -226,12 +240,13 @@ int main() {
 
     wait_for_poll(fd);
     auto exec_end = std::chrono::high_resolution_clock::now();
-    fpga_dur_exec += exec_end - mem_end;
 
     auto res = get_large_result(fd);
     mem_end = std::chrono::high_resolution_clock::now();
-
     fpga_dur_mem += mem_end - exec_end;
+
+    int cycles_elapsed = get_cycles_elapsed(fd);
+    fpga_dur_exec_cycles += cycles_elapsed;
 
     auto res_t = transform_into_output(res);
 
@@ -252,19 +267,19 @@ int main() {
     }
     if (j == NUM_TRIALS - 1) {
       std::cout << "PASS.\n\n";
+      float fpga_dur_exec_ms = float(fpga_dur_exec_cycles) / 125'000;
       /*std::cout << "FPGA exec duration: " << fpga_dur_exec.count() /
       NUM_TRIALS
                 << "ms\n";
       std::cout << "FPGA DMA duration: " << fpga_dur_mem.count() / NUM_TRIALS
                 << "ms\n";*/
-      std::cout << "FPGA exec duration: "
-                << (fpga_dur_exec.count()) / NUM_TRIALS << "ms\n";
+      std::cout << "FPGA exec duration: " << fpga_dur_exec_ms / NUM_TRIALS
+                << "ms\n";
       std::cout << "CPU exec duration: " << cpu_dur.count() / NUM_TRIALS
                 << "ms\n";
 
       std::cout << "\n";
-      std::cout << "Speedup: " << cpu_dur.count() / (fpga_dur_exec).count()
-                << "\n";
+      std::cout << "Speedup: " << cpu_dur.count() / fpga_dur_exec_ms << "\n";
     }
   }
 
