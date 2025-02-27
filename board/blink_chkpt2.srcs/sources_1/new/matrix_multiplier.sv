@@ -47,7 +47,8 @@ module matrix_multiplier    #(
            S_COMPLETE_TILE  = 4'd7,
            S_WRITE_RESULTS = 4'd8,
            S_WRITE_STATUS    = 4'd9,
-           S_INTERRUPT     = 4'd10;
+           S_INTERRUPT     = 4'd10,
+           S_FLUSH_WB          = 4'd11;
     
 reg [3:0] current_state;
 
@@ -148,7 +149,7 @@ always @(posedge aclk or negedge aresetn) begin
             S_START_TILE: begin
                 if(all_tiles_complete) begin
                     increment_tile <= 1;
-                    current_state <= S_WRITE_STATUS;
+                    current_state <= S_FLUSH_WB;
                 end else begin
                     accumulate <= 1;
                     current_state <= S_READ_A;
@@ -202,6 +203,14 @@ always @(posedge aclk or negedge aresetn) begin
                 end else begin
                     matrix_num <= tmp_matrix_num_result;
                     matrix_command <= MHS_WRITE_RESULT;
+                end
+            end
+            
+            S_FLUSH_WB: begin
+                if(matrix_done) begin
+                    current_state <= S_WRITE_STATUS;
+                end else begin
+                    matrix_command <= MHS_FLUSH;
                 end
             end
             

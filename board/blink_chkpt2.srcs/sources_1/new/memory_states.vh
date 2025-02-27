@@ -4,7 +4,7 @@
 // TILE SIZE (SYS_DIM*SYS_DIM) MUST BE FACTOR OF 2 BECAUSE OF PACKING
 // Each word contains 2 16-bit inputs
 // If one tile had odd number of elements, it would need padding or some other mechanism
-parameter SYS_DIM        = 8;
+parameter SYS_DIM        = 6;
 
 parameter MAX_INPUT_SIZE = 100;
 
@@ -14,7 +14,9 @@ parameter MATRIX_NUM_NBITS = $clog2(4*(MAX_INPUT_SIZE*MAX_INPUT_SIZE)/(SYS_DIM*S
 parameter TILE_NUM_ELEMENTS = SYS_DIM*SYS_DIM;
 
 // Max burst size - corresponds to read/write buffer for axi master
-parameter AXI_MAX_BURST_LEN = TILE_NUM_ELEMENTS;
+parameter AXI_MAX_BURST_LEN = TILE_NUM_ELEMENTS*4;
+
+parameter WB_STORAGE_CAPACITY = AXI_MAX_BURST_LEN/TILE_NUM_ELEMENTS;
 
 parameter INPUT_NUM_BITS = 16;
 
@@ -30,4 +32,5 @@ parameter MHS_READ_MATRIX = 4'd2;
 parameter MHS_WRITE_RESULT  = 3'd4;
 parameter MHS_RESET_STATUS  = 3'd5;
 parameter MHS_INTERRUPT     = 3'd6;
+parameter MHS_FLUSH         = 3'd7;
 `endif

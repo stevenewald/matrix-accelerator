@@ -52,6 +52,25 @@ module matrix_memory_handle #(
     // /2 because packed matrices
     wire [31:0] matrix_offset = 2*TILE_NUM_ELEMENTS*matrix_num + 4; //+1 for status_addr
     
+    reg matrix_valid;
+    wire [AXI_MAX_BURST_LEN-1:0][31:0] buffer;
+    wire [31:0] addr_begin;
+    wire buffer_full;
+    reg clear_buffer;
+    wire [$clog2(WB_STORAGE_CAPACITY+1)-1:0] buffer_size;
+    
+    matrix_write_buffer write_buf(
+        .aresetn(rstn),
+        .aclk(clk),
+        .matrix_data(matrix_write_data),
+        .addr(matrix_offset),
+        .clear_buffer(clear_buffer),
+        .matrix_valid(matrix_valid),
+        .size(buffer_size),
+        .buffer(buffer),
+        .addr_begin(addr_begin),
+        .buffer_full(buffer_full));
+    
    
     always @(posedge clk or negedge rstn) begin
         if(!rstn) begin
@@ -66,7 +85,11 @@ module matrix_memory_handle #(
             status_read_data <= 0;
             axi_num_writes <= 0;
             axi_write_data <= 0;
+            matrix_valid <= 0;
+            clear_buffer <= 0;
         end else begin
+            matrix_valid <= 0;
+            clear_buffer <= 0;
             case (state)
                 MHS_IDLE: begin
                     if(matrix_done) begin
@@ -112,12 +135,33 @@ module matrix_memory_handle #(
                         matrix_done <= 1;
                         axi_write <= 0;
                         axi_start <= 0;
-                    end else begin
-                        axi_num_writes <= TILE_NUM_ELEMENTS;
+                    end else if(!axi_start) begin
+                        matrix_valid <= 1;
+                        if(buffer_full) begin
+                            axi_write_data <= buffer;
+                            axi_num_writes <= AXI_MAX_BURST_LEN;
+                            axi_start <= 1;
+                            axi_write <= 1;
+                            axi_addr <= addr_begin;
+                        end else begin
+                            state <= MHS_IDLE;
+                            matrix_done <= 1;
+                        end
+                    end
+                end
+                MHS_FLUSH: begin
+                    if(axi_done) begin
+                        state <= MHS_IDLE;
+                        matrix_done <= 1;
+                        axi_write <= 0;
+                        axi_start <= 0;
+                    end else if(!axi_start) begin
+                        axi_write_data <= buffer;
+                        axi_num_writes <= buffer_size * TILE_NUM_ELEMENTS;
+                        clear_buffer <= 1;
                         axi_start <= 1;
                         axi_write <= 1;
-                        axi_write_data <= matrix_write_data;
-                        axi_addr <= matrix_offset;
+                        axi_addr <= addr_begin;
                     end
                 end
                 MHS_INTERRUPT: begin
