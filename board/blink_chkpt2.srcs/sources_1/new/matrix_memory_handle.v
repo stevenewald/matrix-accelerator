@@ -52,16 +52,6 @@ module matrix_memory_handle #(
     // /2 because packed matrices
     wire [31:0] matrix_offset = 2*TILE_NUM_ELEMENTS*matrix_num + 4; //+1 for status_addr
     
-    wire [TILE_NUM_ELEMENTS-1:0][15:0] matrix_tmp_rdata;
-    
-    genvar i;
-    generate
-        for (i = 0; i < TILE_NUM_ELEMENTS/2; i++) begin
-            assign matrix_tmp_rdata[2*i] = axi_read_data[i][15:0];
-            assign matrix_tmp_rdata[2*i+1] = axi_read_data[i][31:16];
-        end
-    endgenerate
-    
    
     always @(posedge clk or negedge rstn) begin
         if(!rstn) begin
@@ -102,7 +92,10 @@ module matrix_memory_handle #(
                 end
                 MHS_READ_MATRIX: begin
                     if(axi_done) begin
-                        matrix_read_data <= matrix_tmp_rdata;
+                        for(int i = 0; i < TILE_NUM_ELEMENTS/2; ++i) begin
+                            matrix_read_data[2*i] <= axi_read_data[i][15:0];
+                            matrix_read_data[2*i+1] <= axi_read_data[i][31:16];
+                        end
                         state <= MHS_IDLE;
                         matrix_done <= 1;
                         axi_start <= 0;
