@@ -16,12 +16,12 @@
 #define TILE_DIM 8
 
 // Signed
-#define MIN_INPUT_VALUE -std::pow(2, 4)
-#define MAX_INPUT_VALUE std::pow(2, 4)
+#define MIN_INPUT_VALUE -std::pow(2, 14)
+#define MAX_INPUT_VALUE std::pow(2, 14)
 
 #define INPUT_DIM_M 88
 #define INPUT_DIM_K 96
-#define INPUT_DIM_N 88
+#define INPUT_DIM_N 80
 
 #define DEVICE_PATH "/dev/fpga"
 #define PCIE_SET_DMA (_IOW('k', 1, int))
