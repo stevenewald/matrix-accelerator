@@ -10,6 +10,7 @@
 #include <sys/ioctl.h>
 #include <sys/poll.h>
 #include <unistd.h>
+#include <x86intrin.h>
 
 #define NUM_TRIALS 300
 
@@ -192,6 +193,8 @@ void print_matrix(const large_matrix_a &matrix) {
   std::cout << "\n\n";
 }
 
+uint64_t get_cycles() { return __rdtsc(); }
+
 int main() {
   int fd = open(DEVICE_PATH, O_RDWR);
   if (fd < 0) {
@@ -210,8 +213,9 @@ int main() {
   large_matrix_b mat_b;
 
   std::chrono::duration<double, std::milli> fpga_dur_mem{};
-  uint64_t fpga_dur_exec_cycles{};
   std::chrono::duration<double, std::milli> cpu_dur{};
+  uint64_t fpga_dur_exec_cycles{};
+  uint64_t cpu_dur_exec_cycles{};
 
   for (int j = 0; j < NUM_TRIALS; ++j) {
     for (int i = 0; i < INPUT_DIM_M * INPUT_DIM_K; i++) {
@@ -222,9 +226,6 @@ int main() {
     }
     large_matrix_a mat_a_t = transform_into_input_a(mat_a);
     large_matrix_b mat_b_t = transform_into_input_b(mat_b);
-
-    // print_matrix(mat_a_t);
-    // print_matrix(mat_b_t);
 
     auto mem_start = std::chrono::high_resolution_clock::now();
 
@@ -251,8 +252,10 @@ int main() {
     auto res_t = transform_into_output(res);
 
     auto cpu_start = std::chrono::high_resolution_clock::now();
+    auto cpu_start_cycles = get_cycles();
     auto expected = generate_large_result(mat_a, mat_b);
     auto cpu_end = std::chrono::high_resolution_clock::now();
+    cpu_dur_exec_cycles += get_cycles() - cpu_start_cycles;
     cpu_dur += (cpu_end - cpu_start);
 
     int failed = verify_result(expected, res_t);
@@ -273,13 +276,20 @@ int main() {
                 << "ms\n";
       std::cout << "FPGA DMA duration: " << fpga_dur_mem.count() / NUM_TRIALS
                 << "ms\n";*/
+      std::cout << "FPGA exec cycles: " << fpga_dur_exec_cycles / NUM_TRIALS
+                << "\n";
+      std::cout << "CPU exec cycles: " << cpu_dur_exec_cycles / NUM_TRIALS
+                << "\n";
       std::cout << "FPGA exec duration: " << fpga_dur_exec_ms / NUM_TRIALS
                 << "ms\n";
       std::cout << "CPU exec duration: " << cpu_dur.count() / NUM_TRIALS
                 << "ms\n";
 
       std::cout << "\n";
-      std::cout << "Speedup: " << cpu_dur.count() / fpga_dur_exec_ms << "\n";
+      std::cout << "Time Speedup: " << cpu_dur.count() / fpga_dur_exec_ms
+                << "\n";
+      std::cout << "Cycle Speedup: "
+                << float(cpu_dur_exec_cycles) / fpga_dur_exec_cycles << "\n";
     }
   }
 
