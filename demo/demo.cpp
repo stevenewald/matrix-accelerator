@@ -11,17 +11,17 @@
 #include <sys/poll.h>
 #include <unistd.h>
 
-#define NUM_TRIALS 300
+#define NUM_TRIALS 100
 
 #define TILE_DIM 8
 
 // Unsigned
 #define MIN_INPUT_VALUE 0
-#define MAX_INPUT_VALUE std::pow(2, 5)
+#define MAX_INPUT_VALUE std::pow(2, 14)
 
-#define INPUT_DIM_M 104
-#define INPUT_DIM_K 104
-#define INPUT_DIM_N 104
+#define INPUT_DIM_M 72
+#define INPUT_DIM_K 72
+#define INPUT_DIM_N 72
 
 #define DEVICE_PATH "/dev/fpga"
 #define PCIE_SET_DMA (_IOW('k', 1, int))
@@ -44,7 +44,7 @@ bool start_mul(int fd) {
 
 using large_matrix_a = std::array<int16_t, INPUT_DIM_M * INPUT_DIM_K>;
 using large_matrix_b = std::array<int16_t, INPUT_DIM_K * INPUT_DIM_N>;
-using large_matrix_res = std::array<int16_t, INPUT_DIM_M * INPUT_DIM_N>;
+using large_matrix_res = std::array<int32_t, INPUT_DIM_M * INPUT_DIM_N>;
 
 bool write_matrices(int fd, const large_matrix_a &a, const large_matrix_b &b) {
   set_write_mode(fd, true);
@@ -70,10 +70,10 @@ large_matrix_res get_large_result(int fd) {
   off_t offset =
       4 + 2*(INPUT_DIM_M * INPUT_DIM_K + INPUT_DIM_K * INPUT_DIM_N);
   ssize_t bytes_read =
-      pread(fd, res.data(), res.size() * sizeof(int16_t), offset);
-  if (bytes_read != res.size() * sizeof(int16_t)) {
+      pread(fd, res.data(), res.size() * sizeof(int32_t), offset);
+  if (bytes_read != res.size() * sizeof(int32_t)) {
     std::cerr << "pread failed, read " << bytes_read << " bytes instead of "
-              << INPUT_DIM_M * INPUT_DIM_N * 4 - 1 << std::endl;
+              << INPUT_DIM_M * INPUT_DIM_N * 4 << std::endl;
     close(fd);
     throw std::runtime_error("Failed to read result large_matrix");
   }
@@ -87,7 +87,7 @@ large_matrix_res generate_large_result(const large_matrix_a &a,
     for (int col = 0; col < INPUT_DIM_N; col++) {
       for (int k = 0; k < INPUT_DIM_K; k++) {
         res[row * INPUT_DIM_N + col] +=
-            a[row * INPUT_DIM_K + k] * b[k * INPUT_DIM_N + col];
+            int32_t(a[row * INPUT_DIM_K + k]) * int32_t(b[k * INPUT_DIM_N + col]);
       }
     }
   }
