@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+`include "memory_states.vh"
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -53,9 +54,9 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   xil_axi_data_beat                                        Wdatabeat[];       // Write data beats
   bit [31:0] read_data;
   
-  int m = 4;
-  int k = 4;
-  int n = 4;
+  int m = 24;
+  int k = 24;
+  int n = 24;
   
   initial begin
   
@@ -116,7 +117,7 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   
   
   $display ("Mul complete, reading data");
-  for(int i = 0; i < (m*n)/2; i++) begin
+  for(int i = 0; i < (m*n); i++) begin
     mtestRID = $urandom_range(0,(1<<(0)-1)); 
     mtestRADDR = 4+2*m*k+2*k*n+4*i;
     mtestRBurstLength = 0;
@@ -130,9 +131,11 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
     mst_agent.rd_driver.send(rd_trans);
     mst_agent.rd_driver.wait_rsp(rd_trans);
     Rdatablock = rd_trans.get_data_block();
-    $display("%d %d\n", Rdatablock[15:0], Rdatablock[31:16]);
+    if(i%SYS_DIM==0) $display("");
+    if(i%(SYS_DIM*SYS_DIM)==0) $display("");
+    $write("%d ", Rdatablock[31:0]);
  end
- 
+ $display("");
  $display ("Sending start again");
  
  mtestWID = $urandom_range(0,(1<<(0)-1)); 

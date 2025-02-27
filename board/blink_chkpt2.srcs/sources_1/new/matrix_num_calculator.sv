@@ -28,9 +28,9 @@ module matrix_num_calculator(
     input wire [BITS_PER_TILE_CNT-1:0] m_tiles,
     input wire [BITS_PER_TILE_CNT-1:0] k_tiles,
     input wire [BITS_PER_TILE_CNT-1:0] n_tiles,
-    output wire [BITS_PER_MATRIX_NUM-1:0] matrix_num_a,
-    output wire [BITS_PER_MATRIX_NUM-1:0] matrix_num_b,
-    output wire [BITS_PER_MATRIX_NUM-1:0] matrix_num_result,
+    output wire [MATRIX_NUM_NBITS-1:0] matrix_num_a,
+    output wire [MATRIX_NUM_NBITS-1:0] matrix_num_b,
+    output wire [MATRIX_NUM_NBITS-1:0] matrix_num_result,
     output wire last_subtile,
     output wire all_tiles_complete
     );
@@ -46,7 +46,7 @@ module matrix_num_calculator(
     
     assign matrix_num_a = k_tiles*output_tile_num_div_tile_span+sub_tile_num;
     assign matrix_num_b = n_tiles*sub_tile_num + output_tile_num_mod_tile_span + m_tiles*k_tiles;
-    assign matrix_num_result = output_tile_num + (m_tiles*k_tiles+k_tiles*n_tiles);
+    assign matrix_num_result = 2*output_tile_num + (m_tiles*k_tiles+k_tiles*n_tiles);
     
     assign last_subtile = sub_tile_num==k_tiles-1;
     assign all_tiles_complete = output_tile_num == m_tiles*n_tiles;

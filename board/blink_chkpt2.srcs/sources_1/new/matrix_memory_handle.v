@@ -27,7 +27,7 @@ module matrix_memory_handle #(
     output reg axi_start,
     output reg axi_write,
     output reg [31:0] axi_addr,
-    output wire [AXI_MAX_BURST_LEN-1:0][31:0] axi_write_data,
+    output reg [AXI_MAX_BURST_LEN-1:0][31:0] axi_write_data,
     output reg [7:0] axi_num_writes,
     input wire [AXI_MAX_BURST_LEN-1:0][31:0] axi_read_data,
     output reg [7:0] axi_num_reads,
@@ -49,22 +49,16 @@ module matrix_memory_handle #(
     
     reg [2:0] state;
     
+    // /2 because packed matrices
     wire [31:0] matrix_offset = 2*TILE_NUM_ELEMENTS*matrix_num + 4; //+1 for status_addr
     
     wire [TILE_NUM_ELEMENTS-1:0][15:0] matrix_tmp_rdata;
-    reg [TILE_NUM_ELEMENTS-1:0][31:0] matrix_tmp_wdata;
     
     genvar i;
     generate
         for (i = 0; i < TILE_NUM_ELEMENTS/2; i++) begin
             assign matrix_tmp_rdata[2*i] = axi_read_data[i][15:0];
             assign matrix_tmp_rdata[2*i+1] = axi_read_data[i][31:16];
-        end
-        for(i = 0; i < TILE_NUM_ELEMENTS/2; i++) begin
-            assign axi_write_data[i] = (matrix_tmp_wdata[2*i+1]<<16)|matrix_tmp_wdata[2*i];
-        end
-        for(i = TILE_NUM_ELEMENTS/2; i < AXI_MAX_BURST_LEN; i++) begin
-            assign axi_write_data[i] = 0;
         end
     endgenerate
     
@@ -75,13 +69,13 @@ module matrix_memory_handle #(
             axi_start <= 0;
             axi_write <= 0;
             axi_addr <= 0;
-            matrix_tmp_wdata <= 0;
             matrix_read_data <= 0;
             axi_num_reads <= 0;
             matrix_done <= 0;
             state <= MHS_IDLE;
             status_read_data <= 0;
             axi_num_writes <= 0;
+            axi_write_data <= 0;
         end else begin
             case (state)
                 MHS_IDLE: begin
@@ -126,10 +120,10 @@ module matrix_memory_handle #(
                         axi_write <= 0;
                         axi_start <= 0;
                     end else begin
-                        axi_num_writes <= TILE_NUM_ELEMENTS/2;
+                        axi_num_writes <= TILE_NUM_ELEMENTS;
                         axi_start <= 1;
                         axi_write <= 1;
-                        matrix_tmp_wdata <= matrix_write_data;
+                        axi_write_data <= matrix_write_data;
                         axi_addr <= matrix_offset;
                     end
                 end
@@ -151,8 +145,7 @@ module matrix_memory_handle #(
                     end else begin
                         axi_addr <= STATUS_ADDR;
                         axi_num_writes <= 1;
-                        matrix_tmp_wdata[0] <= 0;
-                        matrix_tmp_wdata[1] <= 0;
+                        axi_write_data[0] <= 0;
                         axi_write <= 1;
                         axi_start <= 1;
                     end

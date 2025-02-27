@@ -28,7 +28,7 @@ module matrix_multiplier    #(
     input wire aresetn,
     
     output reg [2:0] matrix_command,
-    output reg [BITS_PER_MATRIX_NUM-1:0] matrix_num,
+    output reg [MATRIX_NUM_NBITS-1:0] matrix_num,
     input wire [31:0] status_read_data,
     input wire [SYS_DIM*SYS_DIM-1:0][15:0] matrix_read_data,
     output reg [SYS_DIM*SYS_DIM-1:0][31:0] matrix_write_data,
@@ -76,13 +76,13 @@ systolic_array #(
     );
     
 reg increment_tile;
-wire [BITS_PER_MATRIX_NUM-1:0] matrix_num_a;
-wire [BITS_PER_MATRIX_NUM-1:0] matrix_num_b;
-wire [BITS_PER_MATRIX_NUM-1:0] matrix_num_result;
+wire [MATRIX_NUM_NBITS-1:0] matrix_num_a;
+wire [MATRIX_NUM_NBITS-1:0] matrix_num_b;
+wire [MATRIX_NUM_NBITS-1:0] matrix_num_result;
 wire last_subtile;
 wire all_tiles_complete;
 
-reg [BITS_PER_MATRIX_NUM-1:0] tmp_matrix_num_result;
+reg [MATRIX_NUM_NBITS-1:0] tmp_matrix_num_result;
 
 matrix_num_calculator calc(
     .arstn(aresetn),
