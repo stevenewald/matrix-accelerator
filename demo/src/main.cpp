@@ -26,7 +26,7 @@ int main() {
     return 1;
   }
 
-  const matmul_dims dims{11 * 8, 13 * 8, 10 * 8};
+  const matmul_dims dims{11 * 8, 12 * 8, 11 * 8};
 
   std::cout << "Testing random " << dims.m << "x" << dims.k << " * " << dims.k
             << "x" << dims.n << " mul\n";
