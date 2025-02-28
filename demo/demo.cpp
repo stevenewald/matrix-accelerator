@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <chrono>
 #include <cstdint>
 #include <cstring>
 #include <fcntl.h>
@@ -193,7 +192,11 @@ void print_matrix(const large_matrix_a &matrix) {
   std::cout << "\n\n";
 }
 
-uint64_t get_cycles() { return __rdtsc(); }
+uint64_t get_time_ns() {
+  struct timespec ts;
+  clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts);
+  return ts.tv_sec * 1'000'000'000LL + ts.tv_nsec;
+}
 
 int main() {
   int fd = open(DEVICE_PATH, O_RDWR);
@@ -212,10 +215,8 @@ int main() {
   large_matrix_a mat_a;
   large_matrix_b mat_b;
 
-  std::chrono::duration<double, std::milli> fpga_dur_mem{};
-  std::chrono::duration<double, std::milli> cpu_dur{};
-  uint64_t fpga_dur_exec_cycles{};
-  uint64_t cpu_dur_exec_cycles{};
+  uint64_t fpga_dur_exec_ns{};
+  uint64_t cpu_dur_exec_ns{};
 
   for (int j = 0; j < NUM_TRIALS; ++j) {
     for (int i = 0; i < INPUT_DIM_M * INPUT_DIM_K; i++) {
@@ -227,8 +228,6 @@ int main() {
     large_matrix_a mat_a_t = transform_into_input_a(mat_a);
     large_matrix_b mat_b_t = transform_into_input_b(mat_b);
 
-    auto mem_start = std::chrono::high_resolution_clock::now();
-
     if (!write_matrices(fd, mat_a_t, mat_b_t)) {
       return 1;
     }
@@ -236,27 +235,19 @@ int main() {
     if (!start_mul(fd)) {
       return 1;
     }
-    auto mem_end = std::chrono::high_resolution_clock::now();
-    fpga_dur_mem += (mem_end - mem_start);
 
     wait_for_poll(fd);
-    auto exec_end = std::chrono::high_resolution_clock::now();
 
     auto res = get_large_result(fd);
-    mem_end = std::chrono::high_resolution_clock::now();
-    fpga_dur_mem += mem_end - exec_end;
 
     int cycles_elapsed = get_cycles_elapsed(fd);
-    fpga_dur_exec_cycles += cycles_elapsed;
+    fpga_dur_exec_ns += 8 * cycles_elapsed; // 125 mhz
 
     auto res_t = transform_into_output(res);
 
-    auto cpu_start = std::chrono::high_resolution_clock::now();
-    auto cpu_start_cycles = get_cycles();
+    auto cpu_start = get_time_ns();
     auto expected = generate_large_result(mat_a, mat_b);
-    auto cpu_end = std::chrono::high_resolution_clock::now();
-    cpu_dur_exec_cycles += get_cycles() - cpu_start_cycles;
-    cpu_dur += (cpu_end - cpu_start);
+    cpu_dur_exec_ns += get_time_ns() - cpu_start;
 
     int failed = verify_result(expected, res_t);
 
@@ -270,26 +261,25 @@ int main() {
     }
     if (j == NUM_TRIALS - 1) {
       std::cout << "PASS.\n\n";
-      float fpga_dur_exec_ms = float(fpga_dur_exec_cycles) / 125'000;
-      /*std::cout << "FPGA exec duration: " << fpga_dur_exec.count() /
-      NUM_TRIALS
-                << "ms\n";
-      std::cout << "FPGA DMA duration: " << fpga_dur_mem.count() / NUM_TRIALS
-                << "ms\n";*/
-      std::cout << "FPGA exec cycles: " << fpga_dur_exec_cycles / NUM_TRIALS
-                << "\n";
-      std::cout << "CPU exec cycles: " << cpu_dur_exec_cycles / NUM_TRIALS
-                << "\n";
-      std::cout << "FPGA exec duration: " << fpga_dur_exec_ms / NUM_TRIALS
-                << "ms\n";
-      std::cout << "CPU exec duration: " << cpu_dur.count() / NUM_TRIALS
-                << "ms\n";
+
+      std::cout << "FPGA exec ms: "
+                << (double(fpga_dur_exec_ns) / NUM_TRIALS) / 1000000 << "ms\n";
+      std::cout << "CPU exec ms: "
+                << (double(cpu_dur_exec_ns) / NUM_TRIALS) / 1000000 << "ms\n";
 
       std::cout << "\n";
-      std::cout << "Time Speedup: " << cpu_dur.count() / fpga_dur_exec_ms
+
+      uint64_t cpu_cycles = double(cpu_dur_exec_ns) / .277778;
+      uint64_t fpga_cycles = double(fpga_dur_exec_ns) / 8;
+
+      std::cout << "FPGA exec cycles: " << fpga_cycles / NUM_TRIALS << "\n";
+      std::cout << "CPU exec cycles: " << cpu_cycles / NUM_TRIALS << "\n";
+
+      std::cout << "\n";
+      std::cout << "Time Speedup: "
+                << double(cpu_dur_exec_ns) / fpga_dur_exec_ns << "\n";
+      std::cout << "Cycle Speedup: " << double(cpu_cycles) / fpga_cycles
                 << "\n";
-      std::cout << "Cycle Speedup: "
-                << float(cpu_dur_exec_cycles) / fpga_dur_exec_cycles << "\n";
     }
   }
 
