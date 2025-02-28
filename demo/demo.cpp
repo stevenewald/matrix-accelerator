@@ -19,12 +19,27 @@
 #define MIN_INPUT_VALUE -std::pow(2, 14)
 #define MAX_INPUT_VALUE std::pow(2, 14)
 
-#define INPUT_DIM_M 88
-#define INPUT_DIM_K 96
-#define INPUT_DIM_N 80
+#define INPUT_TILES_M 11
+#define INPUT_TILES_K 13
+#define INPUT_TILES_N 10
+
+#define INPUT_DIM_M (8*INPUT_TILES_M)
+#define INPUT_DIM_K (8*INPUT_TILES_K)
+#define INPUT_DIM_N (8*INPUT_TILES_N)
 
 #define DEVICE_PATH "/dev/fpga"
 #define PCIE_SET_DMA (_IOW('k', 1, int))
+
+using large_matrix_a = std::array<int16_t, INPUT_DIM_M * INPUT_DIM_K>;
+using large_matrix_b = std::array<int16_t, INPUT_DIM_K * INPUT_DIM_N>;
+using large_matrix_res = std::array<int32_t, INPUT_DIM_M * INPUT_DIM_N>;
+
+static_assert(32 + sizeof(large_matrix_a) + sizeof(large_matrix_b) +
+                  sizeof(large_matrix_res) <=
+              65535);
+static_assert(INPUT_DIM_M%8==0);
+static_assert(INPUT_DIM_K%8==0);
+static_assert(INPUT_DIM_N%8==0);
 
 void set_write_mode(int fd, int dma_on) {
   if (ioctl(fd, PCIE_SET_DMA, &dma_on) < 0) {
@@ -41,10 +56,6 @@ bool start_mul(int fd) {
   }
   return true;
 }
-
-using large_matrix_a = std::array<int16_t, INPUT_DIM_M * INPUT_DIM_K>;
-using large_matrix_b = std::array<int16_t, INPUT_DIM_K * INPUT_DIM_N>;
-using large_matrix_res = std::array<int32_t, INPUT_DIM_M * INPUT_DIM_N>;
 
 bool write_matrices(int fd, const large_matrix_a &a, const large_matrix_b &b) {
   set_write_mode(fd, true);
