@@ -30,8 +30,8 @@ module matrix_multiplier    #(
     output reg [2:0] matrix_command,
     output reg [MATRIX_NUM_NBITS-1:0] matrix_num,
     input wire [31:0] status_read_data,
-    input wire [SYS_DIM*SYS_DIM-1:0][15:0] matrix_read_data,
-    output reg [SYS_DIM*SYS_DIM-1:0][31:0] matrix_write_data,
+    input wire [TILE_NUM_ELEMENTS-1:0][15:0] matrix_read_data,
+    output reg [TILE_NUM_ELEMENTS-1:0][31:0] matrix_write_data,
     input wire matrix_done
     );
     
@@ -51,8 +51,8 @@ module matrix_multiplier    #(
     
 reg [3:0] current_state;
 
-reg [SYS_DIM*SYS_DIM-1:0][15:0] mat_a;
-reg [SYS_DIM*SYS_DIM-1:0][15:0] mat_b;
+reg [TILE_NUM_ELEMENTS-1:0][15:0] mat_a;
+reg [TILE_NUM_ELEMENTS-1:0][15:0] mat_b;
 
 reg start_mul;
 wire mul_done;

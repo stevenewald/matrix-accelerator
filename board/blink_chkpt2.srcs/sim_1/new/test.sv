@@ -75,13 +75,16 @@ module test();
     wire start;
     wire write;
     wire [31:0] addr;
-    wire [AXI_MAX_BURST_LEN-1:0][31:0] write_data;
-    wire [AXI_MAX_BURST_LEN-1:0][31:0] read_data;
+    wire [AXI_MAX_WRITE_BURST_LEN-1:0][31:0] write_data;
+    wire [AXI_MAX_READ_BURST_LEN-1:0][31:0] read_data;
     wire [7:0] num_reads;
     wire [7:0] num_writes;
-    wire done;
     
-    axi_master_fse master_2(
+    wire read_done;
+    wire write_done;
+    wire done = read_done || write_done;
+    
+    axi_write_fse write_fse(
         .clk(axi_clk),
         .resetn(axi_rst),
         .m_axi_awaddr(axi_awaddr),
@@ -94,6 +97,22 @@ module test();
         .m_axi_bresp(axi_bresp),
         .m_axi_bvalid(axi_bvalid),
         .m_axi_bready(axi_bready),
+       
+
+        .m_axi_awsize(axi_awsize),
+        .m_axi_awlen(axi_awlen),
+        .m_axi_wlast(axi_wlast),
+        
+        .start(start && write),
+        .addr(addr),
+        .write_data(write_data),
+        .num_writes(num_writes),
+        .write_done(write_done)
+    );
+    
+    axi_read_fse read_fse(
+        .clk(axi_clk),
+        .resetn(axi_rst),
         .m_axi_araddr(axi_araddr),
         .m_axi_arvalid(axi_arvalid),
         .m_axi_arready(axi_arready),
@@ -104,19 +123,13 @@ module test();
         
         .m_axi_arsize(axi_arsize),
         .m_axi_arlen(axi_arlen),
-        .m_axi_awsize(axi_awsize),
-        .m_axi_awlen(axi_awlen),
         .m_axi_rlast(axi_rlast),
-        .m_axi_wlast(axi_wlast),
         
-        .start(start),
-        .write_en(write),
+        .start(start && !write),
         .addr(addr),
-        .write_data(write_data),
         .read_data(read_data),
         .num_reads(num_reads),
-        .num_writes(num_writes),
-        .done(done)
+        .read_done(read_done)
     );
     
     matrix_master matrix_mst(

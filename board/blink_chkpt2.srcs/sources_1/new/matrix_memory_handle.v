@@ -27,9 +27,9 @@ module matrix_memory_handle #(
     output reg axi_start,
     output reg axi_write,
     output reg [31:0] axi_addr,
-    output reg [AXI_MAX_BURST_LEN-1:0][31:0] axi_write_data,
+    output reg [AXI_MAX_WRITE_BURST_LEN-1:0][31:0] axi_write_data,
     output reg [7:0] axi_num_writes,
-    input wire [AXI_MAX_BURST_LEN-1:0][31:0] axi_read_data,
+    input wire [AXI_MAX_READ_BURST_LEN-1:0][31:0] axi_read_data,
     output reg [7:0] axi_num_reads,
     input wire axi_done,
     

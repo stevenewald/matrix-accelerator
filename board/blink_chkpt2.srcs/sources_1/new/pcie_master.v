@@ -43,9 +43,9 @@ module pcie_master(
     input wire start,
     input wire write,
     input wire [31:0] addr,
-    input wire [AXI_MAX_BURST_LEN-1:0][31:0] write_data,
+    input wire [AXI_MAX_WRITE_BURST_LEN-1:0][31:0] write_data,
     input wire [7:0] num_reads,
-    output wire [AXI_MAX_BURST_LEN-1:0][31:0] read_data,
+    output wire [AXI_MAX_READ_BURST_LEN-1:0][31:0] read_data,
     input wire [7:0] num_writes,
     output wire done 
     );
@@ -55,6 +55,10 @@ module pcie_master(
     .sys_clk_n(sys_clk_n),
     .refclk(sys_clk)
     );
+    
+    wire read_done;
+    wire write_done;
+    assign done = read_done || write_done;
     
     wire [31:0] axi_araddr;
     wire [2:0] axi_arprot;
@@ -143,18 +147,41 @@ module pcie_master(
     .msi_enabled(msi_enabled)
     );
     
-    axi_master_fse fse (
+    axi_read_fse read_fse (
         .clk(axi_clk),
         .resetn(axi_rst_n),
         
-        .start(start),
-        .write_en(write),
+        .start(start && !write),
+        .addr(addr),
+        .read_data(read_data),
+        .num_reads(num_reads),
+        .read_done(read_done),
+    
+        // Read Address Channel
+        .m_axi_araddr(axi_araddr),
+        .m_axi_arvalid(axi_arvalid),
+        .m_axi_arready(axi_arready),
+        .m_axi_arlen(axi_arlen),
+        .m_axi_arsize(axi_arsize),
+    
+        // Read Data Channel
+        .m_axi_rdata(axi_rdata),
+        .m_axi_rresp(axi_rresp),
+        .m_axi_rvalid(axi_rvalid),
+        .m_axi_rready(axi_rready),
+        .m_axi_rlast(axi_rlast)
+        
+    );
+    
+     axi_write_fse write_fse (
+        .clk(axi_clk),
+        .resetn(axi_rst_n),
+        
+        .start(start && write),
         .addr(addr),
         .write_data(write_data),
         .num_writes(num_writes),
-        .read_data(read_data),
-        .num_reads(num_reads),
-        .done(done),
+        .write_done(write_done),
     
         // Write Address Channel
         .m_axi_awaddr(axi_awaddr),
@@ -173,21 +200,6 @@ module pcie_master(
         // Write Response Channel
         .m_axi_bresp(axi_bresp),
         .m_axi_bvalid(axi_bvalid),
-        .m_axi_bready(axi_bready),
-    
-        // Read Address Channel
-        .m_axi_araddr(axi_araddr),
-        .m_axi_arvalid(axi_arvalid),
-        .m_axi_arready(axi_arready),
-        .m_axi_arlen(axi_arlen),
-        .m_axi_arsize(axi_arsize),
-    
-        // Read Data Channel
-        .m_axi_rdata(axi_rdata),
-        .m_axi_rresp(axi_rresp),
-        .m_axi_rvalid(axi_rvalid),
-        .m_axi_rready(axi_rready),
-        .m_axi_rlast(axi_rlast)
-        
+        .m_axi_bready(axi_bready)        
     );
 endmodule

@@ -14,7 +14,8 @@ parameter MATRIX_NUM_NBITS = $clog2(4*(MAX_INPUT_SIZE*MAX_INPUT_SIZE)/(SYS_DIM*S
 parameter TILE_NUM_ELEMENTS = SYS_DIM*SYS_DIM;
 
 // Max burst size - corresponds to read/write buffer for axi master
-parameter AXI_MAX_BURST_LEN = TILE_NUM_ELEMENTS;
+parameter AXI_MAX_WRITE_BURST_LEN = TILE_NUM_ELEMENTS;
+parameter AXI_MAX_READ_BURST_LEN = TILE_NUM_ELEMENTS/2;
 
 parameter INPUT_NUM_BITS = 16;
 
