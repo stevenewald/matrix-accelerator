@@ -1,14 +1,22 @@
 version: '3'
 
 tasks:
+  init:
+    aliases: [i]
+    cmds:
+      - rm -rf build
+      - mkdir -p build
+      - cd build && cmake ..
+
   build:
     aliases: [b]
+    dir: build 
     cmds: 
-      - g++ demo.cpp -o demo #-O3
+      - cmake --build . -j
 
   test:
     aliases: [t]
     cmds:
       - task: build
       - echo "1" | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
-      - sudo ./demo #; sudo dmesg | tail -n 5
+      - sudo ./build/MatrixAcceleratorDemo
