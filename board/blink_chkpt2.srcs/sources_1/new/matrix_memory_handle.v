@@ -31,7 +31,8 @@ module matrix_memory_handle #(
     output reg [7:0] axi_num_writes,
     input wire [AXI_MAX_READ_BURST_LEN-1:0][31:0] axi_read_data,
     output reg [7:0] axi_num_reads,
-    input wire axi_done,
+    input wire axi_write_done,
+    input wire [1:0] axi_read_done,
     input wire axi_read_ready,
     
     output reg msi_interrupt_req,
@@ -93,7 +94,7 @@ module matrix_memory_handle #(
                     end
                 end
                 MHS_READ_STATUS: begin
-                    if(axi_done) begin
+                    if(axi_read_done[0]) begin
                         status_read_data <= axi_read_data[0];
                         matrix_done <= 1;
                         axi_start <= 0;
@@ -108,7 +109,7 @@ module matrix_memory_handle #(
                     end
                 end
                 MHS_READ_MATRIX: begin
-                    if(axi_done) begin
+                    if(axi_read_done[0]) begin
                         matrix_read_data <= matrix_tmp_rdata;
                         state <= MHS_IDLE;
                         matrix_done <= 1;
@@ -123,7 +124,7 @@ module matrix_memory_handle #(
                     end
                 end
                 MHS_WRITE_RESULT: begin
-                    if(axi_done) begin
+                    if(axi_write_done) begin
                         state <= MHS_IDLE;
                         matrix_done <= 1;
                         axi_write <= 0;
@@ -146,7 +147,7 @@ module matrix_memory_handle #(
                     end
                 end
                 MHS_RESET_STATUS: begin
-                    if(axi_done) begin
+                    if(axi_write_done) begin
                         axi_start <= 0;
                         state <= MHS_IDLE;
                         matrix_done <= 1;

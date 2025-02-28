@@ -43,9 +43,11 @@ module top(
      wire [31:0] axi_addr;
      wire [AXI_MAX_READ_BURST_LEN-1:0][31:0] axi_read_data;
      wire [AXI_MAX_WRITE_BURST_LEN-1:0][31:0] axi_write_data;
-     wire axi_done;
+     wire [1:0] axi_read_done;
+     wire axi_write_done;
      wire [7:0] num_reads;
      wire [7:0] num_writes;
+     wire axi_read_ready;
     
     wire sys_clk;
     pcie_master pcie(
@@ -72,7 +74,9 @@ module top(
         .read_data(axi_read_data),
         .num_reads(num_reads),
         .num_writes(num_writes),
-        .done(axi_done)
+        .axi_read_done(axi_read_done),
+        .axi_write_done(axi_write_done),
+        .axi_read_ready(axi_read_ready)
     );
     
     matrix_master matrix_mst(
@@ -89,7 +93,9 @@ module top(
         .axi_num_reads(num_reads),
         .axi_write_data(axi_write_data),
         .axi_num_writes(num_writes),
-        .axi_done(axi_done)
+        .axi_write_done(axi_write_done),
+        .axi_read_done(axi_read_done),
+        .axi_read_ready(axi_read_ready)
         );
     
     

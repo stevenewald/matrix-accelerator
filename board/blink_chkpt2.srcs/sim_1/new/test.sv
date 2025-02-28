@@ -162,7 +162,8 @@ module test();
         .axi_num_reads(num_reads),
         .axi_num_writes(num_writes),
         .axi_write_data(write_data),
-        .axi_done(write_done || read_done[0]),
+        .axi_write_done(write_done),
+        .axi_read_done(read_done),
         .axi_read_ready(axi_read_ready)
         );
   

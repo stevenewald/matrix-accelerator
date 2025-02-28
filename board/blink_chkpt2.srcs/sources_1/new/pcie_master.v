@@ -41,14 +41,15 @@ module pcie_master(
     output wire link_up,
     
     input wire start,
-    output wire read_ready,
     input wire write,
     input wire [31:0] addr,
     input wire [AXI_MAX_WRITE_BURST_LEN-1:0][31:0] write_data,
     input wire [7:0] num_reads,
     output wire [MAX_OUTSTANDING_READS-1:0][AXI_MAX_READ_BURST_LEN-1:0][31:0] read_data,
     input wire [7:0] num_writes,
-    output wire done 
+    output wire axi_write_done,
+    output wire [1:0] axi_read_done,
+    output wire axi_read_ready
     );
     
     refclk clk(
@@ -56,10 +57,6 @@ module pcie_master(
     .sys_clk_n(sys_clk_n),
     .refclk(sys_clk)
     );
-    
-    wire read_done;
-    wire write_done;
-    assign done = read_done || write_done;
     
     wire [31:0] axi_araddr;
     wire [2:0] axi_arprot;
@@ -143,7 +140,7 @@ module pcie_master(
     .axi_in_arid(axi_arid),
     .axi_in_rid(axi_rid),
     .axi_in_awid(0),
-    .axi_in_bid(0),
+    .axi_in_bid(),
     
     
     .refclk(sys_clk),
@@ -166,13 +163,13 @@ module pcie_master(
         .addr(addr),
         .read_data(read_data),
         .num_reads(num_reads),
-        .read_done(read_done),
         
         // double reads
-        .ready(read_ready),
+        .ready(axi_read_ready),
         .m_axi_arid(axi_arid),
         .m_axi_rid(axi_rid),
-        .assigned_read_id(assigned_read_id),
+        .assigned_read_id(0),
+        .read_done(axi_read_done),
     
         // Read Address Channel
         .m_axi_araddr(axi_araddr),
@@ -198,7 +195,7 @@ module pcie_master(
         .addr(addr),
         .write_data(write_data),
         .num_writes(num_writes),
-        .write_done(write_done),
+        .write_done(axi_write_done),
     
         // Write Address Channel
         .m_axi_awaddr(axi_awaddr),
