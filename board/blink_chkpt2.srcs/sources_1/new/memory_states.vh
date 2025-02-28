@@ -4,7 +4,7 @@
 // TILE SIZE (SYS_DIM*SYS_DIM) MUST BE FACTOR OF 2 BECAUSE OF PACKING
 // Each word contains 2 16-bit inputs
 // If one tile had odd number of elements, it would need padding or some other mechanism
-parameter SYS_DIM        = 8;
+parameter SYS_DIM        = 2;
 
 parameter MAX_INPUT_SIZE = 100;
 
@@ -31,4 +31,7 @@ parameter MHS_READ_MATRIX = 4'd2;
 parameter MHS_WRITE_RESULT  = 3'd4;
 parameter MHS_RESET_STATUS  = 3'd5;
 parameter MHS_INTERRUPT     = 3'd6;
+
+parameter MAX_OUTSTANDING_READS = 2;
+parameter BITS_PER_READ_ID = $clog2(MAX_OUTSTANDING_READS);
 `endif

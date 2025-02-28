@@ -41,11 +41,12 @@ module pcie_master(
     output wire link_up,
     
     input wire start,
+    output wire read_ready,
     input wire write,
     input wire [31:0] addr,
     input wire [AXI_MAX_WRITE_BURST_LEN-1:0][31:0] write_data,
     input wire [7:0] num_reads,
-    output wire [AXI_MAX_READ_BURST_LEN-1:0][31:0] read_data,
+    output wire [MAX_OUTSTANDING_READS-1:0][AXI_MAX_READ_BURST_LEN-1:0][31:0] read_data,
     input wire [7:0] num_writes,
     output wire done 
     );
@@ -92,6 +93,10 @@ module pcie_master(
     wire [7:0] axi_awsize;
     wire axi_wlast;
     
+    // double reads
+    wire [MAX_OUTSTANDING_READS-1:0] axi_arid;
+    wire [MAX_OUTSTANDING_READS-1:0] axi_rid;
+    
     design_1_wrapper des(
     .aresetn(axi_rst_n),
     .axi_clk(axi_clk),
@@ -134,6 +139,12 @@ module pcie_master(
     .axi_in_rlast(axi_rlast),
     .axi_in_wlast(axi_wlast),
     
+    // ids
+    .axi_in_arid(axi_arid),
+    .axi_in_rid(axi_rid),
+    .axi_in_awid(0),
+    .axi_in_bid(0),
+    
     
     .refclk(sys_clk),
     .sys_reset(sys_rst_n),
@@ -156,6 +167,12 @@ module pcie_master(
         .read_data(read_data),
         .num_reads(num_reads),
         .read_done(read_done),
+        
+        // double reads
+        .ready(read_ready),
+        .m_axi_arid(axi_arid),
+        .m_axi_rid(axi_rid),
+        .assigned_read_id(assigned_read_id),
     
         // Read Address Channel
         .m_axi_araddr(axi_araddr),

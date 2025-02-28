@@ -35,6 +35,11 @@ module test();
     wire axi_rlast;
     wire axi_wlast;
     
+    // double reads
+    wire [BITS_PER_READ_ID-1:0] axi_rid;
+    wire [BITS_PER_READ_ID-1:0] axi_arid;
+    wire axi_read_ready;
+    
     assign axi_arprot = 3'b0;
     assign axi_awprot = 3'b0;
 
@@ -67,7 +72,11 @@ module test();
         .axi_in_wlast(axi_wlast),
         .axi_in_rlast(axi_rlast),
         .axi_in_arburst(1),
-        .axi_in_awburst(1)
+        .axi_in_awburst(1),
+        .axi_in_rid(axi_rid),
+        .axi_in_arid(axi_arid),
+        .axi_in_bid(),
+        .axi_in_awid(0)
     );
     
     wire msi_req;
@@ -76,13 +85,15 @@ module test();
     wire write;
     wire [31:0] addr;
     wire [AXI_MAX_WRITE_BURST_LEN-1:0][31:0] write_data;
-    wire [AXI_MAX_READ_BURST_LEN-1:0][31:0] read_data;
+    wire [MAX_OUTSTANDING_READS-1:0][AXI_MAX_READ_BURST_LEN-1:0][31:0] read_data;
     wire [7:0] num_reads;
     wire [7:0] num_writes;
     
-    wire read_done;
+    wire [MAX_OUTSTANDING_READS-1:0] read_done;
     wire write_done;
-    wire done = read_done || write_done;
+    
+    // double reads
+    wire [BITS_PER_READ_ID-1:0] assigned_read_id = 0;
     
     axi_write_fse write_fse(
         .clk(axi_clk),
@@ -129,7 +140,12 @@ module test();
         .addr(addr),
         .read_data(read_data),
         .num_reads(num_reads),
-        .read_done(read_done)
+        .read_done(read_done),
+        
+        .m_axi_arid(axi_arid),
+        .m_axi_rid(axi_rid),
+        .assigned_read_id(assigned_read_id),
+        .ready(axi_read_ready)
     );
     
     matrix_master matrix_mst(
@@ -142,11 +158,12 @@ module test();
         .axi_start(start),
         .axi_write(write),
         .axi_addr(addr),
-        .axi_read_data(read_data),
+        .axi_read_data(read_data[0]),
         .axi_num_reads(num_reads),
         .axi_num_writes(num_writes),
         .axi_write_data(write_data),
-        .axi_done(done)
+        .axi_done(write_done || read_done[0]),
+        .axi_read_ready(axi_read_ready)
         );
   
   axi_stim stim();

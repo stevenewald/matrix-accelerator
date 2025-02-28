@@ -149,7 +149,11 @@
         "M00_AXI_rresp": [ { "direction": "in", "size_left": "1", "size_right": "0", "driver_value": "0" } ],
         "M00_AXI_rlast": [ { "direction": "in", "driver_value": "0" } ],
         "M00_AXI_rvalid": [ { "direction": "in", "driver_value": "0" } ],
-        "M00_AXI_rready": [ { "direction": "out", "driver_value": "0" } ]
+        "M00_AXI_rready": [ { "direction": "out", "driver_value": "0" } ],
+        "S00_AXI_awid": [ { "direction": "in", "size_left": "0", "size_right": "0", "driver_value": "0" } ],
+        "S00_AXI_bid": [ { "direction": "out", "size_left": "0", "size_right": "0", "driver_value": "0" } ],
+        "S00_AXI_arid": [ { "direction": "in", "size_left": "0", "size_right": "0", "driver_value": "0" } ],
+        "S00_AXI_rid": [ { "direction": "out", "size_left": "0", "size_right": "0", "driver_value": "0" } ]
       },
       "interfaces": {
         "CLK.aclk": {
@@ -191,7 +195,7 @@
             "DATA_WIDTH": [ { "value": "32", "value_src": "user_prop", "value_permission": "bd", "resolve_type": "generated", "format": "long", "usage": "simulation.tlm", "is_static_object": false } ],
             "PROTOCOL": [ { "value": "AXI4", "value_src": "user_prop", "value_permission": "bd", "resolve_type": "generated", "usage": "simulation.tlm", "is_static_object": false } ],
             "FREQ_HZ": [ { "value": "125000000", "value_src": "user_prop", "value_permission": "bd", "resolve_type": "generated", "format": "long", "usage": "simulation.tlm", "is_static_object": false } ],
-            "ID_WIDTH": [ { "value": "0", "value_src": "user_prop", "value_permission": "bd", "resolve_type": "generated", "format": "long", "usage": "simulation.tlm", "is_static_object": false } ],
+            "ID_WIDTH": [ { "value": "1", "value_src": "user_prop", "value_permission": "bd", "resolve_type": "generated", "format": "long", "usage": "simulation.tlm", "is_static_object": false } ],
             "ADDR_WIDTH": [ { "value": "32", "value_src": "user_prop", "value_permission": "bd", "resolve_type": "generated", "format": "long", "usage": "simulation.tlm", "is_static_object": false } ],
             "AWUSER_WIDTH": [ { "value": "0", "value_src": "user_prop", "value_permission": "bd", "resolve_type": "generated", "format": "long", "usage": "simulation.tlm", "is_static_object": false } ],
             "ARUSER_WIDTH": [ { "value": "0", "value_src": "user_prop", "value_permission": "bd", "resolve_type": "generated", "format": "long", "usage": "simulation.tlm", "is_static_object": false } ],
@@ -209,7 +213,7 @@
             "HAS_BRESP": [ { "value": "1", "value_src": "user_prop", "value_permission": "bd", "resolve_type": "generated", "format": "long", "usage": "simulation.tlm", "is_static_object": false } ],
             "HAS_RRESP": [ { "value": "1", "value_src": "user_prop", "value_permission": "bd", "resolve_type": "generated", "format": "long", "usage": "simulation.tlm", "is_static_object": false } ],
             "SUPPORTS_NARROW_BURST": [ { "value": "0", "value_src": "default_prop", "value_permission": "bd", "resolve_type": "generated", "format": "long", "usage": "simulation.tlm", "is_static_object": false } ],
-            "NUM_READ_OUTSTANDING": [ { "value": "1", "value_src": "user", "value_permission": "bd", "resolve_type": "generated", "format": "long", "usage": "simulation.tlm", "is_static_object": false } ],
+            "NUM_READ_OUTSTANDING": [ { "value": "2", "value_src": "user", "value_permission": "bd", "resolve_type": "generated", "format": "long", "usage": "simulation.tlm", "is_static_object": false } ],
             "NUM_WRITE_OUTSTANDING": [ { "value": "1", "value_src": "user", "value_permission": "bd", "resolve_type": "generated", "format": "long", "usage": "simulation.tlm", "is_static_object": false } ],
             "MAX_BURST_LENGTH": [ { "value": "1", "value_src": "user_prop", "value_permission": "bd", "resolve_type": "generated", "format": "long", "usage": "simulation.tlm", "is_static_object": false } ],
             "PHASE": [ { "value": "0.0", "value_permission": "bd", "resolve_type": "generated", "format": "float", "usage": "simulation.tlm", "is_static_object": false } ],
@@ -253,7 +257,11 @@
             "RRESP": [ { "physical_name": "S00_AXI_rresp" } ],
             "RLAST": [ { "physical_name": "S00_AXI_rlast" } ],
             "RVALID": [ { "physical_name": "S00_AXI_rvalid" } ],
-            "RREADY": [ { "physical_name": "S00_AXI_rready" } ]
+            "RREADY": [ { "physical_name": "S00_AXI_rready" } ],
+            "AWID": [ { "physical_name": "S00_AXI_awid" } ],
+            "BID": [ { "physical_name": "S00_AXI_bid" } ],
+            "ARID": [ { "physical_name": "S00_AXI_arid" } ],
+            "RID": [ { "physical_name": "S00_AXI_rid" } ]
           }
         },
         "S01_AXI": {

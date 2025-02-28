@@ -32,6 +32,7 @@ module matrix_memory_handle #(
     input wire [AXI_MAX_READ_BURST_LEN-1:0][31:0] axi_read_data,
     output reg [7:0] axi_num_reads,
     input wire axi_done,
+    input wire axi_read_ready,
     
     output reg msi_interrupt_req,
     input wire msi_interrupt_ack,
@@ -48,6 +49,8 @@ module matrix_memory_handle #(
     );
     
     reg [2:0] state;
+    
+    reg rip;
     
     // /2 because packed matrices
     wire [31:0] matrix_offset = 2*TILE_NUM_ELEMENTS*matrix_num + 4; //+1 for status_addr
@@ -76,7 +79,9 @@ module matrix_memory_handle #(
             status_read_data <= 0;
             axi_num_writes <= 0;
             axi_write_data <= 0;
+            rip <= 0;
         end else begin
+            axi_start <= 0;
             case (state)
                 MHS_IDLE: begin
                     if(matrix_done) begin
@@ -93,11 +98,13 @@ module matrix_memory_handle #(
                         matrix_done <= 1;
                         axi_start <= 0;
                         state <= MHS_IDLE;
-                    end else begin
+                        rip <= 0;
+                    end else if(axi_read_ready && !rip) begin
                         axi_addr <= STATUS_ADDR;
                         axi_num_reads <= 1;
                         axi_write <= 0;
                         axi_start <= 1;
+                        rip <= 1;
                     end
                 end
                 MHS_READ_MATRIX: begin
@@ -106,11 +113,13 @@ module matrix_memory_handle #(
                         state <= MHS_IDLE;
                         matrix_done <= 1;
                         axi_start <= 0;
-                    end else begin
+                        rip <= 0;
+                    end else if(axi_read_ready && !rip) begin
                         axi_num_reads <= TILE_NUM_ELEMENTS/2;
                         axi_start <= 1;
                         axi_addr <= matrix_offset;
                         axi_write <= 0;
+                        rip <= 1;
                     end
                 end
                 MHS_WRITE_RESULT: begin

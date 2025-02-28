@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x8FA710943A63F63C",
+      "boundary_crc": "0xACBFF8AB85EB44CD",
       "device": "xc7a35tfgg484-2",
       "gen_directory": "../../../../blink_chkpt2.gen/sim_1/bd/design_2",
       "name": "design_2",
@@ -74,7 +74,7 @@
             "value": "1"
           },
           "ID_WIDTH": {
-            "value": "0"
+            "value": "1"
           },
           "INSERT_VIP": {
             "value": "0",
@@ -85,7 +85,7 @@
             "value_src": "default"
           },
           "NUM_READ_OUTSTANDING": {
-            "value": "1"
+            "value": "2"
           },
           "NUM_READ_THREADS": {
             "value": "1"
@@ -267,6 +267,30 @@
             "direction": "I",
             "left": "2",
             "right": "0"
+          },
+          "ARID": {
+            "physical_name": "axi_in_arid",
+            "direction": "I",
+            "left": "0",
+            "right": "0"
+          },
+          "AWID": {
+            "physical_name": "axi_in_awid",
+            "direction": "I",
+            "left": "0",
+            "right": "0"
+          },
+          "BID": {
+            "physical_name": "axi_in_bid",
+            "direction": "O",
+            "left": "0",
+            "right": "0"
+          },
+          "RID": {
+            "physical_name": "axi_in_rid",
+            "direction": "O",
+            "left": "0",
+            "right": "0"
           }
         }
       }
@@ -413,7 +437,7 @@
             "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
             "parameters": {
               "NUM_READ_OUTSTANDING": {
-                "value": "1"
+                "value": "2"
               },
               "NUM_WRITE_OUTSTANDING": {
                 "value": "1"
