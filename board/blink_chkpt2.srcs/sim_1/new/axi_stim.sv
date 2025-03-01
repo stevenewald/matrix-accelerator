@@ -54,9 +54,9 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   xil_axi_data_beat                                        Wdatabeat[];       // Write data beats
   bit [31:0] read_data;
   
-  int m = 4;
-  int k = 4;
-  int n = 4;
+  int m = 32;
+  int k = 32;
+  int n = 32;
   
   initial begin
   
