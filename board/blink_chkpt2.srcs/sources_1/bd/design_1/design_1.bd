@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0xF42A6E251D72C317",
+      "boundary_crc": "0x187672D448E57887",
       "device": "xc7a35tfgg484-2",
       "gen_directory": "../../../../blink_chkpt2.gen/sources_1/bd/design_1",
       "name": "design_1",
@@ -71,7 +71,7 @@
             "value_src": "default_prop"
           },
           "DATA_WIDTH": {
-            "value": "32"
+            "value": "64"
           },
           "FREQ_HZ": {
             "value": "125000000"
@@ -182,13 +182,13 @@
           "WDATA": {
             "physical_name": "axi_in_wdata",
             "direction": "I",
-            "left": "31",
+            "left": "63",
             "right": "0"
           },
           "WSTRB": {
             "physical_name": "axi_in_wstrb",
             "direction": "I",
-            "left": "3",
+            "left": "7",
             "right": "0"
           },
           "WVALID": {
@@ -236,7 +236,7 @@
           "RDATA": {
             "physical_name": "axi_in_rdata",
             "direction": "O",
-            "left": "31",
+            "left": "63",
             "right": "0"
           },
           "RRESP": {
@@ -543,6 +543,9 @@
         "xci_path": "ip\\design_1_axi_bram_ctrl_0_0\\design_1_axi_bram_ctrl_0_0.xci",
         "inst_hier_path": "axi_bram_ctrl_0",
         "parameters": {
+          "DATA_WIDTH": {
+            "value": "64"
+          },
           "PROTOCOL": {
             "value": "AXI4"
           },

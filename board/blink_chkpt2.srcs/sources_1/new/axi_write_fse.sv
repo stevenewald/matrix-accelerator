@@ -5,7 +5,7 @@ module axi_write_fse
     input                         resetn,      // Active low reset
     input                         start,       // Transaction start trigger
     input      [31:0]   addr,        // Transaction address
-    input      [AXI_MAX_WRITE_BURST_LEN-1:0][31:0]   write_data,  
+    input      [AXI_MAX_WRITE_BURST_LEN-1:0][63:0]   write_data,  
     input wire [7:0]    num_writes,
 
     output reg                  write_done,         // Transaction completion flag
@@ -18,8 +18,8 @@ module axi_write_fse
     output reg [2:0]            m_axi_awsize,
 
     // AXI-Lite Write Data Channel
-    output reg [31:0]   m_axi_wdata,
-    output reg [4:0] m_axi_wstrb,
+    output reg [63:0]   m_axi_wdata,
+    output reg [7:0] m_axi_wstrb,
     output reg                  m_axi_wvalid,
     input                   m_axi_wready,
     output reg                  m_axi_wlast,
@@ -49,7 +49,7 @@ always @(posedge clk or negedge resetn) begin
         m_axi_awaddr  <= {32{1'b0}};
         m_axi_awvalid <= 1'b0;
         m_axi_wdata   <= {32{1'b0}};
-        m_axi_wstrb   <= {4{1'b0}};
+        m_axi_wstrb   <= {8{1'b0}};
         m_axi_wvalid  <= 1'b0;
         m_axi_bready  <= 1'b0;
 
@@ -66,7 +66,7 @@ always @(posedge clk or negedge resetn) begin
             STATE_IDLE: begin
                 // !done to ensure buffer
                 if (!write_done && start) begin
-                    truncated_burst <= (addr&32'h1000) != ((addr+4*num_writes)&32'h1000);
+                    truncated_burst <= (addr&32'h1000) != ((addr+8*num_writes)&32'h1000);
                     arg_num <= 0;
                     state <= STATE_WRITE_ADDR;
                 end else begin
@@ -80,9 +80,9 @@ always @(posedge clk or negedge resetn) begin
                     m_axi_awvalid <= 0;
                     state <= STATE_WRITE_DATA;
                 end else begin
-                    m_axi_awaddr  <= addr + 4*arg_num;
+                    m_axi_awaddr  <= addr + 8*arg_num;
                     m_axi_awvalid <= 1'b1;
-                    m_axi_awsize <= 2;
+                    m_axi_awsize <= 3;
                     m_axi_awlen <= truncated_burst ? 0 : num_writes-1;
                 end
             end
@@ -100,7 +100,7 @@ always @(posedge clk or negedge resetn) begin
                 end else if (!m_axi_wvalid) begin
                     m_axi_wlast <= truncated_burst || num_writes==1;
                     m_axi_wdata  <= write_data[arg_num];
-                    m_axi_wstrb  <= {4'hF};  // Full word write
+                    m_axi_wstrb  <= 8'hFF;  // Full word write
                     m_axi_wvalid <= 1'b1;
                 end
             end
