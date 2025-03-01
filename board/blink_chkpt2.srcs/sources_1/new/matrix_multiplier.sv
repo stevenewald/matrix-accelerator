@@ -28,9 +28,9 @@ module matrix_multiplier    #(
     input wire aresetn,
     
     output reg [2:0] matrix_command,
-    output reg [MATRIX_NUM_NBITS-1:0] matrix_num,
+    output reg [2:0][MATRIX_NUM_NBITS-1:0] matrix_num,
     input wire [31:0] status_read_data,
-    input wire [TILE_NUM_ELEMENTS-1:0][15:0] matrix_read_data,
+    input wire [1:0][TILE_NUM_ELEMENTS-1:0][15:0] matrix_read_data,
     output reg [TILE_NUM_ELEMENTS-1:0][31:0] matrix_write_data,
     input wire matrix_done
     );
@@ -158,21 +158,13 @@ always @(posedge aclk or negedge aresetn) begin
             // Read from 0x0 -> reg_A
             S_READ_A: begin
                 if (matrix_done) begin
-                    mat_a <= matrix_read_data;
-                    current_state <= S_READ_B;
-                end else begin
-                    matrix_num <= matrix_num_a;
-                    matrix_command <= MHS_READ_MATRIX;
-                end
-            end
-            
-            S_READ_B: begin
-                if (matrix_done) begin
-                    mat_b <= matrix_read_data;
+                    mat_a <= matrix_read_data[0];
+                    mat_b <= matrix_read_data[1];
                     current_state <= S_COMPUTE;
                 end else begin
-                    matrix_num <= matrix_num_b;
-                    matrix_command <= MHS_READ_MATRIX;
+                    matrix_num[0] <= matrix_num_a;
+                    matrix_num[1] <= matrix_num_b;
+                    matrix_command <= MHS_READ_MATRICES;
                 end
             end
             
@@ -200,7 +192,7 @@ always @(posedge aclk or negedge aresetn) begin
                     current_state <= S_START_TILE;
                     accumulate <= 0;
                 end else begin
-                    matrix_num <= tmp_matrix_num_result;
+                    matrix_num[2] <= tmp_matrix_num_result;
                     matrix_command <= MHS_WRITE_RESULT;
                 end
             end

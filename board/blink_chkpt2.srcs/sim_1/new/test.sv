@@ -93,7 +93,7 @@ module test();
     wire write_done;
     
     // double reads
-    wire [BITS_PER_READ_ID-1:0] assigned_read_id = 0;
+    wire [BITS_PER_READ_ID-1:0] assigned_read_id;
     
     axi_write_fse write_fse(
         .clk(axi_clk),
@@ -158,13 +158,14 @@ module test();
         .axi_start(start),
         .axi_write(write),
         .axi_addr(addr),
-        .axi_read_data(read_data[0]),
+        .axi_read_data(read_data),
         .axi_num_reads(num_reads),
         .axi_num_writes(num_writes),
         .axi_write_data(write_data),
         .axi_write_done(write_done),
         .axi_read_done(read_done),
-        .axi_read_ready(axi_read_ready)
+        .axi_read_ready(axi_read_ready),
+        .axi_read_id(assigned_read_id)
         );
   
   axi_stim stim();

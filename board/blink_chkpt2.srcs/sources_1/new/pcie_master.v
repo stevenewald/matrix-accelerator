@@ -43,6 +43,7 @@ module pcie_master(
     input wire start,
     input wire write,
     input wire [31:0] addr,
+    input wire [BITS_PER_READ_ID-1:0] assigned_read_id,
     input wire [AXI_MAX_WRITE_BURST_LEN-1:0][31:0] write_data,
     input wire [7:0] num_reads,
     output wire [MAX_OUTSTANDING_READS-1:0][AXI_MAX_READ_BURST_LEN-1:0][31:0] read_data,
@@ -168,7 +169,7 @@ module pcie_master(
         .ready(axi_read_ready),
         .m_axi_arid(axi_arid),
         .m_axi_rid(axi_rid),
-        .assigned_read_id(0),
+        .assigned_read_id(assigned_read_id),
         .read_done(axi_read_done),
     
         // Read Address Channel

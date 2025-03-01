@@ -31,22 +31,23 @@ module matrix_master(
     output wire axi_start,
     output wire axi_write,
     output wire [31:0] axi_addr,
-    input wire [AXI_MAX_READ_BURST_LEN-1:0][31:0] axi_read_data,
+    input wire [1:0][AXI_MAX_READ_BURST_LEN-1:0][31:0] axi_read_data,
     output wire [7:0] axi_num_reads,
     output wire [AXI_MAX_WRITE_BURST_LEN-1:0][31:0] axi_write_data,
     output wire [7:0] axi_num_writes,
     input wire axi_write_done,
     input wire [1:0] axi_read_done,
-    input wire axi_read_ready
+    input wire axi_read_ready,
+    output wire axi_read_id
     );
     
     wire matrix_done;
     wire [2:0] matrix_command;
     wire [TILE_NUM_ELEMENTS-1:0][31:0] matrix_write_data;
-    wire [TILE_NUM_ELEMENTS-1:0][15:0] matrix_read_data;
+    wire [1:0][TILE_NUM_ELEMENTS-1:0][15:0] matrix_read_data;
     wire [31:0] status_read_data;
     
-    wire [MATRIX_NUM_NBITS-1:0] matrix_num;
+    wire [2:0][MATRIX_NUM_NBITS-1:0] matrix_num;
     
     matrix_memory_handle matrix_handle (
     .axi_start(axi_start),
@@ -59,6 +60,7 @@ module matrix_master(
     .axi_write_done(axi_write_done),
     .axi_read_done(axi_read_done),
     .axi_read_ready(axi_read_ready),
+    .axi_read_id(axi_read_id),
     .msi_interrupt_req(msi_interrupt_req),
     .msi_interrupt_ack(msi_interrupt_ack),
     .matrix_num(matrix_num),

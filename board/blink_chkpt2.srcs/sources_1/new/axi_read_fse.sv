@@ -53,7 +53,6 @@ always @(posedge clk or negedge resetn) begin
         m_axi_arid <= 0;
     end else begin
         read_done <= 0;
-        
         if(m_axi_rvalid && m_axi_rready) begin
             arg_num[m_axi_rid] <= arg_num[m_axi_rid] + 1;
             read_data[m_axi_rid][arg_num[m_axi_rid]] <= m_axi_rdata;

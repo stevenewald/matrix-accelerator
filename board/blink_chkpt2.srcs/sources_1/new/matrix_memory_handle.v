@@ -29,7 +29,7 @@ module matrix_memory_handle #(
     output reg [31:0] axi_addr,
     output reg [AXI_MAX_WRITE_BURST_LEN-1:0][31:0] axi_write_data,
     output reg [7:0] axi_num_writes,
-    input wire [AXI_MAX_READ_BURST_LEN-1:0][31:0] axi_read_data,
+    input wire [1:0][AXI_MAX_READ_BURST_LEN-1:0][31:0] axi_read_data,
     output reg [7:0] axi_num_reads,
     input wire axi_write_done,
     input wire [1:0] axi_read_done,
@@ -41,30 +41,40 @@ module matrix_memory_handle #(
     input wire clk,
     input wire rstn,
     
-    input wire [MATRIX_NUM_NBITS-1:0] matrix_num,
+    input wire [2:0][MATRIX_NUM_NBITS-1:0] matrix_num,
     input wire [TILE_NUM_ELEMENTS-1:0][31:0] matrix_write_data,
-    output reg [TILE_NUM_ELEMENTS-1:0][15:0] matrix_read_data,
+    output reg [1:0][TILE_NUM_ELEMENTS-1:0][15:0] matrix_read_data,
     output reg [31:0] status_read_data,
     input wire [2:0] command,
+    output reg axi_read_id,
     output reg matrix_done
     );
     
     reg [2:0] state;
     
-    reg rip;
+    reg [1:0] rip;
     
     // /2 because packed matrices
-    wire [31:0] matrix_offset = 2*TILE_NUM_ELEMENTS*matrix_num + 4; //+1 for status_addr
+    wire [2:0][31:0] matrix_offset;
+    assign matrix_offset[0] = 2*TILE_NUM_ELEMENTS*matrix_num[0] + 4; //+1 for status_addr
+    assign matrix_offset[1] = 2*TILE_NUM_ELEMENTS*matrix_num[1] + 4; //+1 for status_addr
+    assign matrix_offset[2] = 2*TILE_NUM_ELEMENTS*matrix_num[2] + 4; //+1 for status_addr
     
-    wire [TILE_NUM_ELEMENTS-1:0][15:0] matrix_tmp_rdata;
+    wire [1:0][TILE_NUM_ELEMENTS-1:0][15:0] matrix_tmp_rdata;
     
     genvar i;
     generate
         for (i = 0; i < TILE_NUM_ELEMENTS/2; i++) begin
-            assign matrix_tmp_rdata[2*i] = axi_read_data[i][15:0];
-            assign matrix_tmp_rdata[2*i+1] = axi_read_data[i][31:16];
+            assign matrix_tmp_rdata[0][2*i] = axi_read_data[0][i][15:0];
+            assign matrix_tmp_rdata[0][2*i+1] = axi_read_data[0][i][31:16];
+        end
+        for (i = 0; i < TILE_NUM_ELEMENTS/2; i++) begin
+            assign matrix_tmp_rdata[1][2*i] = axi_read_data[1][i][15:0];
+            assign matrix_tmp_rdata[1][2*i+1] = axi_read_data[1][i][31:16];
         end
     endgenerate
+    
+    reg [1:0] st;
     
    
     always @(posedge clk or negedge rstn) begin
@@ -80,7 +90,9 @@ module matrix_memory_handle #(
             status_read_data <= 0;
             axi_num_writes <= 0;
             axi_write_data <= 0;
+            axi_read_id <= 0;
             rip <= 0;
+            st <= 0;
         end else begin
             axi_start <= 0;
             case (state)
@@ -99,28 +111,43 @@ module matrix_memory_handle #(
                         matrix_done <= 1;
                         axi_start <= 0;
                         state <= MHS_IDLE;
-                        rip <= 0;
-                    end else if(axi_read_ready && !rip) begin
+                        rip[0] <= 0;
+                    end else if(axi_read_ready && !rip[0]) begin
                         axi_addr <= STATUS_ADDR;
                         axi_num_reads <= 1;
                         axi_write <= 0;
                         axi_start <= 1;
-                        rip <= 1;
+                        rip[0] <= 1;
+                        axi_read_id <= 0;
                     end
                 end
-                MHS_READ_MATRIX: begin
-                    if(axi_read_done[0]) begin
+                MHS_READ_MATRICES: begin
+                    if(rip[0] && axi_read_done[0])
+                        st[0] <= 1;
+                    if(rip[1] && axi_read_done[1])
+                        st[1] <= 1;
+                        
+                    if(st[0] && st[1]) begin
                         matrix_read_data <= matrix_tmp_rdata;
                         state <= MHS_IDLE;
                         matrix_done <= 1;
                         axi_start <= 0;
                         rip <= 0;
-                    end else if(axi_read_ready && !rip) begin
+                        st <= 0;
+                    end else if(axi_read_ready && !rip[0]) begin
                         axi_num_reads <= TILE_NUM_ELEMENTS/2;
                         axi_start <= 1;
-                        axi_addr <= matrix_offset;
+                        axi_addr <= matrix_offset[0];
                         axi_write <= 0;
-                        rip <= 1;
+                        axi_read_id <= 0;
+                        rip[0] <= 1;
+                    end else if(axi_read_ready && !rip[1]) begin
+                        axi_num_reads <= TILE_NUM_ELEMENTS/2;
+                        axi_start <= 1;
+                        axi_addr <= matrix_offset[1];
+                        axi_write <= 0;
+                        axi_read_id <= 1;
+                        rip[1] <= 1;
                     end
                 end
                 MHS_WRITE_RESULT: begin
@@ -134,7 +161,7 @@ module matrix_memory_handle #(
                         axi_start <= 1;
                         axi_write <= 1;
                         axi_write_data <= matrix_write_data;
-                        axi_addr <= matrix_offset;
+                        axi_addr <= matrix_offset[2];
                     end
                 end
                 MHS_INTERRUPT: begin
