@@ -25,7 +25,6 @@ module systolic_PE(
     input rst,
     input [15:0] a_in,
     input [15:0] b_in,
-    input valid,
     output reg [15:0] a_out,
     output reg [15:0] b_out,
     output wire [31:0] result
@@ -44,10 +43,6 @@ module systolic_PE(
     
     always @(posedge clk or negedge rst) begin
         if (!rst) begin
-            a_out <= 32'b0;
-            b_out <= 32'b0;
-            inter <= 32'b0;
-        end else if(!valid) begin
             a_out <= 32'b0;
             b_out <= 32'b0;
             inter <= 32'b0;

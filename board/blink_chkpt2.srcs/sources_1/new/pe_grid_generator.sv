@@ -36,6 +36,8 @@ module pe_grid_generator #(
     
     genvar x,y;
     
+    wire rst2 = rst && valid;
+    
     generate
         for(y = 0; y < DIM; y = y + 1) begin : gen1
             for(x = 0; x < DIM; x = x + 1) begin : gen2
@@ -45,41 +47,37 @@ module pe_grid_generator #(
                 if(x==DIM-1 && y==DIM-1) begin
                     systolic_PE sys_pe(
                         .clk(clk),
-                        .rst(rst),
+                        .rst(rst2),
                         .a_in(_a_in),
                         .b_in(_b_in),
-                        .valid(valid),
                         .result(result[x+(y*DIM)])
                         );
                 end else if(x==DIM-1) begin
                     systolic_PE sys_pe(
                         .clk(clk),
-                        .rst(rst),
+                        .rst(rst2),
                         .a_in(_a_in),
                         .b_in(_b_in),
                         .b_out(b_out[x+(y*DIM)]),
-                        .valid(valid),
                         .result(result[x+(y*DIM)])
                         );
                 end else if(y==DIM-1) begin
                     systolic_PE sys_pe(
                         .clk(clk),
-                        .rst(rst),
+                        .rst(rst2),
                         .a_in(_a_in),
                         .a_out(a_out[x+(y*(DIM-1))]),
                         .b_in(_b_in),
-                        .valid(valid),
                         .result(result[x+(y*DIM)])
                         );
                 end else begin
                     systolic_PE sys_pe(
                         .clk(clk),
-                        .rst(rst),
+                        .rst(rst2),
                         .a_in(_a_in),
                         .a_out(a_out[x+(y*(DIM-1))]),
                         .b_in(_b_in),
                         .b_out(b_out[x+(y*DIM)]),
-                        .valid(valid),
                         .result(result[x+(y*DIM)])
                         );
                 end
