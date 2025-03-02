@@ -152,6 +152,8 @@ always @(posedge aclk or negedge aresetn) begin
                 end else begin
                     accumulate <= 1;
                     current_state <= S_READ_A;
+                    matrix_num <= matrix_num_a;
+                    matrix_command <= MHS_READ_MATRIX;
                 end
             end
 
@@ -161,9 +163,6 @@ always @(posedge aclk or negedge aresetn) begin
                     mat_a <= matrix_read_data;
                     current_state <= S_READ_B;
                     matrix_num <= matrix_num_b;
-                    matrix_command <= MHS_READ_MATRIX;
-                end else begin
-                    matrix_num <= matrix_num_a;
                     matrix_command <= MHS_READ_MATRIX;
                 end
             end
@@ -180,11 +179,11 @@ always @(posedge aclk or negedge aresetn) begin
                 if(mul_done) begin
                     start_mul <= 0;
                     current_state <= S_COMPLETE_TILE;
+                    increment_tile <= 1;
                 end
             end
             
             S_COMPLETE_TILE: begin
-                increment_tile <= 1;
                 if(last_subtile) begin // all sub tiles complete
                     current_state <= S_WRITE_RESULTS;
                     matrix_num <= matrix_num_result;
