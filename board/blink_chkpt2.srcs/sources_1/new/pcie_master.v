@@ -43,9 +43,9 @@ module pcie_master(
     input wire start,
     input wire write,
     input wire [15:0] addr,
-    input wire [AXI_MAX_WRITE_BURST_LEN-1:0][63:0] write_data,
+    input wire [AXI_MAX_WRITE_BURST_LEN-1:0][127:0] write_data,
     input wire [7:0] num_reads,
-    output wire [AXI_MAX_READ_BURST_LEN-1:0][63:0] read_data,
+    output wire [AXI_MAX_READ_BURST_LEN-1:0][127:0] read_data,
     input wire [7:0] num_writes,
     output wire done 
     );
@@ -71,13 +71,13 @@ module pcie_master(
     wire axi_bready;
     wire [1:0] axi_bresp;
     wire axi_bvalid;
-    wire [63:0] axi_rdata;
+    wire [127:0] axi_rdata;
     wire axi_rready;
     wire [1:0] axi_rresp;
     wire axi_rvalid;
-    wire [63:0] axi_wdata;
+    wire [127:0] axi_wdata;
     wire axi_wready;
-    wire [7:0] axi_wstrb;
+    wire [15:0] axi_wstrb;
     wire axi_wvalid;
     
     assign axi_arprot = 3'b0;

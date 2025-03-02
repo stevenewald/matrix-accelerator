@@ -68,7 +68,7 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   
   for(int i = 0; i < (m*k + k*n)/2; i++) begin
       mtestWID = $urandom_range(0,(1<<(0)-1)); 
-      mtestWADDR = 64'h8 + i*4;
+      mtestWADDR = 64'd16 + i*4;
       mtestWBurstLength = 0;
       mtestWDataSize = xil_axi_size_t'(xil_clog2((32)/8));
       mtestWBurstType = XIL_AXI_BURST_TYPE_INCR;
@@ -119,7 +119,7 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   $display ("Mul complete, reading data");
   for(int i = 0; i < (m*n); i++) begin
     mtestRID = $urandom_range(0,(1<<(0)-1)); 
-    mtestRADDR = 8+2*m*k+2*k*n+4*i;
+    mtestRADDR = 16+2*m*k+2*k*n+4*i;
     mtestRBurstLength = 0;
     mtestRDataSize = xil_axi_size_t'(xil_clog2((32)/8));
     mtestRBurstType = XIL_AXI_BURST_TYPE_INCR;

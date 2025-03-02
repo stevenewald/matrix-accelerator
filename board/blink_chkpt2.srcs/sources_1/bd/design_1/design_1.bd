@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x40DA206FBCD8E6FB",
+      "boundary_crc": "0x3A570D9152E88CF",
       "device": "xc7a35tfgg484-2",
       "gen_directory": "../../../../blink_chkpt2.gen/sources_1/bd/design_1",
       "name": "design_1",
@@ -71,7 +71,7 @@
             "value_src": "default_prop"
           },
           "DATA_WIDTH": {
-            "value": "64"
+            "value": "128"
           },
           "FREQ_HZ": {
             "value": "125000000"
@@ -182,13 +182,13 @@
           "WDATA": {
             "physical_name": "axi_in_wdata",
             "direction": "I",
-            "left": "63",
+            "left": "127",
             "right": "0"
           },
           "WSTRB": {
             "physical_name": "axi_in_wstrb",
             "direction": "I",
-            "left": "7",
+            "left": "15",
             "right": "0"
           },
           "WVALID": {
@@ -236,7 +236,7 @@
           "RDATA": {
             "physical_name": "axi_in_rdata",
             "direction": "O",
-            "left": "63",
+            "left": "127",
             "right": "0"
           },
           "RRESP": {
@@ -502,7 +502,7 @@
             "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
             "parameters": {
               "MAX_BURST_LENGTH": {
-                "value": "256"
+                "value": "128"
               },
               "NUM_READ_OUTSTANDING": {
                 "value": "32"
@@ -544,7 +544,7 @@
         "inst_hier_path": "axi_bram_ctrl_0",
         "parameters": {
           "DATA_WIDTH": {
-            "value": "64"
+            "value": "128"
           },
           "PROTOCOL": {
             "value": "AXI4"
