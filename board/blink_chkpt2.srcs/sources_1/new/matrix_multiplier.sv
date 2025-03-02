@@ -83,8 +83,6 @@ wire [MATRIX_NUM_NBITS-1:0] matrix_num_result;
 wire last_subtile;
 wire all_tiles_complete;
 
-reg [MATRIX_NUM_NBITS-1:0] tmp_matrix_num_result;
-
 matrix_num_calculator calc(
     .arstn(aresetn),
     .aclk(aclk),
@@ -112,7 +110,6 @@ always @(posedge aclk or negedge aresetn) begin
         k_tiles <= 0;
         n_tiles <= 0;
         increment_tile <= 0;
-        tmp_matrix_num_result <= 0;
         cycles_elapsed <= 0;
         for (int init = 0; init < SYS_DIM*SYS_DIM; init = init + 1) begin
             mat_a[init] <= 32'h0;
@@ -155,6 +152,8 @@ always @(posedge aclk or negedge aresetn) begin
                 end else begin
                     accumulate <= 1;
                     current_state <= S_READ_A;
+                    matrix_num <= matrix_num_a;
+                    matrix_command <= MHS_READ_MATRIX;
                 end
             end
 
@@ -163,8 +162,7 @@ always @(posedge aclk or negedge aresetn) begin
                 if (matrix_done) begin
                     mat_a <= matrix_read_data;
                     current_state <= S_READ_B;
-                end else begin
-                    matrix_num <= matrix_num_a;
+                    matrix_num <= matrix_num_b;
                     matrix_command <= MHS_READ_MATRIX;
                 end
             end
@@ -173,9 +171,7 @@ always @(posedge aclk or negedge aresetn) begin
                 if (matrix_done) begin
                     mat_b <= matrix_read_data;
                     current_state <= S_COMPUTE;
-                end else begin
-                    matrix_num <= matrix_num_b;
-                    matrix_command <= MHS_READ_MATRIX;
+                    start_mul <= 1;
                 end
             end
             
@@ -183,16 +179,15 @@ always @(posedge aclk or negedge aresetn) begin
                 if(mul_done) begin
                     start_mul <= 0;
                     current_state <= S_COMPLETE_TILE;
-                end else begin
-                    start_mul <= 1;
+                    increment_tile <= 1;
                 end
             end
             
             S_COMPLETE_TILE: begin
-                increment_tile <= 1;
                 if(last_subtile) begin // all sub tiles complete
-                    tmp_matrix_num_result <= matrix_num_result;
                     current_state <= S_WRITE_RESULTS;
+                    matrix_num <= matrix_num_result;
+                    matrix_command <= MHS_WRITE_RESULT;
                 end else begin
                     current_state <= S_START_TILE;
                 end
@@ -202,9 +197,6 @@ always @(posedge aclk or negedge aresetn) begin
                 if(matrix_done) begin
                     current_state <= S_START_TILE;
                     accumulate <= 0;
-                end else begin
-                    matrix_num <= tmp_matrix_num_result;
-                    matrix_command <= MHS_WRITE_RESULT;
                 end
             end
             
