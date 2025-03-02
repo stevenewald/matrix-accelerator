@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0xBB2E721219EF9A51",
+      "boundary_crc": "0xEBE4936847EF9004",
       "device": "xc7a35tfgg484-2",
       "gen_directory": "../../../../blink_chkpt2.gen/sim_1/bd/design_2",
       "name": "design_2",
@@ -41,7 +41,7 @@
             "value_src": "default_prop"
           },
           "DATA_WIDTH": {
-            "value": "128"
+            "value": "256"
           },
           "FREQ_HZ": {
             "value": "62500000"
@@ -147,13 +147,13 @@
           "WDATA": {
             "physical_name": "axi_in_wdata",
             "direction": "I",
-            "left": "127",
+            "left": "255",
             "right": "0"
           },
           "WSTRB": {
             "physical_name": "axi_in_wstrb",
             "direction": "I",
-            "left": "15",
+            "left": "31",
             "right": "0"
           },
           "WVALID": {
@@ -195,7 +195,7 @@
           "RDATA": {
             "physical_name": "axi_in_rdata",
             "direction": "O",
-            "left": "127",
+            "left": "255",
             "right": "0"
           },
           "RRESP": {

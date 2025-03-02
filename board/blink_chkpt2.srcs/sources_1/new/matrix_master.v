@@ -31,9 +31,9 @@ module matrix_master(
     output wire axi_start,
     output wire axi_write,
     output wire [15:0] axi_addr,
-    input wire [AXI_MAX_READ_BURST_LEN-1:0][127:0] axi_read_data,
+    input wire [AXI_MAX_READ_BURST_LEN-1:0][255:0] axi_read_data,
     output wire [7:0] axi_num_reads,
-    output wire [AXI_MAX_WRITE_BURST_LEN-1:0][127:0] axi_write_data,
+    output wire [AXI_MAX_WRITE_BURST_LEN-1:0][255:0] axi_write_data,
     output wire [7:0] axi_num_writes,
     input wire axi_done
     );
