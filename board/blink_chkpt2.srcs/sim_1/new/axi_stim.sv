@@ -54,9 +54,9 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   xil_axi_data_beat                                        Wdatabeat[];       // Write data beats
   bit [31:0] read_data;
   
-  int m = 8;
-  int k = 8;
-  int n = 8;
+  int m = 4;
+  int k = 4;
+  int n = 4;
   
   initial begin
   
@@ -111,12 +111,22 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
     mst_agent.rd_driver.send(rd_trans);
     mst_agent.rd_driver.wait_rsp(rd_trans);
     Rdatablock = rd_trans.get_data_block();
-    if(Rdatablock==32'b0) break;
+    if(Rdatablock[31:0]==32'b0) begin
+        mtestRADDR = 4;
+        rd_trans = mst_agent.rd_driver.create_transaction("read transaction");
+        rd_trans.set_read_cmd(mtestRADDR,mtestRBurstType,mtestRID,
+        mtestRBurstLength,mtestRDataSize);
+        rd_trans.set_driver_return_item_policy(XIL_AXI_PAYLOAD_RETURN);
+        mst_agent.rd_driver.send(rd_trans);
+        mst_agent.rd_driver.wait_rsp(rd_trans);
+        Rdatablock = rd_trans.get_data_block();
+        $display("Multiplication complete. Cycles elapsed: %d", Rdatablock[31:0]);
+        break;
+    end
     #100;
   end
   
   
-  $display ("Mul complete, reading data");
   for(int i = 0; i < (m*n); i++) begin
     mtestRID = $urandom_range(0,(1<<(0)-1)); 
     mtestRADDR = 32+2*m*k+2*k*n+4*i;

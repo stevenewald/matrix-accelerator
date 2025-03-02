@@ -32,7 +32,8 @@ module matrix_multiplier    #(
     input wire [31:0] status_read_data,
     input wire [TILE_NUM_ELEMENTS-1:0][15:0] matrix_read_data,
     output reg [TILE_NUM_ELEMENTS-1:0][31:0] matrix_write_data,
-    input wire matrix_done
+    input wire matrix_done,
+    output reg [31:0] cycles_elapsed
     );
     
     
@@ -112,7 +113,7 @@ always @(posedge aclk or negedge aresetn) begin
         n_tiles <= 0;
         increment_tile <= 0;
         tmp_matrix_num_result <= 0;
-        
+        cycles_elapsed <= 0;
         for (int init = 0; init < SYS_DIM*SYS_DIM; init = init + 1) begin
             mat_a[init] <= 32'h0;
             mat_b[init] <= 32'h0;
@@ -120,6 +121,7 @@ always @(posedge aclk or negedge aresetn) begin
     end else begin
         matrix_command <= MHS_IDLE;
         increment_tile <= 0;
+        cycles_elapsed <= cycles_elapsed + 1;
         
         case (current_state)
             S_IDLE: begin
@@ -142,6 +144,7 @@ always @(posedge aclk or negedge aresetn) begin
                     k_tiles <= status_read_data[19:10] / SYS_DIM;
                     n_tiles <= status_read_data[29:20] / SYS_DIM;
                     current_state <= S_START_TILE;
+                    cycles_elapsed <= 0;
                 end
             end
             

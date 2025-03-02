@@ -43,6 +43,7 @@ module matrix_memory_handle #(
     input wire [TILE_NUM_ELEMENTS-1:0][31:0] matrix_write_data,
     output reg [TILE_NUM_ELEMENTS-1:0][15:0] matrix_read_data,
     output reg [31:0] status_read_data,
+    input wire [31:0] cycles_elapsed,
     input wire [2:0] command,
     output reg matrix_done
     );
@@ -53,26 +54,12 @@ module matrix_memory_handle #(
     wire [15:0] matrix_offset = 2*TILE_NUM_ELEMENTS*matrix_num + 32; //+1 for status_addr
     
     wire [TILE_NUM_ELEMENTS-1:0][15:0] matrix_tmp_rdata;
-    
-    genvar i;
+    genvar i,j;
     generate
         for (i = 0; i < TILE_NUM_ELEMENTS/16; i++) begin
-            assign matrix_tmp_rdata[16*i] = axi_read_data[i][15:0];
-            assign matrix_tmp_rdata[16*i+1] = axi_read_data[i][31:16];
-            assign matrix_tmp_rdata[16*i+2] = axi_read_data[i][47:32];
-            assign matrix_tmp_rdata[16*i+3] = axi_read_data[i][63:48];
-            assign matrix_tmp_rdata[16*i+4] = axi_read_data[i][79:64];
-            assign matrix_tmp_rdata[16*i+5] = axi_read_data[i][95:80];
-            assign matrix_tmp_rdata[16*i+6] = axi_read_data[i][111:96];
-            assign matrix_tmp_rdata[16*i+7] = axi_read_data[i][127:112];
-            assign matrix_tmp_rdata[16*i+8] = axi_read_data[i][143:128];
-            assign matrix_tmp_rdata[16*i+9] = axi_read_data[i][159:144];
-            assign matrix_tmp_rdata[16*i+10] = axi_read_data[i][175:160];
-            assign matrix_tmp_rdata[16*i+11] = axi_read_data[i][191:176];
-            assign matrix_tmp_rdata[16*i+12] = axi_read_data[i][207:192];
-            assign matrix_tmp_rdata[16*i+13] = axi_read_data[i][223:208];
-            assign matrix_tmp_rdata[16*i+14] = axi_read_data[i][239:224];
-            assign matrix_tmp_rdata[16*i+15] = axi_read_data[i][255:240];
+            for(j = 0; j < 16; j++) begin
+                assign matrix_tmp_rdata[16*i+j] = axi_read_data[i][15+16*j:16*j];
+            end
         end
     endgenerate
     
@@ -159,7 +146,7 @@ module matrix_memory_handle #(
                     end else begin
                         axi_addr <= STATUS_ADDR;
                         axi_num_writes <= 1;
-                        axi_write_data[0] <= 0;
+                        axi_write_data[0] <= cycles_elapsed << 32;
                         axi_write <= 1;
                         axi_start <= 1;
                     end

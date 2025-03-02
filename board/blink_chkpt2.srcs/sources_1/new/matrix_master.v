@@ -43,6 +43,7 @@ module matrix_master(
     wire [TILE_NUM_ELEMENTS-1:0][31:0] matrix_write_data;
     wire [TILE_NUM_ELEMENTS-1:0][15:0] matrix_read_data;
     wire [31:0] status_read_data;
+    wire [31:0] cycles_elapsed;
     
     wire [MATRIX_NUM_NBITS-1:0] matrix_num;
     
@@ -64,7 +65,8 @@ module matrix_master(
     .command(matrix_command),
     .status_read_data(status_read_data),
     .matrix_write_data(matrix_write_data),
-    .matrix_read_data(matrix_read_data));
+    .matrix_read_data(matrix_read_data),
+    .cycles_elapsed(cycles_elapsed));
     
     matrix_multiplier #(
         .SYS_DIM(SYS_DIM)) multiplier (
@@ -75,6 +77,7 @@ module matrix_master(
         .status_read_data(status_read_data),
         .matrix_read_data(matrix_read_data),
         .matrix_write_data(matrix_write_data),
-        .matrix_done(matrix_done)
+        .matrix_done(matrix_done),
+        .cycles_elapsed(cycles_elapsed)
         );
 endmodule
