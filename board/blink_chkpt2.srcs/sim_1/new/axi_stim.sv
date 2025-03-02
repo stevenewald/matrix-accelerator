@@ -54,9 +54,11 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   xil_axi_data_beat                                        Wdatabeat[];       // Write data beats
   bit [31:0] read_data;
   
-  int m = 4;
-  int k = 4;
-  int n = 4;
+  int m = 8;
+  int k = 8;
+  int n = 8;
+  
+  int cycles_elapsed = 0;
   
   initial begin
   
@@ -120,7 +122,8 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
         mst_agent.rd_driver.send(rd_trans);
         mst_agent.rd_driver.wait_rsp(rd_trans);
         Rdatablock = rd_trans.get_data_block();
-        $display("Multiplication complete. Cycles elapsed: %d", Rdatablock[31:0]);
+        cycles_elapsed = Rdatablock[31:0];
+        $display("Multiplication complete.");
         break;
     end
     #100;
@@ -164,7 +167,7 @@ design_2_axi_vip_1_0_mst_t  mst_agent;
   mst_agent.wait_drivers_idle(); 
     
 
-  $display("TEST DONE : Test Completed Successfully");
+  $display("TEST DONE : Test Completed Successfully.\n\nCycles elapsed: %d", cycles_elapsed);
   $finish;
   end  
 endmodule

@@ -62,6 +62,10 @@ always @(posedge clk or negedge resetn) begin
                     truncated_burst <= (addr&16'h1000) != ((addr+32*num_reads)&32'h1000);
                     arg_num <= 0;
                     state <= STATE_READ_ADDR;
+                    m_axi_araddr  <= addr;
+                    m_axi_arvalid <= 1'b1;
+                    m_axi_arlen <= (addr&16'h1000) != ((addr+32*num_reads)&32'h1000) ? 0 : num_reads-1;
+                    m_axi_arsize <= 5;
                 end else begin
                     read_done <= 0;
                 end
@@ -73,6 +77,7 @@ always @(posedge clk or negedge resetn) begin
                 if(m_axi_arvalid && m_axi_arready) begin
                     m_axi_arvalid <= 0;
                     state <= STATE_READ_DATA;
+                    m_axi_rready <= 1'b1;
                 end else begin
                     m_axi_araddr  <= addr + 32*arg_num;
                     m_axi_arvalid <= 1'b1;
