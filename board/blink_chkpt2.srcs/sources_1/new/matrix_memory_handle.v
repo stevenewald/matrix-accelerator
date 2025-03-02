@@ -22,11 +22,11 @@
 
 
 module matrix_memory_handle #(
-    parameter STATUS_ADDR = 32'h0
+    parameter STATUS_ADDR = 15'h0
     ) (
     output reg axi_start,
     output reg axi_write,
-    output reg [31:0] axi_addr,
+    output reg [15:0] axi_addr,
     output reg [AXI_MAX_WRITE_BURST_LEN-1:0][63:0] axi_write_data,
     output reg [7:0] axi_num_writes,
     input wire [AXI_MAX_READ_BURST_LEN-1:0][63:0] axi_read_data,
@@ -50,7 +50,7 @@ module matrix_memory_handle #(
     reg [2:0] state;
     
     // /2 because packed matrices
-    wire [31:0] matrix_offset = 2*TILE_NUM_ELEMENTS*matrix_num + 8; //+1 for status_addr
+    wire [15:0] matrix_offset = 2*TILE_NUM_ELEMENTS*matrix_num + 8; //+1 for status_addr
     
     wire [TILE_NUM_ELEMENTS-1:0][15:0] matrix_tmp_rdata;
     

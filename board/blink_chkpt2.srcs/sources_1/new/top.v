@@ -40,7 +40,7 @@ module top(
      
      wire axi_start;
      wire axi_write;
-     wire [31:0] axi_addr;
+     wire [15:0] axi_addr;
      wire [AXI_MAX_READ_BURST_LEN-1:0][63:0] axi_read_data;
      wire [AXI_MAX_WRITE_BURST_LEN-1:0][63:0] axi_write_data;
      wire axi_done;

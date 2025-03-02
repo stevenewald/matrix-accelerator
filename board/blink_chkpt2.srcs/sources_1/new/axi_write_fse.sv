@@ -4,14 +4,14 @@ module axi_write_fse
     input                         clk,
     input                         resetn,      // Active low reset
     input                         start,       // Transaction start trigger
-    input      [31:0]   addr,        // Transaction address
+    input      [15:0]   addr,        // Transaction address
     input      [AXI_MAX_WRITE_BURST_LEN-1:0][63:0]   write_data,  
     input wire [7:0]    num_writes,
 
     output reg                  write_done,         // Transaction completion flag
 
     // AXI-Lite Write Address Channel
-    output reg [31:0]   m_axi_awaddr,
+    output reg [15:0]   m_axi_awaddr,
     output reg                  m_axi_awvalid,
     input                       m_axi_awready,
     output reg [7:0]            m_axi_awlen,
@@ -46,7 +46,7 @@ reg truncated_burst;
 //---------------------------------------------------------------------
 always @(posedge clk or negedge resetn) begin
     if (!resetn) begin
-        m_axi_awaddr  <= {32{1'b0}};
+        m_axi_awaddr  <= 0;
         m_axi_awvalid <= 1'b0;
         m_axi_wdata   <= {32{1'b0}};
         m_axi_wstrb   <= {8{1'b0}};
@@ -66,7 +66,7 @@ always @(posedge clk or negedge resetn) begin
             STATE_IDLE: begin
                 // !done to ensure buffer
                 if (!write_done && start) begin
-                    truncated_burst <= (addr&32'h1000) != ((addr+8*num_writes)&32'h1000);
+                    truncated_burst <= (addr&16'h1000) != ((addr+8*num_writes)&16'h1000);
                     arg_num <= 0;
                     state <= STATE_WRITE_ADDR;
                 end else begin

@@ -6,7 +6,7 @@ module test();
     
     wire axi_rst;
     wire axi_clk;
-    wire [31:0] axi_araddr;
+    wire [15:0] axi_araddr;
     wire [2:0] axi_arprot;
     wire axi_arvalid;
     wire axi_arready;
@@ -74,7 +74,7 @@ module test();
     
     wire start;
     wire write;
-    wire [31:0] addr;
+    wire [15:0] addr;
     wire [AXI_MAX_WRITE_BURST_LEN-1:0][63:0] write_data;
     wire [AXI_MAX_READ_BURST_LEN-1:0][63:0] read_data;
     wire [7:0] num_reads;

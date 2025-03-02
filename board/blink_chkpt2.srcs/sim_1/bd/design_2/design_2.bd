@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0xEEA2AE70D95808C6",
+      "boundary_crc": "0xA84E3754D3B3AE20",
       "device": "xc7a35tfgg484-2",
       "gen_directory": "../../../../blink_chkpt2.gen/sim_1/bd/design_2",
       "name": "design_2",
@@ -25,7 +25,7 @@
         "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
         "parameters": {
           "ADDR_WIDTH": {
-            "value": "32"
+            "value": "16"
           },
           "ARUSER_WIDTH": {
             "value": "0"
@@ -126,14 +126,14 @@
         "address_space_ref": "axi_in",
         "base_address": {
           "minimum": "0x00000000",
-          "maximum": "0xFFFFFFFF",
-          "width": "32"
+          "maximum": "0x0000FFFF",
+          "width": "16"
         },
         "port_maps": {
           "AWADDR": {
             "physical_name": "axi_in_awaddr",
             "direction": "I",
-            "left": "31",
+            "left": "15",
             "right": "0"
           },
           "AWVALID": {
@@ -181,7 +181,7 @@
           "ARADDR": {
             "physical_name": "axi_in_araddr",
             "direction": "I",
-            "left": "31",
+            "left": "15",
             "right": "0"
           },
           "ARVALID": {
@@ -373,8 +373,8 @@
             "mode": "Master",
             "base_address": {
               "minimum": "0x00000000",
-              "maximum": "0xFFFFFFFF",
-              "width": "32"
+              "maximum": "0x0000FFFF",
+              "width": "16"
             }
           },
           "S_AXI": {
@@ -389,8 +389,8 @@
         "addressing": {
           "address_spaces": {
             "Master_AXI": {
-              "range": "4G",
-              "width": "32"
+              "range": "64K",
+              "width": "16"
             }
           }
         }
@@ -623,12 +623,12 @@
       "/": {
         "address_spaces": {
           "axi_in": {
-            "range": "4G",
-            "width": "32",
+            "range": "64K",
+            "width": "16",
             "segments": {
               "SEG_axi_bram_ctrl_0_Mem0": {
                 "address_block": "/axi_bram_ctrl_0/S_AXI/Mem0",
-                "offset": "0x00000000",
+                "offset": "0x0000",
                 "range": "8K"
               }
             }
@@ -641,7 +641,7 @@
             "segments": {
               "SEG_axi_bram_ctrl_0_Mem0": {
                 "address_block": "/axi_bram_ctrl_0/S_AXI/Mem0",
-                "offset": "0x00000000",
+                "offset": "0x0000",
                 "range": "8K"
               }
             }

@@ -4,7 +4,7 @@ module axi_read_fse
     input                         clk,
     input                         resetn,  
     input                         start,     
-    input      [31:0]   addr, 
+    input      [15:0]   addr, 
 
     output reg [AXI_MAX_READ_BURST_LEN-1:0][63:0]   read_data, 
     input wire [7:0]     num_reads,
@@ -13,7 +13,7 @@ module axi_read_fse
 
 
     // AXI-Lite Read Address Channel
-    output reg [31:0]   m_axi_araddr,
+    output reg [15:0]   m_axi_araddr,
     output reg                  m_axi_arvalid,
     input                       m_axi_arready,
     output reg [7:0]            m_axi_arlen,
@@ -43,7 +43,7 @@ reg truncated_burst;
 always @(posedge clk or negedge resetn) begin
     if (!resetn) begin
 
-        m_axi_araddr  <= {32{1'b0}};
+        m_axi_araddr  <= 0;
         m_axi_arvalid <= 1'b0;
         m_axi_rready  <= 1'b0;
         m_axi_arlen <= 8'b0;
@@ -59,7 +59,7 @@ always @(posedge clk or negedge resetn) begin
             STATE_IDLE: begin
                 // !done to ensure buffer
                 if (!read_done && start) begin
-                    truncated_burst <= (addr&32'h1000) != ((addr+8*num_reads)&32'h1000);
+                    truncated_burst <= (addr&16'h1000) != ((addr+8*num_reads)&16'h1000);
                     arg_num <= 0;
                     state <= STATE_READ_ADDR;
                 end else begin
