@@ -11,17 +11,17 @@
 #include <sys/poll.h>
 #include <unistd.h>
 
-#define NUM_TRIALS 100
+#define NUM_TRIALS 300
 
 #define TILE_DIM 8
 
 // Signed
-#define MIN_INPUT_VALUE -std::pow(2, 14)
-#define MAX_INPUT_VALUE std::pow(2, 14)
+#define MIN_INPUT_VALUE -std::pow(2, 4)
+#define MAX_INPUT_VALUE std::pow(2, 4)
 
-#define INPUT_DIM_M 72
-#define INPUT_DIM_K 72
-#define INPUT_DIM_N 72
+#define INPUT_DIM_M 88
+#define INPUT_DIM_K 96
+#define INPUT_DIM_N 88
 
 #define DEVICE_PATH "/dev/fpga"
 #define PCIE_SET_DMA (_IOW('k', 1, int))
@@ -53,7 +53,7 @@ bool write_matrices(int fd, const large_matrix_a &a, const large_matrix_b &b) {
   std::copy(a.begin(), a.end(), args.begin());
   std::copy(b.begin(), b.end(), args.begin() + INPUT_DIM_M * INPUT_DIM_K);
 
-  off_t offset = 4;
+  off_t offset = 8;
   ssize_t bytes_written =
       pwrite(fd, args.data(), args.size() * sizeof(int16_t), offset);
   if (bytes_written != args.size() * sizeof(int16_t)) {
@@ -68,7 +68,7 @@ large_matrix_res get_large_result(int fd) {
   set_write_mode(fd, true);
   large_matrix_res res;
   off_t offset =
-      4 + 2*(INPUT_DIM_M * INPUT_DIM_K + INPUT_DIM_K * INPUT_DIM_N);
+      8 + 2*(INPUT_DIM_M * INPUT_DIM_K + INPUT_DIM_K * INPUT_DIM_N);
   ssize_t bytes_read =
       pread(fd, res.data(), res.size() * sizeof(int32_t), offset);
   if (bytes_read != res.size() * sizeof(int32_t)) {
