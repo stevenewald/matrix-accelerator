@@ -77,11 +77,17 @@ systolic_array #(
     );
     
 reg increment_tile;
+wire [MATRIX_NUM_NBITS-1:0] matrix_num_a_prev;
+wire [MATRIX_NUM_NBITS-1:0] matrix_num_b_prev;
+wire [MATRIX_NUM_NBITS-1:0] matrix_num_result_prev;
 wire [MATRIX_NUM_NBITS-1:0] matrix_num_a;
 wire [MATRIX_NUM_NBITS-1:0] matrix_num_b;
 wire [MATRIX_NUM_NBITS-1:0] matrix_num_result;
 wire last_subtile;
 wire all_tiles_complete;
+wire last_subtile_prev;
+wire all_tiles_complete_prev;
+reg a_ready;
 
 matrix_num_calculator calc(
     .arstn(aresetn),
@@ -93,8 +99,13 @@ matrix_num_calculator calc(
     .matrix_num_a(matrix_num_a),
     .matrix_num_b(matrix_num_b),
     .matrix_num_result(matrix_num_result),
+    .matrix_num_a_prev(matrix_num_a_prev),
+    .matrix_num_b_prev(matrix_num_b_prev),
+    .matrix_num_result_prev(matrix_num_result_prev),
     .last_subtile(last_subtile),
-    .all_tiles_complete(all_tiles_complete));
+    .all_tiles_complete(all_tiles_complete),
+    .last_subtile_prev(last_subtile_prev),
+    .all_tiles_complete_prev(all_tiles_complete_prev));
 
 ////////////////////////////////////////////////////////////////////////////////
 // Output and Data Handling
@@ -115,6 +126,7 @@ always @(posedge aclk or negedge aresetn) begin
             mat_a[init] <= 32'h0;
             mat_b[init] <= 32'h0;
         end
+        a_ready <= 0;
     end else begin
         matrix_command <= MHS_IDLE;
         increment_tile <= 0;
@@ -142,6 +154,7 @@ always @(posedge aclk or negedge aresetn) begin
                     n_tiles <= status_read_data[29:20] / SYS_DIM;
                     current_state <= S_START_TILE;
                     cycles_elapsed <= 0;
+                    a_ready <= 0;
                 end
             end
             
@@ -152,8 +165,10 @@ always @(posedge aclk or negedge aresetn) begin
                 end else begin
                     accumulate <= 1;
                     current_state <= S_READ_A;
-                    matrix_num <= matrix_num_a;
-                    matrix_command <= MHS_READ_MATRIX;
+                    if(!a_ready) begin
+                        matrix_num <= matrix_num_a;
+                        matrix_command <= MHS_READ_MATRIX;
+                    end
                 end
             end
 
@@ -164,6 +179,12 @@ always @(posedge aclk or negedge aresetn) begin
                     current_state <= S_READ_B;
                     matrix_num <= matrix_num_b;
                     matrix_command <= MHS_READ_MATRIX;
+                    increment_tile <= 1;
+                end else if(a_ready) begin
+                    current_state <= S_READ_B;
+                    matrix_num <= matrix_num_b;
+                    matrix_command <= MHS_READ_MATRIX;
+                    increment_tile <= 1;
                 end
             end
             
@@ -172,21 +193,30 @@ always @(posedge aclk or negedge aresetn) begin
                     mat_b <= matrix_read_data;
                     current_state <= S_COMPUTE;
                     start_mul <= 1;
+                    
+                    a_ready <= 0;
+                    matrix_num <= matrix_num_a; // next
+                    matrix_command <= MHS_READ_MATRIX;
                 end
             end
             
             S_COMPUTE: begin
                 if(mul_done) begin
                     start_mul <= 0;
+                end
+                if(matrix_done) begin
+                    a_ready <= 1;
+                    mat_a <= matrix_read_data;
+                end
+                if((mul_done || !start_mul) && (a_ready || matrix_done)) begin
                     current_state <= S_COMPLETE_TILE;
-                    increment_tile <= 1;
                 end
             end
             
             S_COMPLETE_TILE: begin
-                if(last_subtile) begin // all sub tiles complete
+                if(last_subtile_prev) begin // all sub tiles complete
                     current_state <= S_WRITE_RESULTS;
-                    matrix_num <= matrix_num_result;
+                    matrix_num <= matrix_num_result_prev;
                     matrix_command <= MHS_WRITE_RESULT;
                 end else begin
                     current_state <= S_START_TILE;
