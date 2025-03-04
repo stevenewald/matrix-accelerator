@@ -131,6 +131,7 @@ always @(posedge aclk or negedge aresetn) begin
         matrix_command <= MHS_IDLE;
         increment_tile <= 0;
         cycles_elapsed <= cycles_elapsed + 1;
+        if(matrix_done) a_ready <= 1;
         
         case (current_state)
             S_IDLE: begin
@@ -174,13 +175,8 @@ always @(posedge aclk or negedge aresetn) begin
 
             // Read from 0x0 -> reg_A
             S_READ_A: begin
-                if (matrix_done) begin
+                if (a_ready) begin
                     mat_a <= matrix_read_data;
-                    current_state <= S_READ_B;
-                    matrix_num <= matrix_num_b;
-                    matrix_command <= MHS_READ_MATRIX;
-                    increment_tile <= 1;
-                end else if(a_ready) begin
                     current_state <= S_READ_B;
                     matrix_num <= matrix_num_b;
                     matrix_command <= MHS_READ_MATRIX;
@@ -203,21 +199,17 @@ always @(posedge aclk or negedge aresetn) begin
             S_COMPUTE: begin
                 if(mul_done) begin
                     start_mul <= 0;
-                end
-                if(matrix_done) begin
-                    a_ready <= 1;
-                    mat_a <= matrix_read_data;
-                end
-                if((mul_done || !start_mul) && (a_ready || matrix_done)) begin
                     current_state <= S_COMPLETE_TILE;
                 end
             end
             
             S_COMPLETE_TILE: begin
                 if(last_subtile_prev) begin // all sub tiles complete
-                    current_state <= S_WRITE_RESULTS;
-                    matrix_num <= matrix_num_result_prev;
-                    matrix_command <= MHS_WRITE_RESULT;
+                    if(a_ready) begin // skip waiting for update
+                        current_state <= S_WRITE_RESULTS;
+                        matrix_num <= matrix_num_result_prev;
+                        matrix_command <= MHS_WRITE_RESULT;
+                    end
                 end else begin
                     current_state <= S_START_TILE;
                 end
