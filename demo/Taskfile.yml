@@ -6,7 +6,7 @@ tasks:
     cmds:
       - rm -rf build
       - mkdir -p build
-      - cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
+      - cd build && cmake -DCMAKE_CXX_FLAGS="-march=native -O3" -DCMAKE_BUILD_TYPE=Release ..
 
   build:
     aliases: [b]

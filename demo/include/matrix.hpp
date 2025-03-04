@@ -1,8 +1,8 @@
 #pragma once
 #include "types.hpp"
 
-matrix_res generate_large_result(const matrix_input &a, const matrix_input &b,
-                                 const matmul_dims &dims);
+void generate_large_result(matrix_res &res, const matrix_input &a,
+                           const matrix_input &b, const matmul_dims &dims);
 
 matrix_input transform_into_input_a(const matrix_input &input,
                                     const matmul_dims &dims);

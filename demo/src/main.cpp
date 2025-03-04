@@ -68,8 +68,9 @@ int main() {
 
     auto res_t = transform_into_output(res, dims);
 
+	matrix_res expected(dims.m * dims.n);
     auto cpu_start = get_time_ns();
-    auto expected = generate_large_result(mat_a, mat_b, dims);
+    generate_large_result(expected, mat_a, mat_b, dims);
     cpu_dur_exec_ns += get_time_ns() - cpu_start;
 
     int failed = verify_result(expected, res_t, dims);
